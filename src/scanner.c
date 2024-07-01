@@ -3,24 +3,21 @@
 
 #include <wctype.h>
 
-#define _HTML_TOKENS_ \
-    START_TAG_NAME, \
-    SCRIPT_START_TAG_NAME, \
-    STYLE_START_TAG_NAME, \
-    END_TAG_NAME, \
-    ERRONEOUS_END_TAG_NAME, \
-    SELF_CLOSING_TAG_DELIMITER, \
-    IMPLICIT_END_TAG, \
-    RAW_TEXT, \
-    COMMENT, \
-
-#ifndef TREE_SITTER_MAIN_LANG
-enum TokenType { _HTML_TOKENS_ };
-#endif
+enum TokenType {
+    START_TAG_NAME,
+    SCRIPT_START_TAG_NAME,
+    STYLE_START_TAG_NAME,
+    END_TAG_NAME,
+    ERRONEOUS_END_TAG_NAME,
+    SELF_CLOSING_TAG_DELIMITER,
+    IMPLICIT_END_TAG,
+    RAW_TEXT,
+    COMMENT,
+};
 
 typedef struct {
     Array(Tag) tags;
-} Html_Scanner;
+} Scanner;
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -28,7 +25,7 @@ static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 
 static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
 
-static unsigned serialize(Html_Scanner *scanner, char *buffer) {
+static unsigned serialize(Scanner *scanner, char *buffer) {
     uint16_t tag_count = scanner->tags.size > UINT16_MAX ? UINT16_MAX : scanner->tags.size;
     uint16_t serialized_tag_count = 0;
 
@@ -62,7 +59,7 @@ static unsigned serialize(Html_Scanner *scanner, char *buffer) {
     return size;
 }
 
-static void deserialize(Html_Scanner *scanner, const char *buffer, unsigned length) {
+static void deserialize(Scanner *scanner, const char *buffer, unsigned length) {
     for (unsigned i = 0; i < scanner->tags.size; i++) {
         tag_free(&scanner->tags.contents[i]);
     }
@@ -143,7 +140,7 @@ static bool scan_comment(TSLexer *lexer) {
     return false;
 }
 
-static bool scan_raw_text(Html_Scanner *scanner, TSLexer *lexer) {
+static bool scan_raw_text(Scanner *scanner, TSLexer *lexer) {
     if (scanner->tags.size == 0) {
         return false;
     }
@@ -171,12 +168,12 @@ static bool scan_raw_text(Html_Scanner *scanner, TSLexer *lexer) {
     return true;
 }
 
-static void pop_tag(Html_Scanner *scanner) {
+static void pop_tag(Scanner *scanner) {
     Tag popped_tag = array_pop(&scanner->tags);
     tag_free(&popped_tag);
 }
 
-static bool scan_implicit_end_tag(Html_Scanner *scanner, TSLexer *lexer) {
+static bool scan_implicit_end_tag(Scanner *scanner, TSLexer *lexer) {
     Tag *parent = scanner->tags.size == 0 ? NULL : array_back(&scanner->tags);
 
     bool is_closing_tag = false;
@@ -233,7 +230,7 @@ static bool scan_implicit_end_tag(Html_Scanner *scanner, TSLexer *lexer) {
     return false;
 }
 
-static bool scan_start_tag_name(Html_Scanner *scanner, TSLexer *lexer) {
+static bool scan_start_tag_name(Scanner *scanner, TSLexer *lexer) {
     String tag_name = scan_tag_name(lexer);
     if (tag_name.size == 0) {
         array_delete(&tag_name);
@@ -256,7 +253,7 @@ static bool scan_start_tag_name(Html_Scanner *scanner, TSLexer *lexer) {
     return true;
 }
 
-static bool scan_end_tag_name(Html_Scanner *scanner, TSLexer *lexer) {
+static bool scan_end_tag_name(Scanner *scanner, TSLexer *lexer) {
     String tag_name = scan_tag_name(lexer);
 
     if (tag_name.size == 0) {
@@ -276,7 +273,7 @@ static bool scan_end_tag_name(Html_Scanner *scanner, TSLexer *lexer) {
     return true;
 }
 
-static bool scan_self_closing_tag_delimiter(Html_Scanner *scanner, TSLexer *lexer) {
+static bool scan_self_closing_tag_delimiter(Scanner *scanner, TSLexer *lexer) {
     advance(lexer);
     if (lexer->lookahead == '>') {
         advance(lexer);
@@ -289,7 +286,7 @@ static bool scan_self_closing_tag_delimiter(Html_Scanner *scanner, TSLexer *lexe
     return false;
 }
 
-static bool scan(Html_Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     if (valid_symbols[RAW_TEXT] && !valid_symbols[START_TAG_NAME] && !valid_symbols[END_TAG_NAME]) {
         return scan_raw_text(scanner, lexer);
     }
@@ -336,27 +333,27 @@ static bool scan(Html_Scanner *scanner, TSLexer *lexer, const bool *valid_symbol
 }
 
 void *tree_sitter_html_external_scanner_create() {
-    Html_Scanner *scanner = (Html_Scanner *)ts_calloc(1, sizeof(Html_Scanner));
+    Scanner *scanner = (Scanner *)ts_calloc(1, sizeof(Scanner));
     return scanner;
 }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-    Html_Scanner *scanner = (Html_Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
     return scan(scanner, lexer, valid_symbols);
 }
 
 unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer) {
-    Html_Scanner *scanner = (Html_Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
     return serialize(scanner, buffer);
 }
 
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
-    Html_Scanner *scanner = (Html_Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
     deserialize(scanner, buffer, length);
 }
 
 void tree_sitter_html_external_scanner_destroy(void *payload) {
-    Html_Scanner *scanner = (Html_Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
     for (unsigned i = 0; i < scanner->tags.size; i++) {
         tag_free(&scanner->tags.contents[i]);
     }
