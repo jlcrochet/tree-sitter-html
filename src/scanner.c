@@ -14,7 +14,7 @@
     RAW_TEXT, \
     COMMENT, \
 
-#ifndef TREE_SITTER_RAZOR
+#ifndef TREE_SITTER_MAIN_LANG
 enum TokenType { _HTML_TOKENS_ };
 #endif
 
