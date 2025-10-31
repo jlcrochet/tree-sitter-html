@@ -15,6 +15,7 @@ enum TokenType {
   START_TAG_NAME,
   START_TAG_NAME_SCRIPT,
   START_TAG_NAME_STYLE,
+  START_TAG_NAME_VOID,
   END_TAG_NAME,
   ERRONEOUS_END_TAG_NAME,
   SELF_CLOSING_TAG_DELIMITER,
@@ -190,6 +191,12 @@ static bool scan_raw_text(TSLexer *lexer, Scanner *scanner) {
   if (scanner->tags.size == 0) return false;
 
   enum Element top_element = scanner->tags.contents[scanner->tags.size - 1];
+
+  // Only scan raw text for script and style elements
+  if (top_element != E_script && top_element != E_style) {
+    return false;
+  }
+
   XXH64_hash_t top_hash = 0;
   if (top_element == E_Unknown && scanner->hashes.size > 0) {
     // Find the corresponding hash by counting E_Unknown elements
@@ -257,7 +264,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
   // Handle start tag names
   if (valid_symbols[START_TAG_NAME] || valid_symbols[START_TAG_NAME_SCRIPT] ||
-      valid_symbols[START_TAG_NAME_STYLE]) {
+      valid_symbols[START_TAG_NAME_STYLE] || valid_symbols[START_TAG_NAME_VOID]) {
     enum Element element;
     XXH64_hash_t hash;
 
@@ -274,13 +281,18 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         lexer->mark_end(lexer);
         return true;
       }
+      // Check for void elements
+      if (valid_symbols[START_TAG_NAME_VOID] && is_void_element(element)) {
+        // Don't push void elements to the stack
+        lexer->result_symbol = START_TAG_NAME_VOID;
+        lexer->mark_end(lexer);
+        return true;
+      }
       if (valid_symbols[START_TAG_NAME]) {
-        // Only push non-void elements onto the stack
-        if (!is_void_element(element)) {
-          array_push(&scanner->tags, element);
-          if (element == E_Unknown) {
-            array_push(&scanner->hashes, hash);
-          }
+        // Push non-void elements onto the stack
+        array_push(&scanner->tags, element);
+        if (element == E_Unknown) {
+          array_push(&scanner->hashes, hash);
         }
         lexer->result_symbol = START_TAG_NAME;
         lexer->mark_end(lexer);

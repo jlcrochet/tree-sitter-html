@@ -14,6 +14,7 @@ module.exports = grammar({
     $._start_tag_name,
     $._start_tag_name_script,
     $._start_tag_name_style,
+    $._start_tag_name_void,
     $._end_tag_name,
     $.erroneous_end_tag_name,
     '/>',
@@ -44,6 +45,7 @@ module.exports = grammar({
       $.element,
       $.script_element,
       $.style_element,
+      $.void_element,
       $.erroneous_end_tag,
       $.text
     ),
@@ -69,6 +71,8 @@ module.exports = grammar({
       $.end_tag
     ),
 
+    void_element: $ => alias($.void_start_tag, $.start_tag),
+
     start_tag: $ => seq(
       '<',
       alias($._start_tag_name, $.tag_name),
@@ -88,6 +92,13 @@ module.exports = grammar({
       alias($._start_tag_name_style, $.tag_name),
       repeat($.attribute),
       '>'
+    ),
+
+    void_start_tag: $ => seq(
+      '<',
+      alias($._start_tag_name_void, $.tag_name),
+      repeat($.attribute),
+      choice('>', '/>')
     ),
 
     self_closing_tag: $ => seq(
