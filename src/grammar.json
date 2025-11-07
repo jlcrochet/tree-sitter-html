@@ -636,17 +636,8 @@
                 "name": "ambiguous_ampersand"
               },
               {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "SYMBOL",
-                    "name": "_cdata_allowed"
-                  },
-                  {
-                    "type": "SYMBOL",
-                    "name": "cdata"
-                  }
-                ]
+                "type": "SYMBOL",
+                "name": "cdata"
               },
               {
                 "type": "SYMBOL",
@@ -854,8 +845,12 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "STRING",
-          "value": "<!"
+          "type": "PREC_RIGHT",
+          "value": 0,
+          "content": {
+            "type": "STRING",
+            "value": "<!"
+          }
         },
         {
           "type": "PATTERN",
@@ -1113,10 +1108,6 @@
     {
       "type": "SYMBOL",
       "name": "_comment_text"
-    },
-    {
-      "type": "SYMBOL",
-      "name": "_cdata_allowed"
     }
   ],
   "inline": [],

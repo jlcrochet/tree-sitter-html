@@ -27,7 +27,6 @@ const G = {
     $.ambiguous_ampersand,
     $._cdata_text,
     $._comment_text,
-    $._cdata_allowed,
   ],
 
   extras: _ => [],
@@ -156,7 +155,7 @@ const G = {
         $.character_reference,
         $.ambiguous_ampersand,
         // We have to check for CDATA sections in normal elements too in order to match CDATA that is directly inside a top-level foreign element; the external scanner will validate this.
-        seq($._cdata_allowed, $.cdata),
+        $.cdata,
         $.element,
         $.script_element,
         $.style_element,
@@ -201,7 +200,7 @@ const G = {
     ),
 
     doctype: $ => seq(
-      '<!',
+      prec.right('<!'),
       /DOCTYPE/i,
       WHITESPACE,
       /html/i,
