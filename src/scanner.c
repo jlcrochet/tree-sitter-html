@@ -31,7 +31,6 @@ enum TokenType {
     TT_AmbiguousAmpersand,
     TT_CdataText,
     TT_CommentText,
-    // TT_CdataAllowed,
 };
 
 enum ElementNamespace {
@@ -698,12 +697,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             }
         }
     }
-
-    // if (valid_symbols[TT_CdataAllowed]) {
-    //     fputs("BLEH\n", stderr);
-    //     lexer->result_symbol = TT_CdataAllowed;
-    //     return get_current_namespace(scanner) != EN_HTML;
-    // }
 
     return false;
 }

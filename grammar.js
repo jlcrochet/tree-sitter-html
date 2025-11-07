@@ -31,6 +31,10 @@ const G = {
 
   extras: _ => [],
 
+  // conflicts: $ => [
+  //   [$.attribute]
+  // ],
+
   rules: {
     document: $ => optional(seq(
       optional('\uFEFF'),
@@ -168,7 +172,7 @@ const G = {
     start_tag: $ => seq(
       '<',
       alias($._start_tag_name, $.tag_name),
-      repeat(seq(WHITESPACE, $.attribute)),
+      repeat(seq(token(prec(1, WHITESPACE)), $.attribute)),
       optional(WHITESPACE),
       '>'
     ),
@@ -200,7 +204,7 @@ const G = {
     ),
 
     doctype: $ => seq(
-      prec.right('<!'),
+      '<!',
       /DOCTYPE/i,
       WHITESPACE,
       /html/i,
@@ -221,9 +225,9 @@ const G = {
     attribute: $ => seq(
       $.attribute_name,
       optional(seq(
-        // optional(WHITESPACE),
+        optional(token(prec(2, WHITESPACE))),
         '=',
-        // optional(WHITESPACE),
+        optional(WHITESPACE),
         $.attribute_value,
       ))
     ),
