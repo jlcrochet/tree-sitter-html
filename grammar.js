@@ -27,6 +27,7 @@ const G = {
     $.ambiguous_ampersand,
     $._cdata_text,
     $._comment_text,
+    $._cdata_allowed,
   ],
 
   extras: _ => [],
@@ -154,6 +155,8 @@ const G = {
         // $.text,
         $.character_reference,
         $.ambiguous_ampersand,
+        // We have to check for CDATA sections in normal elements too in order to match CDATA that is directly inside a top-level foreign element; the external scanner will validate this.
+        seq($._cdata_allowed, $.cdata),
         $.element,
         $.script_element,
         $.style_element,
@@ -187,13 +190,13 @@ const G = {
 
     cdata: $ => seq(
       '<![CDATA[',
-      alias($._cdata_text, $.text),
+      optional(alias($._cdata_text, $.text)),
       ']]>'
     ),
 
     comment: $ => seq(
       '<!--',
-      alias($._comment_text, $.text),
+      optional(alias($._comment_text, $.text)),
       '-->'
     ),
 

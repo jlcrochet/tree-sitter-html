@@ -636,6 +636,19 @@
                 "name": "ambiguous_ampersand"
               },
               {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "_cdata_allowed"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "cdata"
+                  }
+                ]
+              },
+              {
                 "type": "SYMBOL",
                 "name": "element"
               },
@@ -785,13 +798,21 @@
           "value": "<![CDATA["
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_cdata_text"
-          },
-          "named": true,
-          "value": "text"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_cdata_text"
+              },
+              "named": true,
+              "value": "text"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "STRING",
@@ -807,13 +828,21 @@
           "value": "<!--"
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_comment_text"
-          },
-          "named": true,
-          "value": "text"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_comment_text"
+              },
+              "named": true,
+              "value": "text"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "STRING",
@@ -1084,6 +1113,10 @@
     {
       "type": "SYMBOL",
       "name": "_comment_text"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_cdata_allowed"
     }
   ],
   "inline": [],
