@@ -31,10 +31,6 @@ const G = {
 
   extras: _ => [],
 
-  // conflicts: $ => [
-  //   [$.attribute]
-  // ],
-
   rules: {
     document: $ => optional(seq(
       optional('\uFEFF'),
@@ -243,19 +239,23 @@ const G = {
       // Single-quoted
       seq(
         "'",
-        /[^'&]+/,
-        $.character_reference,
-        $.ambiguous_ampersand,
-        '&',
+        repeat(choice(
+          /[^'&]+/,
+          $.character_reference,
+          $.ambiguous_ampersand,
+          '&',
+        )),
         "'"
       ),
       // Double-quoted
       seq(
         '"',
-        /[^"&]+/,
-        $.character_reference,
-        $.ambiguous_ampersand,
-        '&',
+        repeat(choice(
+          /[^"&]+/,
+          $.character_reference,
+          $.ambiguous_ampersand,
+          '&',
+        )),
         '"'
       ),
     ),

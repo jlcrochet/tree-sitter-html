@@ -1034,20 +1034,28 @@
               "value": "'"
             },
             {
-              "type": "PATTERN",
-              "value": "[^'&]+"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "character_reference"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "ambiguous_ampersand"
-            },
-            {
-              "type": "STRING",
-              "value": "&"
+              "type": "REPEAT",
+              "content": {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "PATTERN",
+                    "value": "[^'&]+"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "character_reference"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "ambiguous_ampersand"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "&"
+                  }
+                ]
+              }
             },
             {
               "type": "STRING",
@@ -1063,20 +1071,28 @@
               "value": "\""
             },
             {
-              "type": "PATTERN",
-              "value": "[^\"&]+"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "character_reference"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "ambiguous_ampersand"
-            },
-            {
-              "type": "STRING",
-              "value": "&"
+              "type": "REPEAT",
+              "content": {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "PATTERN",
+                    "value": "[^\"&]+"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "character_reference"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "ambiguous_ampersand"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "&"
+                  }
+                ]
+              }
             },
             {
               "type": "STRING",
