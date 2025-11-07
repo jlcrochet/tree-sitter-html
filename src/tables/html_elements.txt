@@ -62,6 +62,7 @@ link
 main
 map
 mark
+math
 menu
 menuitem
 meta

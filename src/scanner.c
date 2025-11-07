@@ -1,383 +1,700 @@
+#include <stdint.h>
+#include <ctype.h>
+#include <string.h>
+#include <wctype.h>
+#include "helpers.h"
+#include "tables/html_elements.h"
+#include "tables/mathml_elements.h"
+#include "tables/svg_elements.h"
+#include "tables/html_character_references.h"
+#include "tables/html_character_references_no_semicolon.h"
 #include "tree_sitter/parser.h"
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
-#include <wctype.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdio.h>
-#include "tables/html_elements.h"
 
 #define XXH_INLINE_ALL
 #define XXH_STATIC_LINKING_ONLY
 #include "xxHash/xxhash.h"
 
 enum TokenType {
-  START_TAG_NAME,
-  START_TAG_NAME_SCRIPT,
-  START_TAG_NAME_STYLE,
-  START_TAG_NAME_VOID,
-  END_TAG_NAME,
-  ERRONEOUS_END_TAG_NAME,
-  SELF_CLOSING_TAG_DELIMITER,
-  IMPLICIT_END_TAG,
-  RAW_TEXT,
-  COMMENT,
+    TT_StartTagName,
+    TT_VoidStartTagName,
+    TT_ScriptStartTagName,
+    TT_StyleStartTagName,
+    TT_EscapableRawTextStartTagName,
+    TT_ForeignStartTagName,
+    TT_EndTagName,
+    TT_ErroneousEndTagName,
+    TT_SelfClosingTagDelimiter,
+    // TT_Text,
+    TT_CharacterReference,
+    TT_AmbiguousAmpersand,
+    TT_CdataText,
+    TT_CommentText,
 };
 
-// Tag stack stores enum Element for known HTML elements
-typedef Array(enum Element) TagStack;
+enum ElementNamespace {
+    EN_HTML,
+    EN_MathML,
+    EN_SVG
+};
 
-// For foreign elements (E_Unknown), we store their xxHash hashes
-typedef Array(XXH64_hash_t) HashStack;
+struct Scanner {
+    Array(uint8_t /* enum ElementNamespace */) namespaces;
+    Array(uint8_t) tags;
+    Array(XXH32_hash_t) custom_name_hashes;
+};
 
-typedef struct {
-  TagStack tags;
-  HashStack hashes;
-} Scanner;
-
-// Helper to check if an element is void (self-closing)
-static inline bool is_void_element(enum Element element) {
-  switch (element) {
-    case E_area:
-    case E_base:
-    case E_br:
-    case E_col:
-    case E_embed:
-    case E_hr:
-    case E_img:
-    case E_input:
-    case E_link:
-    case E_meta:
-    case E_param:
-    case E_source:
-    case E_track:
-    case E_wbr:
-      return true;
-    default:
-      return false;
-  }
+static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
+    if (scanner->namespaces.size > 0)
+        return *array_back(&scanner->namespaces);
+    else
+        // If no top-level elements have been pushed onto the stack yet, the default namespace is HTML
+        return EN_HTML;
 }
 
+// enum ElementContentModel {
+//     ECM_Void,
+//     ECM_RawText,
+//     ECM_EscapableRawText,
+//     ECM_Foreign,
+//     ECM_Normal
+// };
+
+// static enum ElementContentModel get_content_model_for_element(uint8_t e, enum ElementNamespace ns) {
+//     if (ns == EN_HTML) {
+//         switch (e) {
+//             case HE_area:
+//             case HE_base:
+//             case HE_br:
+//             case HE_col:
+//             case HE_embed:
+//             case HE_hr:
+//             case HE_img:
+//             case HE_input:
+//             case HE_link:
+//             case HE_meta:
+//             case HE_source:
+//             case HE_track:
+//             case HE_wbr:
+//                 return ECM_Void;
+
+//             case HE_script:
+//             case HE_style:
+//                 return ECM_RawText;
+
+//             case HE_textarea:
+//             case HE_title:
+//                 return ECM_EscapableRawText;
+
+//             default:
+//                 return ECM_Normal;
+//         }
+//     } else {
+//         return ECM_Foreign;
+//     }
+// }
+
 void *tree_sitter_html_external_scanner_create() {
-  Scanner *scanner = ts_calloc(1, sizeof(Scanner));
-  array_init(&scanner->tags);
-  array_init(&scanner->hashes);
-  return scanner;
+    return ts_calloc(1, sizeof(struct Scanner));
 }
 
 void tree_sitter_html_external_scanner_destroy(void *payload) {
-  Scanner *scanner = (Scanner *)payload;
-  array_delete(&scanner->tags);
-  array_delete(&scanner->hashes);
-  ts_free(scanner);
+    struct Scanner *scanner = payload;
+    array_delete(&scanner->namespaces);
+    array_delete(&scanner->tags);
+    array_delete(&scanner->custom_name_hashes);
+    ts_free(scanner);
 }
 
 unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer) {
-  Scanner *scanner = (Scanner *)payload;
-  uint32_t size = 0;
+    struct Scanner *scanner = payload;
 
-  // Serialize tag count
-  uint32_t tag_count = scanner->tags.size;
-  if (tag_count > UINT8_MAX) tag_count = UINT8_MAX;
-  buffer[size++] = (char)tag_count;
+    char *offset = buffer;
 
-  // Serialize tags and hashes
-  for (uint32_t i = 0; i < tag_count && size < TREE_SITTER_SERIALIZATION_BUFFER_SIZE - 9; i++) {
-    enum Element elem = scanner->tags.contents[i];
-    buffer[size++] = (char)elem;
+    #define SERIALIZE_ARRAY(ARRAY) \
+        { \
+            offset += to_vlq(ARRAY.size, offset); \
+            if (ARRAY.size > 0) { \
+                size_t length = ARRAY.size * array_elem_size(&ARRAY); \
+                assert(length + offset - buffer <= TREE_SITTER_SERIALIZATION_BUFFER_SIZE); \
+                memcpy(offset, ARRAY.contents, length); \
+                offset += length; \
+            } \
+        }
 
-    // If it's a foreign element, serialize its hash
-    if (elem == E_Unknown && i < scanner->hashes.size) {
-      XXH64_hash_t hash = scanner->hashes.contents[i];
-      memcpy(&buffer[size], &hash, sizeof(XXH64_hash_t));
-      size += sizeof(XXH64_hash_t);
-    }
-  }
+    SERIALIZE_ARRAY(scanner->namespaces);
+    SERIALIZE_ARRAY(scanner->tags);
+    SERIALIZE_ARRAY(scanner->custom_name_hashes);
 
-  return size;
+    return offset - buffer;
 }
 
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
-  Scanner *scanner = (Scanner *)payload;
+    struct Scanner *scanner = payload;
 
-  array_clear(&scanner->tags);
-  array_clear(&scanner->hashes);
+    array_clear(&scanner->namespaces);
+    array_clear(&scanner->tags);
+    array_clear(&scanner->custom_name_hashes);
 
-  if (length == 0) return;
+    if (length == 0) return;
 
-  uint32_t size = 0;
-  uint32_t tag_count = (uint8_t)buffer[size++];
+    const char *offset = buffer;
 
-  for (uint32_t i = 0; i < tag_count && size < length; i++) {
-    enum Element elem = (enum Element)buffer[size++];
-    array_push(&scanner->tags, elem);
+    #define DESERIALIZE_ARRAY(ARRAY) \
+        { \
+            size_t size; \
+            offset += from_vlq(offset, &size); \
+            if (size > 0) { \
+                array_extend(&ARRAY, size, offset); \
+                offset += size * array_elem_size(&ARRAY); \
+            } \
+        }
 
-    // If it's a foreign element, deserialize its hash
-    if (elem == E_Unknown && size + sizeof(XXH64_hash_t) <= length) {
-      XXH64_hash_t hash;
-      memcpy(&hash, &buffer[size], sizeof(XXH64_hash_t));
-      size += sizeof(XXH64_hash_t);
-      array_push(&scanner->hashes, hash);
-    } else if (elem == E_Unknown) {
-      array_push(&scanner->hashes, 0);
-    }
-  }
+    DESERIALIZE_ARRAY(scanner->namespaces);
+    DESERIALIZE_ARRAY(scanner->tags);
+    DESERIALIZE_ARRAY(scanner->custom_name_hashes);
 }
 
 static void advance(TSLexer *lexer) {
-  lexer->advance(lexer, false);
+    lexer->advance(lexer, false);
 }
 
 static void skip(TSLexer *lexer) {
-  lexer->advance(lexer, true);
+    lexer->advance(lexer, true);
 }
 
-static bool scan_comment(TSLexer *lexer) {
-  if (lexer->lookahead != '<') return false;
-  advance(lexer);
-  if (lexer->lookahead != '!') return false;
-  advance(lexer);
-  if (lexer->lookahead != '-') return false;
-  advance(lexer);
-  if (lexer->lookahead != '-') return false;
-  advance(lexer);
-
-  unsigned dashes = 0;
-  while (lexer->lookahead != 0) {
-    if (lexer->lookahead == '-') {
-      dashes++;
-      advance(lexer);
-    } else if (lexer->lookahead == '>' && dashes >= 2) {
-      advance(lexer);
-      lexer->result_symbol = COMMENT;
-      return true;
-    } else {
-      dashes = 0;
-      advance(lexer);
-    }
-  }
-  return false;
-}
-
-// Scan a tag name and return its element enum and hash
-static bool scan_tag_name(TSLexer *lexer, enum Element *element, XXH64_hash_t *hash) {
-  char tag_name[64];
-  size_t len = 0;
-
-  // Scan tag name characters
-  while (lexer->lookahead != 0 && !iswspace(lexer->lookahead) &&
-         lexer->lookahead != '>' && lexer->lookahead != '/' &&
-         lexer->lookahead != '<' && len < sizeof(tag_name) - 1) {
-    tag_name[len++] = tolower(lexer->lookahead);
-    advance(lexer);
-  }
-
-  if (len == 0) return false;
-
-  // Lookup element
-  *element = lookup_element(tag_name, len);
-
-  // If unknown, compute hash
-  if (*element == E_Unknown) {
-    *hash = XXH64(tag_name, len, 0);
-  } else {
-    *hash = 0;
-  }
-
-  return true;
-}
-
-static bool scan_raw_text(TSLexer *lexer, Scanner *scanner) {
-  if (scanner->tags.size == 0) return false;
-
-  enum Element top_element = scanner->tags.contents[scanner->tags.size - 1];
-
-  // Only scan raw text for script and style elements
-  if (top_element != E_script && top_element != E_style) {
-    return false;
-  }
-
-  XXH64_hash_t top_hash = 0;
-  if (top_element == E_Unknown && scanner->hashes.size > 0) {
-    // Find the corresponding hash by counting E_Unknown elements
-    uint32_t unknown_count = 0;
-    for (uint32_t i = 0; i < scanner->tags.size; i++) {
-      if (scanner->tags.contents[i] == E_Unknown) {
-        unknown_count++;
-      }
-    }
-    if (unknown_count > 0 && unknown_count <= scanner->hashes.size) {
-      top_hash = scanner->hashes.contents[unknown_count - 1];
-    }
-  }
-
-  lexer->mark_end(lexer);
-
-  bool has_content = false;
-  while (lexer->lookahead != 0) {
-    if (lexer->lookahead == '<') {
-      lexer->mark_end(lexer);
-      advance(lexer);
-      if (lexer->lookahead == '/') {
+static bool scan_char(TSLexer *lexer, int c) {
+    if (lexer->lookahead == c) {
         advance(lexer);
-        enum Element end_element;
-        XXH64_hash_t end_hash;
-        if (scan_tag_name(lexer, &end_element, &end_hash)) {
-          // Check if it matches the top of stack
-          if (top_element == E_Unknown) {
-            if (end_element == E_Unknown && end_hash == top_hash) {
-              lexer->result_symbol = RAW_TEXT;
-              return has_content;
-            }
-          } else if (end_element == top_element) {
-            lexer->result_symbol = RAW_TEXT;
-            return has_content;
-          }
-        }
-      }
+        return true;
     } else {
-      has_content = true;
-      advance(lexer);
+        return false;
     }
-  }
+}
 
-  return false;
+static bool scan_whitespace(TSLexer *lexer) {
+    if (is_html_whitespace(lexer->lookahead)) {
+        do { advance(lexer); } while (is_html_whitespace(lexer->lookahead));
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// static bool scan_comment_text(TSLexer *lexer) {
+//     lexer->mark_end(lexer);
+//     unsigned dashes = 0;
+//     while (lexer->lookahead != 0) {
+//         if (lexer->lookahead == '-') {
+//             dashes++;
+//             advance(lexer);
+//         } else if (lexer->lookahead == '>' && dashes >= 2) {
+//             advance(lexer);
+//             lexer->result_symbol = COMMENT_TEXT;
+//             return true;
+//         } else {
+//             dashes = 0;
+//             lexer->mark_end(lexer);
+//             advance(lexer);
+//         }
+//     }
+//     return false;
+// }
+
+// Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any
+// Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
+static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
+    static Array(char) tag_name = array_new();
+    array_clear(&tag_name);
+
+    // For non-ASCII codepoints, we have to serialize to UTF8 first because our lookup tables only support 8-bit characters:
+    #define PUSH_CODEPOINT(CODEPOINT) \
+        { \
+            char bytes[4]; \
+            size_t count = codepoint_to_utf8(bytes, CODEPOINT); \
+            array_extend(&tag_name, count, bytes); \
+        }
+
+    // The first letter of any tag name must be an ASCII alpha character
+    if (!isalpha(lexer->lookahead))
+        return false;
+
+    array_push(&tag_name, lexer->lookahead | 0x0020);
+    advance(lexer);
+    
+    bool must_be_unknown = false;
+
+    while (!lexer->eof(lexer)) {
+        if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '/' || lexer->lookahead == '>') {
+            break;
+        } else if (lexer->lookahead == '\0') {
+            // If NULL is reached before EOF somehow, append U+FFFD REPLACEMENT CHARACTER to the name
+            must_be_unknown = true;
+            PUSH_CODEPOINT(0xFFFD);
+        } else if (isalnum(lexer->lookahead)) {
+            array_push(&tag_name, lexer->lookahead | 0x0020);
+        } else if (is_ascii(lexer->lookahead)) {
+            // Any other ASCII character is valid, but indicates an unknown element
+            must_be_unknown = true;
+            array_push(&tag_name, lexer->lookahead);
+        } else {
+            // All non-ASCII characters are valid in a tag name, but indicate an unknown element
+            must_be_unknown = true;
+            PUSH_CODEPOINT(towlower(lexer->lookahead));
+        }
+        advance(lexer);
+    }
+
+    if (must_be_unknown) {
+        // 0 represents an unknown element in any namespace
+        *element = 0;
+    } else {
+        switch (ns) {
+            case EN_HTML:
+                *element = lookup_html_element(tag_name.contents, tag_name.size);
+                break;
+            case EN_MathML:
+                *element = lookup_mathml_element(tag_name.contents, tag_name.size);
+                break;
+            case EN_SVG:
+                *element = lookup_svg_element(tag_name.contents, tag_name.size);
+                break;
+        }
+    }
+
+    if (*element == 0)
+        *name_hash = XXH32(tag_name.contents, tag_name.size, 0);
+    else
+        *name_hash = 0;
+
+    return true;
 }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-  Scanner *scanner = (Scanner *)payload;
+    struct Scanner *scanner = payload;
 
+    #define ASSERT(CONDITION) \
+        if (!(CONDITION)) return false;
 
-  if (valid_symbols[COMMENT]) {
-    bool result = scan_comment(lexer);
-    if (result) return true;
-  }
+    #define SCAN(CHAR) \
+        scan_char(lexer, CHAR)
 
-  if (valid_symbols[RAW_TEXT]) {
-    bool result = scan_raw_text(lexer, scanner);
-    if (result) return true;
-  }
+    #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
+        (SCAN(CHAR) || SCAN(CHAR | 0x0020))
 
-  while (iswspace(lexer->lookahead)) {
-    skip(lexer);
-  }
+    #define SCAN_WHITESPACE() \
+        scan_whitespace(lexer)
 
-  // Handle start tag names
-  if (valid_symbols[START_TAG_NAME] || valid_symbols[START_TAG_NAME_SCRIPT] ||
-      valid_symbols[START_TAG_NAME_STYLE] || valid_symbols[START_TAG_NAME_VOID]) {
-    enum Element element;
-    XXH64_hash_t hash;
+    if (valid_symbols[TT_StartTagName]) {
+        enum ElementNamespace ns = get_current_namespace(scanner);
+        uint8_t e;
+        XXH32_hash_t name_hash;
 
-    if (scan_tag_name(lexer, &element, &hash)) {
-      if (valid_symbols[START_TAG_NAME_SCRIPT] && element == E_script) {
-        array_push(&scanner->tags, element);
-        lexer->result_symbol = START_TAG_NAME_SCRIPT;
-        lexer->mark_end(lexer);
-        return true;
-      }
-      if (valid_symbols[START_TAG_NAME_STYLE] && element == E_style) {
-        array_push(&scanner->tags, element);
-        lexer->result_symbol = START_TAG_NAME_STYLE;
-        lexer->mark_end(lexer);
-        return true;
-      }
-      // Check for void elements
-      if (valid_symbols[START_TAG_NAME_VOID] && is_void_element(element)) {
-        // Don't push void elements to the stack
-        lexer->result_symbol = START_TAG_NAME_VOID;
-        lexer->mark_end(lexer);
-        return true;
-      }
-      if (valid_symbols[START_TAG_NAME]) {
-        // Push non-void elements onto the stack
-        array_push(&scanner->tags, element);
-        if (element == E_Unknown) {
-          array_push(&scanner->hashes, hash);
+        ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+
+        // Start with the default token for start tag names and disambiguate below
+        lexer->result_symbol = TT_StartTagName;
+
+        switch (ns) {
+            case EN_HTML:
+                switch (e) {
+                    // Void elements
+                    case HE_area:
+                    case HE_base:
+                    case HE_br:
+                    case HE_col:
+                    case HE_embed:
+                    case HE_hr:
+                    case HE_img:
+                    case HE_input:
+                    case HE_link:
+                    case HE_meta:
+                    case HE_source:
+                    case HE_track:
+                    case HE_wbr:
+                        lexer->result_symbol = TT_VoidStartTagName;
+                        break;
+
+                    // Raw text elements
+                    case HE_script:
+                        array_push(&scanner->tags, e);
+                        lexer->result_symbol = TT_ScriptStartTagName;
+                        break;
+                    case HE_style:
+                        array_push(&scanner->tags, e);
+                        lexer->result_symbol = TT_StyleStartTagName;
+                        break;
+
+                    // Escapable raw text elements
+                    case HE_textarea:
+                    case HE_title:
+                        array_push(&scanner->tags, e);
+                        lexer->result_symbol = TT_EscapableRawTextStartTagName;
+                        break;
+
+                    // Top-level elements
+                    case HE_html:
+                        array_push(&scanner->tags, HE_html);
+                        array_push(&scanner->namespaces, EN_HTML);
+                        break;
+                    // For top-level elements of foreign namespaces, we need to make sure that we are pushing the value from that namespace's enum onto the stack so that it can be matched with the end tag later. For example, `HE_math` and `HE_svg` are used for matching start tag names in HTML, but `ME_math` and `SE_svg` are what should be pushed onto the stack.
+                    case HE_math:
+                        array_push(&scanner->tags, ME_math);
+                        array_push(&scanner->namespaces, EN_MathML);
+                        break;
+                    case HE_svg:
+                        array_push(&scanner->tags, SE_svg);
+                        array_push(&scanner->namespaces, EN_SVG);
+                        break;
+
+                    default:
+                        array_push(&scanner->tags, e);
+                }
+                break;
+            case EN_MathML:
+                array_push(&scanner->tags, e);
+                // The top-level `math` element can be nested, so we need to push the MathML namespace again so that we know how many end tags to look for
+                if (e == ME_math)
+                    array_push(&scanner->namespaces, EN_MathML);
+                lexer->result_symbol = TT_ForeignStartTagName;
+                break;
+            case EN_SVG:
+                array_push(&scanner->tags, e);
+                // The top-level `svg` element can be nested, so we need to push the SVG namespace again so that we know how many end tags to look for
+                if (e == SE_svg)
+                    array_push(&scanner->namespaces, EN_SVG);
+                lexer->result_symbol = TT_ForeignStartTagName;
+                break;
         }
-        lexer->result_symbol = START_TAG_NAME;
-        lexer->mark_end(lexer);
+
+        if (e == 0)
+            // Again, 0 represents an unknown element in any namespace; push it's name hash onto the stack
+            array_push(&scanner->custom_name_hashes, name_hash);
+
         return true;
-      }
-    }
-  }
-
-  // Handle end tag names
-  if (valid_symbols[END_TAG_NAME] && scanner->tags.size > 0) {
-    enum Element top_element = scanner->tags.contents[scanner->tags.size - 1];
-    XXH64_hash_t top_hash = 0;
-
-    if (top_element == E_Unknown && scanner->hashes.size > 0) {
-      // Find the corresponding hash
-      uint32_t unknown_count = 0;
-      for (uint32_t i = 0; i < scanner->tags.size; i++) {
-        if (scanner->tags.contents[i] == E_Unknown) {
-          unknown_count++;
-        }
-      }
-      if (unknown_count > 0 && unknown_count <= scanner->hashes.size) {
-        top_hash = scanner->hashes.contents[unknown_count - 1];
-      }
     }
 
-    enum Element element;
-    XXH64_hash_t hash;
-    if (scan_tag_name(lexer, &element, &hash)) {
-      // Check if it matches the top of the stack
-      bool matches = false;
-      if (top_element == E_Unknown) {
-        matches = (element == E_Unknown && hash == top_hash);
-      } else {
-        matches = (element == top_element);
-      }
-
-      if (matches) {
-        array_pop(&scanner->tags);
-        if (top_element == E_Unknown && scanner->hashes.size > 0) {
-          array_pop(&scanner->hashes);
+    if (valid_symbols[TT_EndTagName]) {
+        if (scanner->tags.size == 0) {
+            lexer->result_symbol = TT_ErroneousEndTagName;
+            return true;
         }
-        lexer->result_symbol = END_TAG_NAME;
-        lexer->mark_end(lexer);
+
+        enum ElementNamespace ns = get_current_namespace(scanner);
+        uint8_t element;
+        XXH32_hash_t name_hash;
+
+        ASSERT(scan_tag_name(lexer, ns, &element, &name_hash))
+
+        uint8_t top_element = *array_back(&scanner->tags);
+        XXH32_hash_t top_name_hash = 0;
+        if (top_element == 0)
+            top_name_hash = *array_back(&scanner->custom_name_hashes);
+
+        if (element == top_element && name_hash == top_name_hash) {
+            array_pop(&scanner->tags);
+
+            if (top_name_hash)
+                array_pop(&scanner->custom_name_hashes);
+
+            if (
+                (ns == EN_HTML && element == HE_html) ||
+                (ns == EN_MathML && element == ME_math) ||
+                (ns == EN_SVG && element == SE_svg)
+            )
+                array_pop(&scanner->namespaces);
+
+            lexer->result_symbol = TT_EndTagName;
+            return true;
+        } else {
+            lexer->result_symbol = TT_ErroneousEndTagName;
+            return true;
+        }
+    }
+
+    // // Erroneous end tags *should* be valid in the same places that regular end tags are, but it doesn't hurt to check this just in case
+    // if (valid_symbols[TT_ErroneousEndTagName]) {
+    //     ASSERT(isalpha(lexer->lookahead));
+    //     advance(lexer);
+    //     while (!lexer->eof(lexer) && !is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>') {
+    //         advance(lexer);
+    //     }
+    //     lexer->result_symbol = TT_ErroneousEndTagName;
+    //     return true;
+    // }
+
+    if (valid_symbols[TT_SelfClosingTagDelimiter]) {
+        // Self-closing tag delimiters are only allowed in foreign elements
+        // They're also allowed in void HTML elements, but that's already handled in the grammar
+        ASSERT(get_current_namespace(scanner) != EN_HTML);
+        ASSERT(SCAN('/') && SCAN('>'));
+        uint8_t e = array_pop(&scanner->tags);
+        if (e == 0)
+            array_pop(&scanner->custom_name_hashes);
+        lexer->result_symbol = TT_SelfClosingTagDelimiter;
         return true;
-      }
     }
-  }
 
-  // Handle erroneous end tags
-  if (valid_symbols[ERRONEOUS_END_TAG_NAME]) {
-    enum Element element;
-    XXH64_hash_t hash;
-    if (scan_tag_name(lexer, &element, &hash)) {
-      lexer->result_symbol = ERRONEOUS_END_TAG_NAME;
-      lexer->mark_end(lexer);
-      return true;
-    }
-  }
+    // // Handle implicit end tags
+    // // Only return implicit end tag in specific cases, not always when valid
+    // // For now, we don't automatically close tags
+    // if (valid_symbols[TT_ImplicitEndTag] && scanner->tags.size > 0) {
+    //     // TODO: Implement proper HTML5 tag closing rules
+    //     // For now, don't automatically close any tags
+    // }
 
-  // Handle self-closing tag delimiter
-  if (valid_symbols[SELF_CLOSING_TAG_DELIMITER] && lexer->lookahead == '/') {
-    advance(lexer);
-    if (lexer->lookahead == '>') {
-      advance(lexer);
-      // Pop the tag we just pushed if it's on the stack
-      if (scanner->tags.size > 0) {
-        enum Element top = scanner->tags.contents[scanner->tags.size - 1];
-        array_pop(&scanner->tags);
-        if (top == E_Unknown && scanner->hashes.size > 0) {
-          array_pop(&scanner->hashes);
+    if (valid_symbols[TT_CharacterReference]) {
+        ASSERT(SCAN('&'));
+        
+        if (SCAN('#')) {
+            // Numeric character reference
+            if (SCAN('X') || SCAN('x')) {
+                // Hexadecimal
+                ASSERT(isxdigit(lexer->lookahead));
+                do { advance(lexer); } while (isxdigit(lexer->lookahead));
+                ASSERT(SCAN(';'));
+                lexer->result_symbol = TT_CharacterReference;
+                return true;
+            } else {
+                // Decimal
+                ASSERT(isdigit(lexer->lookahead));
+                do { advance(lexer); } while (isdigit(lexer->lookahead));
+                ASSERT(SCAN(';'));
+                lexer->result_symbol = TT_CharacterReference;
+                return true;
+            }
+        } else {
+            // Named character references
+            static Array(char) entity_name = array_new();
+            array_clear(&entity_name);
+
+            while (isalnum(lexer->lookahead)) {
+                array_push(&entity_name, lexer->lookahead);
+                advance(lexer);
+
+                if (lookup_character_reference_no_semicolon(entity_name.contents, entity_name.size)) {
+                    SCAN(';');
+                    lexer->result_symbol = TT_CharacterReference;
+                    return true;
+                }
+            }
+
+            ASSERT(entity_name.size > 0);
+            ASSERT(SCAN(';'));
+
+            if (lookup_character_reference(entity_name.contents, entity_name.size))
+                lexer->result_symbol = TT_CharacterReference;
+            else
+                lexer->result_symbol = TT_AmbiguousAmpersand;
+
+            return true;
         }
-      }
-      lexer->result_symbol = SELF_CLOSING_TAG_DELIMITER;
-      return true;
     }
-  }
 
-  // Handle implicit end tags
-  // Only return implicit end tag in specific cases, not always when valid
-  // For now, we don't automatically close tags
-  if (valid_symbols[IMPLICIT_END_TAG] && scanner->tags.size > 0) {
-    // TODO: Implement proper HTML5 tag closing rules
-    // For now, don't automatically close any tags
-  }
+    if (valid_symbols[TT_CdataText]) {
+        // Ref: https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-state
+        enum {
+            CdataSection,
+            CdataSectionBracket,
+            CdataSectionEnd
+        } state = CdataSection;
 
-  return false;
+        lexer->mark_end(lexer);
+        
+        while (!lexer->eof(lexer)) {
+            int c = lexer->lookahead;
+            advance(lexer);
+
+            #define RECONSUME(STATE) \
+                { \
+                    state = STATE; \
+                    goto STATE; \
+                }
+            
+            switch (state) {
+                case CdataSection: CdataSection:
+                    switch (c) {
+                        case ']':
+                            state = CdataSectionBracket;
+                            break;
+                        default:
+                            lexer->mark_end(lexer);
+                    }
+                    break;
+                case CdataSectionBracket: CdataSectionBracket:
+                    switch (c) {
+                        case ']':
+                            state = CdataSectionEnd;
+                            break;
+                        default:
+                            lexer->mark_end(lexer);
+                            RECONSUME(CdataSection);
+                    }
+                    break;
+                case CdataSectionEnd: CdataSectionEnd:
+                    switch (c) {
+                        case ']':
+                            lexer->mark_end(lexer);
+                            break;
+                        case '>':
+                            lexer->result_symbol = TT_CdataText;
+                            return true;
+                        default:
+                            lexer->mark_end(lexer);
+                            RECONSUME(CdataSection);
+                    }
+            }
+        }
+    }
+
+    if (valid_symbols[TT_CommentText]) {
+        // Ref: https://html.spec.whatwg.org/multipage/parsing.html#comment-start-state
+        enum {
+            CommentStart,
+            CommentStartDash,
+            Comment,
+            CommentLessThanSign,
+            CommentLessThanSignBang,
+            CommentLessThanSignBangDash,
+            CommentLessThanSignBangDashDash,
+            CommentEndDash,
+            CommentEnd,
+            CommentEndBang,
+        } state = CommentStart;
+
+        lexer->mark_end(lexer);
+
+        while (!lexer->eof(lexer)) {
+            int c = lexer->lookahead;
+            advance(lexer);
+
+            #define RECONSUME(STATE) \
+                { \
+                    state = STATE; \
+                    goto STATE; \
+                }
+            
+            switch (state) {
+                case CommentStart: CommentStart:
+                    switch (c) {
+                        case '-':
+                            state = CommentStartDash;
+                            break;
+                        case '>':
+                            return false;
+                        default:
+                            RECONSUME(Comment);
+                    }
+                    break;
+                case CommentStartDash: CommentStartDash:
+                    switch (c) {
+                        case '-':
+                            state = CommentEnd;
+                            break;
+                        case '>':
+                            return false;
+                        default:
+                            lexer->mark_end(lexer);
+                            RECONSUME(Comment);
+                    }
+                    break;
+                case Comment: Comment:
+                    switch (c) {
+                        case '<':
+                            lexer->mark_end(lexer);
+                            state = CommentLessThanSign;
+                            break;
+                        case '-':
+                            state = CommentEndDash;
+                            break;
+                        case '\0':
+                            return false;
+                        default:
+                            lexer->mark_end(lexer);
+                    }
+                    break;
+                case CommentLessThanSign: CommentLessThanSign:
+                    switch (c) {
+                        case '!':
+                            lexer->mark_end(lexer);
+                            state = CommentLessThanSignBang;
+                            break;
+                        case '<':
+                            lexer->mark_end(lexer);
+                            break;
+                        default:
+                            RECONSUME(Comment);
+                    }
+                    break;
+                case CommentLessThanSignBang: CommentLessThanSignBang:
+                    switch (c) {
+                        case '-':
+                            state = CommentLessThanSignBangDash;
+                            break;
+                        default:
+                            RECONSUME(Comment);
+                    }
+                    break;
+                case CommentLessThanSignBangDash: CommentLessThanSignBangDash:
+                    switch (c) {
+                        case '-':
+                            state = CommentLessThanSignBangDashDash;
+                            break;
+                        default:
+                            RECONSUME(CommentEndDash);
+                    }
+                    break;
+                case CommentLessThanSignBangDashDash: CommentLessThanSignBangDashDash:
+                    switch (c) {
+                        case '>':
+                            RECONSUME(CommentEnd);
+                        default:
+                            return false;
+                    }
+                    break;
+                case CommentEndDash: CommentEndDash:
+                    switch (c) {
+                        case '-':
+                            state = CommentEnd;
+                            break;
+                        default:
+                            lexer->mark_end(lexer);
+                            RECONSUME(Comment);
+                    }
+                    break;
+                case CommentEnd: CommentEnd:
+                    switch (c) {
+                        case '>':
+                            lexer->result_symbol = TT_CommentText;
+                            return true;
+                        case '!':
+                            state = CommentEndBang;
+                            break;
+                        case '-':
+                            lexer->mark_end(lexer);
+                            break;
+                        default:
+                            lexer->mark_end(lexer);
+                            RECONSUME(Comment);
+                    }
+                    break;
+                case CommentEndBang: CommentEndBang:
+                    switch (c) {
+                        case '-':
+                            lexer->mark_end(lexer);
+                            state = CommentEndDash;
+                            break;
+                        case '>':
+                            return false;
+                        default:
+                            lexer->mark_end(lexer);
+                            RECONSUME(Comment);
+                    }
+                    break;
+            }
+        }
+    }
+
+    return false;
 }

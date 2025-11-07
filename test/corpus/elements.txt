@@ -6,9 +6,11 @@ Simple element
 
 (document
   (element
-    (start_tag (tag_name))
+    (start_tag
+      (tag_name))
     (text)
-    (end_tag (tag_name))))
+    (end_tag
+      (tag_name))))
 
 ================================================================================
 Nested elements
@@ -18,12 +20,16 @@ Nested elements
 
 (document
   (element
-    (start_tag (tag_name))
+    (start_tag
+      (tag_name))
     (element
-      (start_tag (tag_name))
+      (start_tag
+        (tag_name))
       (text)
-      (end_tag (tag_name)))
-    (end_tag (tag_name))))
+      (end_tag
+        (tag_name)))
+    (end_tag
+      (tag_name))))
 
 ================================================================================
 Element with attributes
@@ -37,12 +43,15 @@ Element with attributes
       (tag_name)
       (attribute
         (attribute_name)
-        (quoted_attribute_value (attribute_value)))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
-        (quoted_attribute_value (attribute_value))))
+        (quoted_attribute_value
+          (attribute_value))))
     (text)
-    (end_tag (tag_name))))
+    (end_tag
+      (tag_name))))
 
 ================================================================================
 Self-closing tag (non-void)
@@ -67,7 +76,8 @@ Void element with slash
       (tag_name)
       (attribute
         (attribute_name)
-        (quoted_attribute_value (attribute_value))))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Void element without slash
@@ -76,7 +86,9 @@ Void element without slash
 --------------------------------------------------------------------------------
 
 (document
-  (void_element (start_tag (tag_name))))
+  (void_element
+    (start_tag
+      (tag_name))))
 
 ================================================================================
 Script element
@@ -86,9 +98,11 @@ Script element
 
 (document
   (script_element
-    (start_tag (tag_name))
+    (start_tag
+      (tag_name))
     (raw_text)
-    (end_tag (tag_name))))
+    (end_tag
+      (tag_name))))
 
 ================================================================================
 Style element
@@ -98,9 +112,11 @@ Style element
 
 (document
   (style_element
-    (start_tag (tag_name))
+    (start_tag
+      (tag_name))
     (raw_text)
-    (end_tag (tag_name))))
+    (end_tag
+      (tag_name))))
 
 ================================================================================
 Comment
