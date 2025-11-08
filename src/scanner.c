@@ -16,6 +16,8 @@
 #define XXH_STATIC_LINKING_ONLY
 #include "xxHash/xxhash.h"
 
+#define DEBUG
+
 enum TokenType {
     TT_StartTagName,
     TT_VoidStartTagName,
@@ -224,19 +226,22 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     #define SCAN_WHITESPACE() \
         scan_whitespace(lexer)
 
-    // fputs("---------------------------------------------\n", stderr);
-    // fprintf(stderr, "%d TT_StartTagName\n", valid_symbols[TT_StartTagName]);
-    // fprintf(stderr, "%d TT_VoidStartTagName\n", valid_symbols[TT_VoidStartTagName]);
-    // fprintf(stderr, "%d TT_ScriptStartTagName\n", valid_symbols[TT_ScriptStartTagName]);
-    // fprintf(stderr, "%d TT_StyleStartTagName\n", valid_symbols[TT_StyleStartTagName]);
-    // fprintf(stderr, "%d TT_EndTagName\n", valid_symbols[TT_EndTagName]);
-    // fprintf(stderr, "%d TT_ErroneousEndTagName\n", valid_symbols[TT_ErroneousEndTagName]);
-    // fprintf(stderr, "%d TT_SelfClosingTagDelimiter\n", valid_symbols[TT_SelfClosingTagDelimiter]);
-    // fprintf(stderr, "%d TT_Text\n", valid_symbols[TT_Text]);
-    // fprintf(stderr, "%d TT_CharacterReference\n", valid_symbols[TT_CharacterReference]);
-    // fprintf(stderr, "%d TT_AmbiguousAmpersand\n", valid_symbols[TT_AmbiguousAmpersand]);
-    // fprintf(stderr, "%d TT_CdataText\n", valid_symbols[TT_CdataText]);
-    // fprintf(stderr, "%d TT_CommentText\n", valid_symbols[TT_CommentText]);
+    #ifdef DEBUG
+    fputs("---------------------------------------------\n", stderr);
+    fprintf(stderr, "%d %c\n", lexer->get_column(lexer), lexer->lookahead);
+    fprintf(stderr, "%d TT_StartTagName\n", valid_symbols[TT_StartTagName]);
+    fprintf(stderr, "%d TT_VoidStartTagName\n", valid_symbols[TT_VoidStartTagName]);
+    fprintf(stderr, "%d TT_ScriptStartTagName\n", valid_symbols[TT_ScriptStartTagName]);
+    fprintf(stderr, "%d TT_StyleStartTagName\n", valid_symbols[TT_StyleStartTagName]);
+    fprintf(stderr, "%d TT_EndTagName\n", valid_symbols[TT_EndTagName]);
+    fprintf(stderr, "%d TT_ErroneousEndTagName\n", valid_symbols[TT_ErroneousEndTagName]);
+    fprintf(stderr, "%d TT_SelfClosingTagDelimiter\n", valid_symbols[TT_SelfClosingTagDelimiter]);
+    fprintf(stderr, "%d TT_Text\n", valid_symbols[TT_Text]);
+    fprintf(stderr, "%d TT_CharacterReference\n", valid_symbols[TT_CharacterReference]);
+    fprintf(stderr, "%d TT_AmbiguousAmpersand\n", valid_symbols[TT_AmbiguousAmpersand]);
+    fprintf(stderr, "%d TT_CdataText\n", valid_symbols[TT_CdataText]);
+    fprintf(stderr, "%d TT_CommentText\n", valid_symbols[TT_CommentText]);
+    #endif
 
     if (lexer->eof(lexer))
         return false;
@@ -369,6 +374,11 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
         ASSERT(get_current_namespace(scanner) != EN_HTML);
         #endif
+
+        // This is necessary for some reason; probably due to a bug in the grammar
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
+
         ASSERT(SCAN('/') && SCAN('>'));
         uint8_t e = array_pop(&scanner->tags);
         if (e == 0)
