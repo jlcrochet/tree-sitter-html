@@ -16,7 +16,7 @@
 #define XXH_STATIC_LINKING_ONLY
 #include "xxHash/xxhash.h"
 
-#define DEBUG
+// #define DEBUG
 
 enum TokenType {
     TT_StartTagName,
@@ -243,8 +243,8 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     fprintf(stderr, "%d TT_CommentText\n", valid_symbols[TT_CommentText]);
     #endif
 
-    if (lexer->eof(lexer))
-        return false;
+    // if (lexer->eof(lexer))
+    //     return false;
 
     if (valid_symbols[TT_StartTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);
