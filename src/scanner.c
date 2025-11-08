@@ -339,6 +339,8 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[TT_EndTagName]) {
+        ASSERT(scanner->tags.size > 0);
+        
         enum ElementNamespace ns = get_current_namespace(scanner);
         uint8_t element;
         XXH32_hash_t name_hash;
