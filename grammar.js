@@ -134,7 +134,7 @@ const G = {
     _self_closing_tag: $ => seq(
       '<',
       alias($._start_tag_name, $.tag_name),
-      repeat(seq($._whitespace, $.attribute)),
+      repeat(seq(token(prec(1, WHITESPACE)), $.attribute)),
       optional($._whitespace),
       alias($._self_closing_tag_delimiter, '/>')
     ),

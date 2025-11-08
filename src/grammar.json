@@ -541,8 +541,15 @@
             "type": "SEQ",
             "members": [
               {
-                "type": "SYMBOL",
-                "name": "_whitespace"
+                "type": "TOKEN",
+                "content": {
+                  "type": "PREC",
+                  "value": 1,
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "[\\t\\n\\f\\r ]+"
+                  }
+                }
               },
               {
                 "type": "SYMBOL",
