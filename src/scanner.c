@@ -26,7 +26,9 @@ enum TokenType {
     TT_EndTagName,
     TT_ErroneousEndTagName,
     TT_SelfClosingTagDelimiter,
-    // TT_Text,
+    TT_Text,
+    TT_RawText,
+    TT_EscapableRawText,
     TT_CharacterReference,
     TT_AmbiguousAmpersand,
     TT_CdataText,
@@ -52,48 +54,6 @@ static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
         // If no top-level elements have been pushed onto the stack yet, the default namespace is HTML
         return EN_HTML;
 }
-
-// enum ElementContentModel {
-//     ECM_Void,
-//     ECM_RawText,
-//     ECM_EscapableRawText,
-//     ECM_Foreign,
-//     ECM_Normal
-// };
-
-// static enum ElementContentModel get_content_model_for_element(uint8_t e, enum ElementNamespace ns) {
-//     if (ns == EN_HTML) {
-//         switch (e) {
-//             case HE_area:
-//             case HE_base:
-//             case HE_br:
-//             case HE_col:
-//             case HE_embed:
-//             case HE_hr:
-//             case HE_img:
-//             case HE_input:
-//             case HE_link:
-//             case HE_meta:
-//             case HE_source:
-//             case HE_track:
-//             case HE_wbr:
-//                 return ECM_Void;
-
-//             case HE_script:
-//             case HE_style:
-//                 return ECM_RawText;
-
-//             case HE_textarea:
-//             case HE_title:
-//                 return ECM_EscapableRawText;
-
-//             default:
-//                 return ECM_Normal;
-//         }
-//     } else {
-//         return ECM_Foreign;
-//     }
-// }
 
 void *tree_sitter_html_external_scanner_create() {
     return ts_calloc(1, sizeof(struct Scanner));
@@ -182,26 +142,6 @@ static bool scan_whitespace(TSLexer *lexer) {
     }
 }
 
-// static bool scan_comment_text(TSLexer *lexer) {
-//     lexer->mark_end(lexer);
-//     unsigned dashes = 0;
-//     while (lexer->lookahead != 0) {
-//         if (lexer->lookahead == '-') {
-//             dashes++;
-//             advance(lexer);
-//         } else if (lexer->lookahead == '>' && dashes >= 2) {
-//             advance(lexer);
-//             lexer->result_symbol = COMMENT_TEXT;
-//             return true;
-//         } else {
-//             dashes = 0;
-//             lexer->mark_end(lexer);
-//             advance(lexer);
-//         }
-//     }
-//     return false;
-// }
-
 // Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any
 // Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
 static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
@@ -263,10 +203,12 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
         }
     }
 
-    if (*element == 0)
-        *name_hash = XXH32(tag_name.contents, tag_name.size, 0);
-    else
-        *name_hash = 0;
+    if (name_hash != NULL) {
+        if (*element == 0)
+            *name_hash = XXH32(tag_name.contents, tag_name.size, 0);
+        else
+            *name_hash = 0;
+    }
 
     return true;
 }
@@ -285,6 +227,27 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
     #define SCAN_WHITESPACE() \
         scan_whitespace(lexer)
+
+    // fputs("---------------------------------------------\n", stderr);
+    // fprintf(stderr, "%d TT_StartTagName\n", valid_symbols[TT_StartTagName]);
+    // fprintf(stderr, "%d TT_VoidStartTagName\n", valid_symbols[TT_VoidStartTagName]);
+    // fprintf(stderr, "%d TT_ScriptStartTagName\n", valid_symbols[TT_ScriptStartTagName]);
+    // fprintf(stderr, "%d TT_StyleStartTagName\n", valid_symbols[TT_StyleStartTagName]);
+    // fprintf(stderr, "%d TT_EscapableRawTextStartTagName\n", valid_symbols[TT_EscapableRawTextStartTagName]);
+    // fprintf(stderr, "%d TT_ForeignStartTagName\n", valid_symbols[TT_ForeignStartTagName]);
+    // fprintf(stderr, "%d TT_EndTagName\n", valid_symbols[TT_EndTagName]);
+    // fprintf(stderr, "%d TT_ErroneousEndTagName\n", valid_symbols[TT_ErroneousEndTagName]);
+    // fprintf(stderr, "%d TT_SelfClosingTagDelimiter\n", valid_symbols[TT_SelfClosingTagDelimiter]);
+    // fprintf(stderr, "%d TT_Text\n", valid_symbols[TT_Text]);
+    // fprintf(stderr, "%d TT_RawText\n", valid_symbols[TT_RawText]);
+    // fprintf(stderr, "%d TT_EscapableRawText\n", valid_symbols[TT_EscapableRawText]);
+    // fprintf(stderr, "%d TT_CharacterReference\n", valid_symbols[TT_CharacterReference]);
+    // fprintf(stderr, "%d TT_AmbiguousAmpersand\n", valid_symbols[TT_AmbiguousAmpersand]);
+    // fprintf(stderr, "%d TT_CdataText\n", valid_symbols[TT_CdataText]);
+    // fprintf(stderr, "%d TT_CommentText\n", valid_symbols[TT_CommentText]);
+
+    if (lexer->eof(lexer))
+        return false;
 
     if (valid_symbols[TT_StartTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);
@@ -376,11 +339,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[TT_EndTagName]) {
-        if (scanner->tags.size == 0) {
-            lexer->result_symbol = TT_ErroneousEndTagName;
-            return true;
-        }
-
         enum ElementNamespace ns = get_current_namespace(scanner);
         uint8_t element;
         XXH32_hash_t name_hash;
@@ -413,16 +371,14 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
     }
 
-    // // Erroneous end tags *should* be valid in the same places that regular end tags are, but it doesn't hurt to check this just in case
-    // if (valid_symbols[TT_ErroneousEndTagName]) {
-    //     ASSERT(isalpha(lexer->lookahead));
-    //     advance(lexer);
-    //     while (!lexer->eof(lexer) && !is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>') {
-    //         advance(lexer);
-    //     }
-    //     lexer->result_symbol = TT_ErroneousEndTagName;
-    //     return true;
-    // }
+    if (valid_symbols[TT_ErroneousEndTagName]) {
+        ASSERT(isalpha(lexer->lookahead));
+        advance(lexer);
+        while (!lexer->eof(lexer) && !is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
+            advance(lexer);
+        lexer->result_symbol = TT_ErroneousEndTagName;
+        return true;
+    }
 
     if (valid_symbols[TT_SelfClosingTagDelimiter]) {
         // Self-closing tag delimiters are only allowed in foreign elements
@@ -436,15 +392,119 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    // // Handle implicit end tags
-    // // Only return implicit end tag in specific cases, not always when valid
-    // // For now, we don't automatically close tags
-    // if (valid_symbols[TT_ImplicitEndTag] && scanner->tags.size > 0) {
-    //     // TODO: Implement proper HTML5 tag closing rules
-    //     // For now, don't automatically close any tags
-    // }
+    if (valid_symbols[TT_Text]) {
+        // Leading whitespace should not be included as part of the text
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
 
-    if (valid_symbols[TT_CharacterReference]) {
+        bool text_matched = false;
+
+        lexer->mark_end(lexer);
+        
+        while (!lexer->eof(lexer) && lexer->lookahead != '<' && lexer->lookahead != '&') {
+            int c = lexer->lookahead;
+            advance(lexer);
+            if (!is_html_whitespace(c)) {
+                lexer->mark_end(lexer);
+                text_matched = true;
+            }
+        }
+
+        if (text_matched) {
+            lexer->result_symbol = TT_Text;
+            return true;
+        }
+    }
+
+    if (valid_symbols[TT_RawText]) {
+        enum HtmlElement top_element = *array_back(&scanner->tags);
+
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
+
+        bool text_matched = false;
+
+        lexer->mark_end(lexer);
+
+        while (!lexer->eof(lexer)) {
+            int c = lexer->lookahead;
+            advance(lexer);
+            
+            if (c == '<') {
+                // Check for the end tag
+                if (lexer->lookahead == '/') {
+                    advance(lexer);
+                    if (top_element == HE_script) {
+                        if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
+                        }
+                    } else if (top_element == HE_style) {
+                        if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
+                        }
+                    }
+                }
+                lexer->mark_end(lexer);
+                text_matched = true;
+            } else if (!is_html_whitespace(c)) {
+                lexer->mark_end(lexer);
+                text_matched = true;
+            }
+        }
+
+        if (text_matched) {
+            lexer->result_symbol = TT_RawText;
+            return true;
+        }
+    }
+
+    if (valid_symbols[TT_EscapableRawText]) {
+        enum HtmlElement top_element = *array_back(&scanner->tags);
+
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
+
+        bool text_matched = false;
+
+        lexer->mark_end(lexer);
+
+        while (!lexer->eof(lexer) && lexer->lookahead != '&') {
+            int c = lexer->lookahead;
+            advance(lexer);
+            
+            if (c == '<') {
+                // Check for the end tag
+                if (lexer->lookahead == '/') {
+                    advance(lexer);
+                    if (top_element == HE_textarea) {
+                        if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
+                        }
+                    } else if (top_element == HE_title) {
+                        if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
+                        }
+                    }
+                }
+                lexer->mark_end(lexer);
+                text_matched = true;
+            } else if (!is_html_whitespace(c)) {
+                lexer->mark_end(lexer);
+                text_matched = true;
+            }
+        }
+
+        if (text_matched) {
+            lexer->result_symbol = TT_EscapableRawText;
+            return true;
+        }
+    }
+
+    if (valid_symbols[TT_CharacterReference] || valid_symbols[TT_AmbiguousAmpersand]) {
         ASSERT(SCAN('&'));
         
         if (SCAN('#')) {
@@ -455,6 +515,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 do { advance(lexer); } while (isxdigit(lexer->lookahead));
                 ASSERT(SCAN(';'));
                 lexer->result_symbol = TT_CharacterReference;
+                lexer->mark_end(lexer);
                 return true;
             } else {
                 // Decimal
@@ -462,6 +523,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 do { advance(lexer); } while (isdigit(lexer->lookahead));
                 ASSERT(SCAN(';'));
                 lexer->result_symbol = TT_CharacterReference;
+                lexer->mark_end(lexer);
                 return true;
             }
         } else {
@@ -476,6 +538,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 if (lookup_character_reference_no_semicolon(entity_name.contents, entity_name.size)) {
                     SCAN(';');
                     lexer->result_symbol = TT_CharacterReference;
+                    lexer->mark_end(lexer);
                     return true;
                 }
             }
@@ -488,6 +551,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             else
                 lexer->result_symbol = TT_AmbiguousAmpersand;
 
+            lexer->mark_end(lexer);
             return true;
         }
     }

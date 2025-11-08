@@ -22,7 +22,9 @@ const G = {
     $._end_tag_name,
     $.erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
-    // $.text,
+    $.text,
+    $._raw_text,
+    $._escapable_raw_text,
     $.character_reference,
     $.ambiguous_ampersand,
     $._cdata_text,
@@ -34,19 +36,21 @@ const G = {
   rules: {
     document: $ => optional(seq(
       optional('\uFEFF'),
-      optional(seq(optional(WHITESPACE), $.doctype)),
+      optional(seq(optional($._whitespace), $.doctype)),
       repeat1(choice(
-        WHITESPACE,
+        $._whitespace,
         $.element,
         $.script_element,
         $.style_element,
-        // $.text,
+        $.text,
         $.character_reference,
         $.ambiguous_ampersand,
         $.comment,
         $.erroneous_end_tag
       ))
     )),
+
+    _whitespace: _ => WHITESPACE,
 
     // This covers all elements except `script` and `style`, which need to have their own symbols in the grammar in order to facilitate syntax injection
     element: $ => choice(
@@ -60,48 +64,48 @@ const G = {
     _void_start_tag: $ => seq(
       '<',
       alias($._void_start_tag_name, $.tag_name),
-      repeat(seq(WHITESPACE, $.attribute)),
-      optional(WHITESPACE),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
       choice('>', '/>')
     ),
 
     script_element: $ => seq(
       alias($._script_start_tag, $.start_tag),
       repeat(choice(
-        WHITESPACE,
-        // $.text
+        $._whitespace,
+        alias($._raw_text, $.text)
       )),
       $.end_tag
     ),
     _script_start_tag: $ => seq(
       '<',
       alias($._script_start_tag_name, $.tag_name),
-      repeat(seq(WHITESPACE, $.attribute)),
-      optional(WHITESPACE),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
       '>'
     ),
 
     style_element: $ => seq(
       alias($._style_start_tag, $.start_tag),
       repeat(choice(
-        WHITESPACE,
-        // $.text
+        $._whitespace,
+        alias($._raw_text, $.text)
       )),
       $.end_tag
     ),
     _style_start_tag: $ => seq(
       '<',
       alias($._style_start_tag_name, $.tag_name),
-      repeat(seq(WHITESPACE, $.attribute)),
-      optional(WHITESPACE),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
       '>'
     ),
 
     _escapable_raw_text_element: $ => seq(
       alias($._escapable_raw_text_start_tag, $.start_tag),
       repeat(choice(
-        WHITESPACE,
-        // $.text,
+        $._whitespace,
+        alias($._escapable_raw_text, $.text),
         $.character_reference,
         $.ambiguous_ampersand,
       )),
@@ -110,8 +114,8 @@ const G = {
     _escapable_raw_text_start_tag: $ => seq(
       '<',
       alias($._escapable_raw_text_start_tag_name, $.tag_name),
-      repeat(seq(WHITESPACE, $.attribute)),
-      optional(WHITESPACE),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
       '>'
     ),
 
@@ -119,8 +123,8 @@ const G = {
       seq(
         alias($._foreign_start_tag, $.start_tag),
         repeat(choice(
-          WHITESPACE,
-          // $.text,
+          $._whitespace,
+          $.text,
           $.character_reference,
           $.ambiguous_ampersand,
           $.cdata,
@@ -135,23 +139,23 @@ const G = {
     _foreign_start_tag: $ => seq(
       '<',
       alias($._foreign_start_tag_name, $.tag_name),
-      repeat(seq(WHITESPACE, $.attribute)),
-      optional(WHITESPACE),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
       '>'
     ),
     _self_closing_foreign_start_tag: $ => seq(
       '<',
       alias($._foreign_start_tag_name, $.tag_name),
-      repeat(seq(WHITESPACE, $.attribute)),
-      optional(WHITESPACE),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
       alias($._self_closing_tag_delimiter, '/>')
     ),
 
     _normal_element: $ => seq(
       $.start_tag,
       repeat(choice(
-        WHITESPACE,
-        // $.text,
+        $._whitespace,
+        $.text,
         $.character_reference,
         $.ambiguous_ampersand,
         // We have to check for CDATA sections in normal elements too in order to match CDATA that is directly inside a top-level foreign element; the external scanner will validate this.
@@ -169,21 +173,21 @@ const G = {
       '<',
       alias($._start_tag_name, $.tag_name),
       repeat(seq(token(prec(1, WHITESPACE)), $.attribute)),
-      optional(WHITESPACE),
+      optional($._whitespace),
       '>'
     ),
 
     end_tag: $ => seq(
       '</',
       alias($._end_tag_name, $.tag_name),
-      optional(WHITESPACE),
+      optional($._whitespace),
       '>'
     ),
 
     erroneous_end_tag: $ => seq(
       '</',
       $.erroneous_end_tag_name,
-      optional(WHITESPACE),
+      optional($._whitespace),
       '>'
     ),
 
@@ -202,10 +206,10 @@ const G = {
     doctype: $ => seq(
       '<!',
       /DOCTYPE/i,
-      WHITESPACE,
+      $._whitespace,
       /html/i,
       optional($._doctype_legacy_string),
-      optional(WHITESPACE),
+      optional($._whitespace),
       '>'
     ),
     _doctype_legacy_string: $ => token(seq(
@@ -223,7 +227,7 @@ const G = {
       optional(seq(
         optional(token(prec(2, WHITESPACE))),
         '=',
-        optional(WHITESPACE),
+        optional($._whitespace),
         $.attribute_value,
       ))
     ),
