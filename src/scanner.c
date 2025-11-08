@@ -21,14 +21,10 @@ enum TokenType {
     TT_VoidStartTagName,
     TT_ScriptStartTagName,
     TT_StyleStartTagName,
-    TT_EscapableRawTextStartTagName,
-    TT_ForeignStartTagName,
     TT_EndTagName,
     TT_ErroneousEndTagName,
     TT_SelfClosingTagDelimiter,
     TT_Text,
-    TT_RawText,
-    TT_EscapableRawText,
     TT_CharacterReference,
     TT_AmbiguousAmpersand,
     TT_CdataText,
@@ -233,14 +229,10 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     // fprintf(stderr, "%d TT_VoidStartTagName\n", valid_symbols[TT_VoidStartTagName]);
     // fprintf(stderr, "%d TT_ScriptStartTagName\n", valid_symbols[TT_ScriptStartTagName]);
     // fprintf(stderr, "%d TT_StyleStartTagName\n", valid_symbols[TT_StyleStartTagName]);
-    // fprintf(stderr, "%d TT_EscapableRawTextStartTagName\n", valid_symbols[TT_EscapableRawTextStartTagName]);
-    // fprintf(stderr, "%d TT_ForeignStartTagName\n", valid_symbols[TT_ForeignStartTagName]);
     // fprintf(stderr, "%d TT_EndTagName\n", valid_symbols[TT_EndTagName]);
     // fprintf(stderr, "%d TT_ErroneousEndTagName\n", valid_symbols[TT_ErroneousEndTagName]);
     // fprintf(stderr, "%d TT_SelfClosingTagDelimiter\n", valid_symbols[TT_SelfClosingTagDelimiter]);
     // fprintf(stderr, "%d TT_Text\n", valid_symbols[TT_Text]);
-    // fprintf(stderr, "%d TT_RawText\n", valid_symbols[TT_RawText]);
-    // fprintf(stderr, "%d TT_EscapableRawText\n", valid_symbols[TT_EscapableRawText]);
     // fprintf(stderr, "%d TT_CharacterReference\n", valid_symbols[TT_CharacterReference]);
     // fprintf(stderr, "%d TT_AmbiguousAmpersand\n", valid_symbols[TT_AmbiguousAmpersand]);
     // fprintf(stderr, "%d TT_CdataText\n", valid_symbols[TT_CdataText]);
@@ -289,13 +281,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                         lexer->result_symbol = TT_StyleStartTagName;
                         break;
 
-                    // Escapable raw text elements
-                    case HE_textarea:
-                    case HE_title:
-                        array_push(&scanner->tags, e);
-                        lexer->result_symbol = TT_EscapableRawTextStartTagName;
-                        break;
-
                     // Top-level elements
                     case HE_html:
                         array_push(&scanner->tags, HE_html);
@@ -320,14 +305,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 // The top-level `math` element can be nested, so we need to push the MathML namespace again so that we know how many end tags to look for
                 if (e == ME_math)
                     array_push(&scanner->namespaces, EN_MathML);
-                lexer->result_symbol = TT_ForeignStartTagName;
                 break;
             case EN_SVG:
                 array_push(&scanner->tags, e);
                 // The top-level `svg` element can be nested, so we need to push the SVG namespace again so that we know how many end tags to look for
                 if (e == SE_svg)
                     array_push(&scanner->namespaces, EN_SVG);
-                lexer->result_symbol = TT_ForeignStartTagName;
                 break;
         }
 
@@ -383,9 +366,9 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[TT_SelfClosingTagDelimiter]) {
-        // Self-closing tag delimiters are only allowed in foreign elements
-        // They're also allowed in void HTML elements, but that's already handled in the grammar
+        #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
         ASSERT(get_current_namespace(scanner) != EN_HTML);
+        #endif
         ASSERT(SCAN('/') && SCAN('>'));
         uint8_t e = array_pop(&scanner->tags);
         if (e == 0)
@@ -402,106 +385,100 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         bool text_matched = false;
 
         lexer->mark_end(lexer);
+
+        enum {
+            Normal,
+            RawText,
+            EscapableRawText
+        } text_type = Normal;
+
+        enum HtmlElement top_element;
+
+        if (get_current_namespace(scanner) == EN_HTML) {
+            if (scanner->tags.size > 0) {
+                top_element = *array_back(&scanner->tags);
+                if (top_element == HE_script || top_element == HE_style)
+                    text_type = RawText;
+                else if (top_element == HE_textarea || top_element == HE_title)
+                    text_type = EscapableRawText;
+            }
+        }
+
+        switch (text_type) {
+            case Normal:
+                while (!lexer->eof(lexer) && lexer->lookahead != '<' && lexer->lookahead != '&') {
+                    int c = lexer->lookahead;
+                    advance(lexer);
+                    if (!is_html_whitespace(c)) {
+                        lexer->mark_end(lexer);
+                        text_matched = true;
+                    }
+                }
+                break;
+
+            case RawText:
+                while (!lexer->eof(lexer)) {
+                    int c = lexer->lookahead;
+                    advance(lexer);
+            
+                    if (c == '<') {
+                        // Check for the end tag
+                        if (lexer->lookahead == '/') {
+                            advance(lexer);
+                            if (top_element == HE_script) {
+                                if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
+                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                        goto finish;
+                                }
+                            } else if (top_element == HE_style) {
+                                if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
+                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                        goto finish;
+                                }
+                            }
+                        }
+                        lexer->mark_end(lexer);
+                        text_matched = true;
+                    } else if (!is_html_whitespace(c)) {
+                        lexer->mark_end(lexer);
+                        text_matched = true;
+                    }
+                }
+                break;
+
+            case EscapableRawText:
+                while (!lexer->eof(lexer) && lexer->lookahead != '&') {
+                    int c = lexer->lookahead;
+                    advance(lexer);
+            
+                    if (c == '<') {
+                        // Check for the end tag
+                        if (lexer->lookahead == '/') {
+                            advance(lexer);
+                            if (top_element == HE_textarea) {
+                                if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
+                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                        goto finish;
+                                }
+                            } else if (top_element == HE_title) {
+                                if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
+                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                        goto finish;
+                                }
+                            }
+                        }
+                        lexer->mark_end(lexer);
+                        text_matched = true;
+                    } else if (!is_html_whitespace(c)) {
+                        lexer->mark_end(lexer);
+                        text_matched = true;
+                    }
+                }
+                break;
+        }
         
-        while (!lexer->eof(lexer) && lexer->lookahead != '<' && lexer->lookahead != '&') {
-            int c = lexer->lookahead;
-            advance(lexer);
-            if (!is_html_whitespace(c)) {
-                lexer->mark_end(lexer);
-                text_matched = true;
-            }
-        }
-
-        if (text_matched) {
+        finish: if (text_matched) {
             lexer->result_symbol = TT_Text;
-            return true;
-        }
-    }
-
-    if (valid_symbols[TT_RawText]) {
-        enum HtmlElement top_element = *array_back(&scanner->tags);
-
-        while (is_html_whitespace(lexer->lookahead))
-            skip(lexer);
-
-        bool text_matched = false;
-
-        lexer->mark_end(lexer);
-
-        while (!lexer->eof(lexer)) {
-            int c = lexer->lookahead;
-            advance(lexer);
-            
-            if (c == '<') {
-                // Check for the end tag
-                if (lexer->lookahead == '/') {
-                    advance(lexer);
-                    if (top_element == HE_script) {
-                        if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    } else if (top_element == HE_style) {
-                        if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    }
-                }
-                lexer->mark_end(lexer);
-                text_matched = true;
-            } else if (!is_html_whitespace(c)) {
-                lexer->mark_end(lexer);
-                text_matched = true;
-            }
-        }
-
-        if (text_matched) {
-            lexer->result_symbol = TT_RawText;
-            return true;
-        }
-    }
-
-    if (valid_symbols[TT_EscapableRawText]) {
-        enum HtmlElement top_element = *array_back(&scanner->tags);
-
-        while (is_html_whitespace(lexer->lookahead))
-            skip(lexer);
-
-        bool text_matched = false;
-
-        lexer->mark_end(lexer);
-
-        while (!lexer->eof(lexer) && lexer->lookahead != '&') {
-            int c = lexer->lookahead;
-            advance(lexer);
-            
-            if (c == '<') {
-                // Check for the end tag
-                if (lexer->lookahead == '/') {
-                    advance(lexer);
-                    if (top_element == HE_textarea) {
-                        if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    } else if (top_element == HE_title) {
-                        if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    }
-                }
-                lexer->mark_end(lexer);
-                text_matched = true;
-            } else if (!is_html_whitespace(c)) {
-                lexer->mark_end(lexer);
-                text_matched = true;
-            }
-        }
-
-        if (text_matched) {
-            lexer->result_symbol = TT_EscapableRawText;
             return true;
         }
     }

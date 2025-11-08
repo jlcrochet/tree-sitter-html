@@ -17,14 +17,10 @@ const G = {
     $._void_start_tag_name,
     $._script_start_tag_name,
     $._style_start_tag_name,
-    $._escapable_raw_text_start_tag_name,
-    $._foreign_start_tag_name,
     $._end_tag_name,
     $.erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
     $.text,
-    $._raw_text,
-    $._escapable_raw_text,
     $.character_reference,
     $.ambiguous_ampersand,
     $._cdata_text,
@@ -55,8 +51,7 @@ const G = {
     // This covers all elements except `script` and `style`, which need to have their own symbols in the grammar in order to facilitate syntax injection
     element: $ => choice(
       $._void_element,
-      $._escapable_raw_text_element,
-      $._foreign_element,
+      // NOTE: In this context, a "normal" element is just any non-void element. What kind of content a "normal" element is allowed to have is determined by the external scanner.
       $._normal_element
     ),
 
@@ -69,11 +64,31 @@ const G = {
       choice('>', '/>')
     ),
 
+    _normal_element: $ => choice(
+      alias($._self_closing_tag, $.start_tag),
+      seq(
+        $.start_tag,
+        repeat(choice(
+          $._whitespace,
+          $.text,
+          $.character_reference,
+          $.ambiguous_ampersand,
+          $.cdata,
+          $.element,
+          $.script_element,
+          $.style_element,
+          $.comment,
+          $.erroneous_end_tag
+        )),
+        $.end_tag
+      )
+    ),
+
     script_element: $ => seq(
       alias($._script_start_tag, $.start_tag),
       repeat(choice(
         $._whitespace,
-        alias($._raw_text, $.text)
+        $.text
       )),
       $.end_tag
     ),
@@ -89,7 +104,7 @@ const G = {
       alias($._style_start_tag, $.start_tag),
       repeat(choice(
         $._whitespace,
-        alias($._raw_text, $.text)
+        $.text
       )),
       $.end_tag
     ),
@@ -99,74 +114,6 @@ const G = {
       repeat(seq($._whitespace, $.attribute)),
       optional($._whitespace),
       '>'
-    ),
-
-    _escapable_raw_text_element: $ => seq(
-      alias($._escapable_raw_text_start_tag, $.start_tag),
-      repeat(choice(
-        $._whitespace,
-        alias($._escapable_raw_text, $.text),
-        $.character_reference,
-        $.ambiguous_ampersand,
-      )),
-      $.end_tag
-    ),
-    _escapable_raw_text_start_tag: $ => seq(
-      '<',
-      alias($._escapable_raw_text_start_tag_name, $.tag_name),
-      repeat(seq($._whitespace, $.attribute)),
-      optional($._whitespace),
-      '>'
-    ),
-
-    _foreign_element: $ => choice(
-      seq(
-        alias($._foreign_start_tag, $.start_tag),
-        repeat(choice(
-          $._whitespace,
-          $.text,
-          $.character_reference,
-          $.ambiguous_ampersand,
-          $.cdata,
-          alias($._foreign_element, $.element),
-          $.comment,
-          $.erroneous_end_tag
-        )),
-        $.end_tag
-      ),
-      alias($._self_closing_foreign_start_tag, $.start_tag),
-    ),
-    _foreign_start_tag: $ => seq(
-      '<',
-      alias($._foreign_start_tag_name, $.tag_name),
-      repeat(seq($._whitespace, $.attribute)),
-      optional($._whitespace),
-      '>'
-    ),
-    _self_closing_foreign_start_tag: $ => seq(
-      '<',
-      alias($._foreign_start_tag_name, $.tag_name),
-      repeat(seq($._whitespace, $.attribute)),
-      optional($._whitespace),
-      alias($._self_closing_tag_delimiter, '/>')
-    ),
-
-    _normal_element: $ => seq(
-      $.start_tag,
-      repeat(choice(
-        $._whitespace,
-        $.text,
-        $.character_reference,
-        $.ambiguous_ampersand,
-        // We have to check for CDATA sections in normal elements too in order to match CDATA that is directly inside a top-level foreign element; the external scanner will validate this.
-        $.cdata,
-        $.element,
-        $.script_element,
-        $.style_element,
-        $.comment,
-        $.erroneous_end_tag
-      )),
-      $.end_tag
     ),
 
     start_tag: $ => seq(
@@ -182,6 +129,14 @@ const G = {
       alias($._end_tag_name, $.tag_name),
       optional($._whitespace),
       '>'
+    ),
+
+    _self_closing_tag: $ => seq(
+      '<',
+      alias($._start_tag_name, $.tag_name),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
+      alias($._self_closing_tag_delimiter, '/>')
     ),
 
     erroneous_end_tag: $ => seq(
