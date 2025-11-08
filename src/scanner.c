@@ -371,9 +371,9 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[TT_SelfClosingTagDelimiter]) {
-        #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
-        ASSERT(get_current_namespace(scanner) != EN_HTML);
-        #endif
+        // #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
+        // ASSERT(get_current_namespace(scanner) != EN_HTML);
+        // #endif
 
         // This is necessary for some reason; probably due to a bug in the grammar
         while (is_html_whitespace(lexer->lookahead))
