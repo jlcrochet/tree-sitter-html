@@ -36,6 +36,8 @@ enum TokenType {
     TT_AmbiguousAmpersand,
     TT_CdataText,
     TT_CommentText,
+    // This is *not* a token type; it is used by scanners for other languages that need to embed this scanner and add more token types.
+    HtmlTokenTypeEnd
 };
 
 enum ElementNamespace {
