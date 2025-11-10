@@ -3,70 +3,70 @@
 #include <stddef.h>
 #include <stdint.h>
 enum SvgElement {
-    SE_a = 1,
-    SE_animate = 2,
-    SE_animatemotion = 3,
-    SE_animatetransform = 4,
-    SE_circle = 5,
-    SE_clippath = 6,
-    SE_defs = 7,
-    SE_desc = 8,
-    SE_ellipse = 9,
-    SE_feblend = 10,
-    SE_fecolormatrix = 11,
-    SE_fecomponenttransfer = 12,
-    SE_fecomposite = 13,
-    SE_feconvolvematrix = 14,
-    SE_fediffuselighting = 15,
-    SE_fedisplacementmap = 16,
-    SE_fedistantlight = 17,
-    SE_fedropshadow = 18,
-    SE_feflood = 19,
-    SE_fefunca = 20,
-    SE_fefuncb = 21,
-    SE_fefuncg = 22,
-    SE_fefuncr = 23,
-    SE_fegaussianblur = 24,
-    SE_feimage = 25,
-    SE_femerge = 26,
-    SE_femergenode = 27,
-    SE_femorphology = 28,
-    SE_feoffset = 29,
-    SE_fepointlight = 30,
-    SE_fespecularlighting = 31,
-    SE_fespotlight = 32,
-    SE_fetile = 33,
-    SE_feturbulence = 34,
-    SE_filter = 35,
-    SE_foreignobject = 36,
-    SE_g = 37,
-    SE_image = 38,
-    SE_line = 39,
-    SE_lineargradient = 40,
-    SE_marker = 41,
-    SE_mask = 42,
-    SE_metadata = 43,
-    SE_mpath = 44,
-    SE_path = 45,
-    SE_pattern = 46,
-    SE_polygon = 47,
-    SE_polyline = 48,
-    SE_radialgradient = 49,
-    SE_rect = 50,
-    SE_set = 52,
-    SE_svg = 55,
-    SE_script = 51,
-    SE_stop = 53,
-    SE_style = 54,
-    SE_switch = 56,
-    SE_symbol = 57,
-    SE_text = 58,
-    SE_textpath = 59,
-    SE_title = 60,
-    SE_tspan = 61,
-    SE_use = 62,
-    SE_view = 63,
-    SE_Unknown = 0,
+    SvgElement_a = 1,
+    SvgElement_animate = 2,
+    SvgElement_animatemotion = 3,
+    SvgElement_animatetransform = 4,
+    SvgElement_circle = 5,
+    SvgElement_clippath = 6,
+    SvgElement_defs = 7,
+    SvgElement_desc = 8,
+    SvgElement_ellipse = 9,
+    SvgElement_feblend = 10,
+    SvgElement_fecolormatrix = 11,
+    SvgElement_fecomponenttransfer = 12,
+    SvgElement_fecomposite = 13,
+    SvgElement_feconvolvematrix = 14,
+    SvgElement_fediffuselighting = 15,
+    SvgElement_fedisplacementmap = 16,
+    SvgElement_fedistantlight = 17,
+    SvgElement_fedropshadow = 18,
+    SvgElement_feflood = 19,
+    SvgElement_fefunca = 20,
+    SvgElement_fefuncb = 21,
+    SvgElement_fefuncg = 22,
+    SvgElement_fefuncr = 23,
+    SvgElement_fegaussianblur = 24,
+    SvgElement_feimage = 25,
+    SvgElement_femerge = 26,
+    SvgElement_femergenode = 27,
+    SvgElement_femorphology = 28,
+    SvgElement_feoffset = 29,
+    SvgElement_fepointlight = 30,
+    SvgElement_fespecularlighting = 31,
+    SvgElement_fespotlight = 32,
+    SvgElement_fetile = 33,
+    SvgElement_feturbulence = 34,
+    SvgElement_filter = 35,
+    SvgElement_foreignobject = 36,
+    SvgElement_g = 37,
+    SvgElement_image = 38,
+    SvgElement_line = 39,
+    SvgElement_lineargradient = 40,
+    SvgElement_marker = 41,
+    SvgElement_mask = 42,
+    SvgElement_metadata = 43,
+    SvgElement_mpath = 44,
+    SvgElement_path = 45,
+    SvgElement_pattern = 46,
+    SvgElement_polygon = 47,
+    SvgElement_polyline = 48,
+    SvgElement_radialgradient = 49,
+    SvgElement_rect = 50,
+    SvgElement_set = 52,
+    SvgElement_svg = 55,
+    SvgElement_script = 51,
+    SvgElement_stop = 53,
+    SvgElement_style = 54,
+    SvgElement_switch = 56,
+    SvgElement_symbol = 57,
+    SvgElement_text = 58,
+    SvgElement_textpath = 59,
+    SvgElement_title = 60,
+    SvgElement_tspan = 61,
+    SvgElement_use = 62,
+    SvgElement_view = 63,
+    SvgElement_Unknown = 0,
 };
 static enum SvgElement lookup_svg_element(const char *string, size_t length);
 #ifdef __GNUC__
@@ -90,12 +90,12 @@ static enum SvgElement lookup_svg_element1(const char *string)
 {
     switch(string[0]) {
     case 0| onechar('a', 0, 8):
-        return SE_a;
+        return SvgElement_a;
         break;
     case 0| onechar('g', 0, 8):
-        return SE_g;
+        return SvgElement_g;
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element3(const char *string)
 {
@@ -105,13 +105,13 @@ static enum SvgElement lookup_svg_element3(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[2]) {
             case 0| onechar('t', 0, 8):
-                return SE_set;
+                return SvgElement_set;
             }
             break;
         case 0| onechar('v', 0, 8):
             switch(string[2]) {
             case 0| onechar('g', 0, 8):
-                return SE_svg;
+                return SvgElement_svg;
             }
         }
         break;
@@ -120,43 +120,43 @@ static enum SvgElement lookup_svg_element3(const char *string)
         case 0| onechar('s', 0, 8):
             switch(string[2]) {
             case 0| onechar('e', 0, 8):
-                return SE_use;
+                return SvgElement_use;
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element4(const char *string)
 {
     switch(*((triehash_uu32*) &string[0])) {
     case 0| onechar('d', 0, 32)| onechar('e', 8, 32)| onechar('f', 16, 32)| onechar('s', 24, 32):
-        return SE_defs;
+        return SvgElement_defs;
         break;
     case 0| onechar('d', 0, 32)| onechar('e', 8, 32)| onechar('s', 16, 32)| onechar('c', 24, 32):
-        return SE_desc;
+        return SvgElement_desc;
         break;
     case 0| onechar('l', 0, 32)| onechar('i', 8, 32)| onechar('n', 16, 32)| onechar('e', 24, 32):
-        return SE_line;
+        return SvgElement_line;
         break;
     case 0| onechar('m', 0, 32)| onechar('a', 8, 32)| onechar('s', 16, 32)| onechar('k', 24, 32):
-        return SE_mask;
+        return SvgElement_mask;
         break;
     case 0| onechar('p', 0, 32)| onechar('a', 8, 32)| onechar('t', 16, 32)| onechar('h', 24, 32):
-        return SE_path;
+        return SvgElement_path;
         break;
     case 0| onechar('r', 0, 32)| onechar('e', 8, 32)| onechar('c', 16, 32)| onechar('t', 24, 32):
-        return SE_rect;
+        return SvgElement_rect;
         break;
     case 0| onechar('s', 0, 32)| onechar('t', 8, 32)| onechar('o', 16, 32)| onechar('p', 24, 32):
-        return SE_stop;
+        return SvgElement_stop;
         break;
     case 0| onechar('t', 0, 32)| onechar('e', 8, 32)| onechar('x', 16, 32)| onechar('t', 24, 32):
-        return SE_text;
+        return SvgElement_text;
         break;
     case 0| onechar('v', 0, 32)| onechar('i', 8, 32)| onechar('e', 16, 32)| onechar('w', 24, 32):
-        return SE_view;
+        return SvgElement_view;
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element5(const char *string)
 {
@@ -164,34 +164,34 @@ static enum SvgElement lookup_svg_element5(const char *string)
     case 0| onechar('i', 0, 32)| onechar('m', 8, 32)| onechar('a', 16, 32)| onechar('g', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return SE_image;
+            return SvgElement_image;
         }
         break;
     case 0| onechar('m', 0, 32)| onechar('p', 8, 32)| onechar('a', 16, 32)| onechar('t', 24, 32):
         switch(string[4]) {
         case 0| onechar('h', 0, 8):
-            return SE_mpath;
+            return SvgElement_mpath;
         }
         break;
     case 0| onechar('s', 0, 32)| onechar('t', 8, 32)| onechar('y', 16, 32)| onechar('l', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return SE_style;
+            return SvgElement_style;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('i', 8, 32)| onechar('t', 16, 32)| onechar('l', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return SE_title;
+            return SvgElement_title;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('s', 8, 32)| onechar('p', 16, 32)| onechar('a', 24, 32):
         switch(string[4]) {
         case 0| onechar('n', 0, 8):
-            return SE_tspan;
+            return SvgElement_tspan;
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element6(const char *string)
 {
@@ -201,7 +201,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
         case 0| onechar('l', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return SE_circle;
+                return SvgElement_circle;
             }
         }
         break;
@@ -210,7 +210,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
         case 0| onechar('l', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return SE_fetile;
+                return SvgElement_fetile;
             }
         }
         break;
@@ -219,7 +219,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[5]) {
             case 0| onechar('r', 0, 8):
-                return SE_filter;
+                return SvgElement_filter;
             }
         }
         break;
@@ -228,7 +228,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[5]) {
             case 0| onechar('r', 0, 8):
-                return SE_marker;
+                return SvgElement_marker;
             }
         }
         break;
@@ -237,7 +237,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
         case 0| onechar('p', 0, 8):
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
-                return SE_script;
+                return SvgElement_script;
             }
         }
         break;
@@ -246,7 +246,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
         case 0| onechar('c', 0, 8):
             switch(string[5]) {
             case 0| onechar('h', 0, 8):
-                return SE_switch;
+                return SvgElement_switch;
             }
         }
         break;
@@ -255,11 +255,11 @@ static enum SvgElement lookup_svg_element6(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[5]) {
             case 0| onechar('l', 0, 8):
-                return SE_symbol;
+                return SvgElement_symbol;
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element7(const char *string)
 {
@@ -271,7 +271,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('t', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('e', 0, 8):
-                    return SE_animate;
+                    return SvgElement_animate;
                 }
             }
         }
@@ -283,7 +283,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('s', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('e', 0, 8):
-                    return SE_ellipse;
+                    return SvgElement_ellipse;
                 }
             }
         }
@@ -295,7 +295,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('n', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('d', 0, 8):
-                    return SE_feblend;
+                    return SvgElement_feblend;
                 }
             }
         }
@@ -307,7 +307,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('o', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('d', 0, 8):
-                    return SE_feflood;
+                    return SvgElement_feflood;
                 }
             }
         }
@@ -319,16 +319,16 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('c', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('a', 0, 8):
-                    return SE_fefunca;
+                    return SvgElement_fefunca;
                     break;
                 case 0| onechar('b', 0, 8):
-                    return SE_fefuncb;
+                    return SvgElement_fefuncb;
                     break;
                 case 0| onechar('g', 0, 8):
-                    return SE_fefuncg;
+                    return SvgElement_fefuncg;
                     break;
                 case 0| onechar('r', 0, 8):
-                    return SE_fefuncr;
+                    return SvgElement_fefuncr;
                 }
             }
         }
@@ -340,7 +340,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('g', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('e', 0, 8):
-                    return SE_feimage;
+                    return SvgElement_feimage;
                 }
             }
         }
@@ -352,7 +352,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('g', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('e', 0, 8):
-                    return SE_femerge;
+                    return SvgElement_femerge;
                 }
             }
         }
@@ -364,7 +364,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('r', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('n', 0, 8):
-                    return SE_pattern;
+                    return SvgElement_pattern;
                 }
             }
         }
@@ -376,32 +376,32 @@ static enum SvgElement lookup_svg_element7(const char *string)
             case 0| onechar('o', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('n', 0, 8):
-                    return SE_polygon;
+                    return SvgElement_polygon;
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element8(const char *string)
 {
     switch(*((triehash_uu64*) &string[0])) {
     case 0| onechar('c', 0, 64)| onechar('l', 8, 64)| onechar('i', 16, 64)| onechar('p', 24, 64)| onechar('p', 32, 64)| onechar('a', 40, 64)| onechar('t', 48, 64)| onechar('h', 56, 64):
-        return SE_clippath;
+        return SvgElement_clippath;
         break;
     case 0| onechar('f', 0, 64)| onechar('e', 8, 64)| onechar('o', 16, 64)| onechar('f', 24, 64)| onechar('f', 32, 64)| onechar('s', 40, 64)| onechar('e', 48, 64)| onechar('t', 56, 64):
-        return SE_feoffset;
+        return SvgElement_feoffset;
         break;
     case 0| onechar('m', 0, 64)| onechar('e', 8, 64)| onechar('t', 16, 64)| onechar('a', 24, 64)| onechar('d', 32, 64)| onechar('a', 40, 64)| onechar('t', 48, 64)| onechar('a', 56, 64):
-        return SE_metadata;
+        return SvgElement_metadata;
         break;
     case 0| onechar('p', 0, 64)| onechar('o', 8, 64)| onechar('l', 16, 64)| onechar('y', 24, 64)| onechar('l', 32, 64)| onechar('i', 40, 64)| onechar('n', 48, 64)| onechar('e', 56, 64):
-        return SE_polyline;
+        return SvgElement_polyline;
         break;
     case 0| onechar('t', 0, 64)| onechar('e', 8, 64)| onechar('x', 16, 64)| onechar('t', 24, 64)| onechar('p', 32, 64)| onechar('a', 40, 64)| onechar('t', 48, 64)| onechar('h', 56, 64):
-        return SE_textpath;
+        return SvgElement_textpath;
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element11(const char *string)
 {
@@ -413,7 +413,7 @@ static enum SvgElement lookup_svg_element11(const char *string)
             case 0| onechar('t', 0, 8):
                 switch(string[10]) {
                 case 0| onechar('e', 0, 8):
-                    return SE_fecomposite;
+                    return SvgElement_fecomposite;
                 }
             }
         }
@@ -425,7 +425,7 @@ static enum SvgElement lookup_svg_element11(const char *string)
             case 0| onechar('d', 0, 8):
                 switch(string[10]) {
                 case 0| onechar('e', 0, 8):
-                    return SE_femergenode;
+                    return SvgElement_femergenode;
                 }
             }
         }
@@ -437,12 +437,12 @@ static enum SvgElement lookup_svg_element11(const char *string)
             case 0| onechar('h', 0, 8):
                 switch(string[10]) {
                 case 0| onechar('t', 0, 8):
-                    return SE_fespotlight;
+                    return SvgElement_fespotlight;
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element12(const char *string)
 {
@@ -450,28 +450,28 @@ static enum SvgElement lookup_svg_element12(const char *string)
     case 0| onechar('f', 0, 64)| onechar('e', 8, 64)| onechar('d', 16, 64)| onechar('r', 24, 64)| onechar('o', 32, 64)| onechar('p', 40, 64)| onechar('s', 48, 64)| onechar('h', 56, 64):
         switch(*((triehash_uu32*) &string[8])) {
         case 0| onechar('a', 0, 32)| onechar('d', 8, 32)| onechar('o', 16, 32)| onechar('w', 24, 32):
-            return SE_fedropshadow;
+            return SvgElement_fedropshadow;
         }
         break;
     case 0| onechar('f', 0, 64)| onechar('e', 8, 64)| onechar('m', 16, 64)| onechar('o', 24, 64)| onechar('r', 32, 64)| onechar('p', 40, 64)| onechar('h', 48, 64)| onechar('o', 56, 64):
         switch(*((triehash_uu32*) &string[8])) {
         case 0| onechar('l', 0, 32)| onechar('o', 8, 32)| onechar('g', 16, 32)| onechar('y', 24, 32):
-            return SE_femorphology;
+            return SvgElement_femorphology;
         }
         break;
     case 0| onechar('f', 0, 64)| onechar('e', 8, 64)| onechar('p', 16, 64)| onechar('o', 24, 64)| onechar('i', 32, 64)| onechar('n', 40, 64)| onechar('t', 48, 64)| onechar('l', 56, 64):
         switch(*((triehash_uu32*) &string[8])) {
         case 0| onechar('i', 0, 32)| onechar('g', 8, 32)| onechar('h', 16, 32)| onechar('t', 24, 32):
-            return SE_fepointlight;
+            return SvgElement_fepointlight;
         }
         break;
     case 0| onechar('f', 0, 64)| onechar('e', 8, 64)| onechar('t', 16, 64)| onechar('u', 24, 64)| onechar('r', 32, 64)| onechar('b', 40, 64)| onechar('u', 48, 64)| onechar('l', 56, 64):
         switch(*((triehash_uu32*) &string[8])) {
         case 0| onechar('e', 0, 32)| onechar('n', 8, 32)| onechar('c', 16, 32)| onechar('e', 24, 32):
-            return SE_feturbulence;
+            return SvgElement_feturbulence;
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element13(const char *string)
 {
@@ -481,7 +481,7 @@ static enum SvgElement lookup_svg_element13(const char *string)
         case 0| onechar('o', 0, 32)| onechar('t', 8, 32)| onechar('i', 16, 32)| onechar('o', 24, 32):
             switch(string[12]) {
             case 0| onechar('n', 0, 8):
-                return SE_animatemotion;
+                return SvgElement_animatemotion;
             }
         }
         break;
@@ -490,7 +490,7 @@ static enum SvgElement lookup_svg_element13(const char *string)
         case 0| onechar('a', 0, 32)| onechar('t', 8, 32)| onechar('r', 16, 32)| onechar('i', 24, 32):
             switch(string[12]) {
             case 0| onechar('x', 0, 8):
-                return SE_fecolormatrix;
+                return SvgElement_fecolormatrix;
             }
         }
         break;
@@ -499,11 +499,11 @@ static enum SvgElement lookup_svg_element13(const char *string)
         case 0| onechar('b', 0, 32)| onechar('j', 8, 32)| onechar('e', 16, 32)| onechar('c', 24, 32):
             switch(string[12]) {
             case 0| onechar('t', 0, 8):
-                return SE_foreignobject;
+                return SvgElement_foreignobject;
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element14(const char *string)
 {
@@ -515,7 +515,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
             case 0| onechar('h', 0, 8):
                 switch(string[13]) {
                 case 0| onechar('t', 0, 8):
-                    return SE_fedistantlight;
+                    return SvgElement_fedistantlight;
                 }
             }
         }
@@ -527,7 +527,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
             case 0| onechar('u', 0, 8):
                 switch(string[13]) {
                 case 0| onechar('r', 0, 8):
-                    return SE_fegaussianblur;
+                    return SvgElement_fegaussianblur;
                 }
             }
         }
@@ -539,7 +539,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
             case 0| onechar('n', 0, 8):
                 switch(string[13]) {
                 case 0| onechar('t', 0, 8):
-                    return SE_lineargradient;
+                    return SvgElement_lineargradient;
                 }
             }
         }
@@ -551,12 +551,12 @@ static enum SvgElement lookup_svg_element14(const char *string)
             case 0| onechar('n', 0, 8):
                 switch(string[13]) {
                 case 0| onechar('t', 0, 8):
-                    return SE_radialgradient;
+                    return SvgElement_radialgradient;
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element16(const char *string)
 {
@@ -564,16 +564,16 @@ static enum SvgElement lookup_svg_element16(const char *string)
     case 0| onechar('a', 0, 64)| onechar('n', 8, 64)| onechar('i', 16, 64)| onechar('m', 24, 64)| onechar('a', 32, 64)| onechar('t', 40, 64)| onechar('e', 48, 64)| onechar('t', 56, 64):
         switch(*((triehash_uu64*) &string[8])) {
         case 0| onechar('r', 0, 64)| onechar('a', 8, 64)| onechar('n', 16, 64)| onechar('s', 24, 64)| onechar('f', 32, 64)| onechar('o', 40, 64)| onechar('r', 48, 64)| onechar('m', 56, 64):
-            return SE_animatetransform;
+            return SvgElement_animatetransform;
         }
         break;
     case 0| onechar('f', 0, 64)| onechar('e', 8, 64)| onechar('c', 16, 64)| onechar('o', 24, 64)| onechar('n', 32, 64)| onechar('v', 40, 64)| onechar('o', 48, 64)| onechar('l', 56, 64):
         switch(*((triehash_uu64*) &string[8])) {
         case 0| onechar('v', 0, 64)| onechar('e', 8, 64)| onechar('m', 16, 64)| onechar('a', 24, 64)| onechar('t', 32, 64)| onechar('r', 40, 64)| onechar('i', 48, 64)| onechar('x', 56, 64):
-            return SE_feconvolvematrix;
+            return SvgElement_feconvolvematrix;
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element17(const char *string)
 {
@@ -583,7 +583,7 @@ static enum SvgElement lookup_svg_element17(const char *string)
         case 0| onechar('e', 0, 64)| onechar('l', 8, 64)| onechar('i', 16, 64)| onechar('g', 24, 64)| onechar('h', 32, 64)| onechar('t', 40, 64)| onechar('i', 48, 64)| onechar('n', 56, 64):
             switch(string[16]) {
             case 0| onechar('g', 0, 8):
-                return SE_fediffuselighting;
+                return SvgElement_fediffuselighting;
             }
         }
         break;
@@ -592,11 +592,11 @@ static enum SvgElement lookup_svg_element17(const char *string)
         case 0| onechar('c', 0, 64)| onechar('e', 8, 64)| onechar('m', 16, 64)| onechar('e', 24, 64)| onechar('n', 32, 64)| onechar('t', 40, 64)| onechar('m', 48, 64)| onechar('a', 56, 64):
             switch(string[16]) {
             case 0| onechar('p', 0, 8):
-                return SE_fedisplacementmap;
+                return SvgElement_fedisplacementmap;
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element18(const char *string)
 {
@@ -608,12 +608,12 @@ static enum SvgElement lookup_svg_element18(const char *string)
             case 0| onechar('n', 0, 8):
                 switch(string[17]) {
                 case 0| onechar('g', 0, 8):
-                    return SE_fespecularlighting;
+                    return SvgElement_fespecularlighting;
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element19(const char *string)
 {
@@ -627,25 +627,25 @@ static enum SvgElement lookup_svg_element19(const char *string)
                 case 0| onechar('e', 0, 8):
                     switch(string[18]) {
                     case 0| onechar('r', 0, 8):
-                        return SE_fecomponenttransfer;
+                        return SvgElement_fecomponenttransfer;
                     }
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 #else
 static enum SvgElement lookup_svg_element1(const char *string)
 {
     switch(string[0]) {
     case 'a':
-        return SE_a;
+        return SvgElement_a;
         break;
     case 'g':
-        return SE_g;
+        return SvgElement_g;
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element3(const char *string)
 {
@@ -655,13 +655,13 @@ static enum SvgElement lookup_svg_element3(const char *string)
         case 'e':
             switch(string[2]) {
             case 't':
-                return SE_set;
+                return SvgElement_set;
             }
             break;
         case 'v':
             switch(string[2]) {
             case 'g':
-                return SE_svg;
+                return SvgElement_svg;
             }
         }
         break;
@@ -670,11 +670,11 @@ static enum SvgElement lookup_svg_element3(const char *string)
         case 's':
             switch(string[2]) {
             case 'e':
-                return SE_use;
+                return SvgElement_use;
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element4(const char *string)
 {
@@ -686,13 +686,13 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 'f':
                 switch(string[3]) {
                 case 's':
-                    return SE_defs;
+                    return SvgElement_defs;
                 }
                 break;
             case 's':
                 switch(string[3]) {
                 case 'c':
-                    return SE_desc;
+                    return SvgElement_desc;
                 }
             }
         }
@@ -704,7 +704,7 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 'n':
                 switch(string[3]) {
                 case 'e':
-                    return SE_line;
+                    return SvgElement_line;
                 }
             }
         }
@@ -716,7 +716,7 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 's':
                 switch(string[3]) {
                 case 'k':
-                    return SE_mask;
+                    return SvgElement_mask;
                 }
             }
         }
@@ -728,7 +728,7 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 't':
                 switch(string[3]) {
                 case 'h':
-                    return SE_path;
+                    return SvgElement_path;
                 }
             }
         }
@@ -740,7 +740,7 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 'c':
                 switch(string[3]) {
                 case 't':
-                    return SE_rect;
+                    return SvgElement_rect;
                 }
             }
         }
@@ -752,7 +752,7 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 'o':
                 switch(string[3]) {
                 case 'p':
-                    return SE_stop;
+                    return SvgElement_stop;
                 }
             }
         }
@@ -764,7 +764,7 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 'x':
                 switch(string[3]) {
                 case 't':
-                    return SE_text;
+                    return SvgElement_text;
                 }
             }
         }
@@ -776,12 +776,12 @@ static enum SvgElement lookup_svg_element4(const char *string)
             case 'e':
                 switch(string[3]) {
                 case 'w':
-                    return SE_view;
+                    return SvgElement_view;
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element5(const char *string)
 {
@@ -795,7 +795,7 @@ static enum SvgElement lookup_svg_element5(const char *string)
                 case 'g':
                     switch(string[4]) {
                     case 'e':
-                        return SE_image;
+                        return SvgElement_image;
                     }
                 }
             }
@@ -810,7 +810,7 @@ static enum SvgElement lookup_svg_element5(const char *string)
                 case 't':
                     switch(string[4]) {
                     case 'h':
-                        return SE_mpath;
+                        return SvgElement_mpath;
                     }
                 }
             }
@@ -825,7 +825,7 @@ static enum SvgElement lookup_svg_element5(const char *string)
                 case 'l':
                     switch(string[4]) {
                     case 'e':
-                        return SE_style;
+                        return SvgElement_style;
                     }
                 }
             }
@@ -840,7 +840,7 @@ static enum SvgElement lookup_svg_element5(const char *string)
                 case 'l':
                     switch(string[4]) {
                     case 'e':
-                        return SE_title;
+                        return SvgElement_title;
                     }
                 }
             }
@@ -852,13 +852,13 @@ static enum SvgElement lookup_svg_element5(const char *string)
                 case 'a':
                     switch(string[4]) {
                     case 'n':
-                        return SE_tspan;
+                        return SvgElement_tspan;
                     }
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element6(const char *string)
 {
@@ -874,7 +874,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
                     case 'l':
                         switch(string[5]) {
                         case 'e':
-                            return SE_circle;
+                            return SvgElement_circle;
                         }
                     }
                 }
@@ -892,7 +892,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
                     case 'l':
                         switch(string[5]) {
                         case 'e':
-                            return SE_fetile;
+                            return SvgElement_fetile;
                         }
                     }
                 }
@@ -907,7 +907,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
                     case 'e':
                         switch(string[5]) {
                         case 'r':
-                            return SE_filter;
+                            return SvgElement_filter;
                         }
                     }
                 }
@@ -925,7 +925,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
                     case 'e':
                         switch(string[5]) {
                         case 'r':
-                            return SE_marker;
+                            return SvgElement_marker;
                         }
                     }
                 }
@@ -943,7 +943,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
                     case 'p':
                         switch(string[5]) {
                         case 't':
-                            return SE_script;
+                            return SvgElement_script;
                         }
                     }
                 }
@@ -958,7 +958,7 @@ static enum SvgElement lookup_svg_element6(const char *string)
                     case 'c':
                         switch(string[5]) {
                         case 'h':
-                            return SE_switch;
+                            return SvgElement_switch;
                         }
                     }
                 }
@@ -973,14 +973,14 @@ static enum SvgElement lookup_svg_element6(const char *string)
                     case 'o':
                         switch(string[5]) {
                         case 'l':
-                            return SE_symbol;
+                            return SvgElement_symbol;
                         }
                     }
                 }
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element7(const char *string)
 {
@@ -998,7 +998,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 't':
                             switch(string[6]) {
                             case 'e':
-                                return SE_animate;
+                                return SvgElement_animate;
                             }
                         }
                     }
@@ -1019,7 +1019,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 's':
                             switch(string[6]) {
                             case 'e':
-                                return SE_ellipse;
+                                return SvgElement_ellipse;
                             }
                         }
                     }
@@ -1040,7 +1040,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 'n':
                             switch(string[6]) {
                             case 'd':
-                                return SE_feblend;
+                                return SvgElement_feblend;
                             }
                         }
                     }
@@ -1055,7 +1055,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 'o':
                             switch(string[6]) {
                             case 'd':
-                                return SE_feflood;
+                                return SvgElement_feflood;
                             }
                         }
                     }
@@ -1067,16 +1067,16 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 'c':
                             switch(string[6]) {
                             case 'a':
-                                return SE_fefunca;
+                                return SvgElement_fefunca;
                                 break;
                             case 'b':
-                                return SE_fefuncb;
+                                return SvgElement_fefuncb;
                                 break;
                             case 'g':
-                                return SE_fefuncg;
+                                return SvgElement_fefuncg;
                                 break;
                             case 'r':
-                                return SE_fefuncr;
+                                return SvgElement_fefuncr;
                             }
                         }
                     }
@@ -1091,7 +1091,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 'g':
                             switch(string[6]) {
                             case 'e':
-                                return SE_feimage;
+                                return SvgElement_feimage;
                             }
                         }
                     }
@@ -1106,7 +1106,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 'g':
                             switch(string[6]) {
                             case 'e':
-                                return SE_femerge;
+                                return SvgElement_femerge;
                             }
                         }
                     }
@@ -1127,7 +1127,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 'r':
                             switch(string[6]) {
                             case 'n':
-                                return SE_pattern;
+                                return SvgElement_pattern;
                             }
                         }
                     }
@@ -1145,7 +1145,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
                         case 'o':
                             switch(string[6]) {
                             case 'n':
-                                return SE_polygon;
+                                return SvgElement_polygon;
                             }
                         }
                     }
@@ -1153,7 +1153,7 @@ static enum SvgElement lookup_svg_element7(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element8(const char *string)
 {
@@ -1173,7 +1173,7 @@ static enum SvgElement lookup_svg_element8(const char *string)
                             case 't':
                                 switch(string[7]) {
                                 case 'h':
-                                    return SE_clippath;
+                                    return SvgElement_clippath;
                                 }
                             }
                         }
@@ -1197,7 +1197,7 @@ static enum SvgElement lookup_svg_element8(const char *string)
                             case 'e':
                                 switch(string[7]) {
                                 case 't':
-                                    return SE_feoffset;
+                                    return SvgElement_feoffset;
                                 }
                             }
                         }
@@ -1221,7 +1221,7 @@ static enum SvgElement lookup_svg_element8(const char *string)
                             case 't':
                                 switch(string[7]) {
                                 case 'a':
-                                    return SE_metadata;
+                                    return SvgElement_metadata;
                                 }
                             }
                         }
@@ -1245,7 +1245,7 @@ static enum SvgElement lookup_svg_element8(const char *string)
                             case 'n':
                                 switch(string[7]) {
                                 case 'e':
-                                    return SE_polyline;
+                                    return SvgElement_polyline;
                                 }
                             }
                         }
@@ -1269,7 +1269,7 @@ static enum SvgElement lookup_svg_element8(const char *string)
                             case 't':
                                 switch(string[7]) {
                                 case 'h':
-                                    return SE_textpath;
+                                    return SvgElement_textpath;
                                 }
                             }
                         }
@@ -1278,7 +1278,7 @@ static enum SvgElement lookup_svg_element8(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element11(const char *string)
 {
@@ -1304,7 +1304,7 @@ static enum SvgElement lookup_svg_element11(const char *string)
                                         case 't':
                                             switch(string[10]) {
                                             case 'e':
-                                                return SE_fecomposite;
+                                                return SvgElement_fecomposite;
                                             }
                                         }
                                     }
@@ -1331,7 +1331,7 @@ static enum SvgElement lookup_svg_element11(const char *string)
                                         case 'd':
                                             switch(string[10]) {
                                             case 'e':
-                                                return SE_femergenode;
+                                                return SvgElement_femergenode;
                                             }
                                         }
                                     }
@@ -1358,7 +1358,7 @@ static enum SvgElement lookup_svg_element11(const char *string)
                                         case 'h':
                                             switch(string[10]) {
                                             case 't':
-                                                return SE_fespotlight;
+                                                return SvgElement_fespotlight;
                                             }
                                         }
                                     }
@@ -1370,7 +1370,7 @@ static enum SvgElement lookup_svg_element11(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element12(const char *string)
 {
@@ -1398,7 +1398,7 @@ static enum SvgElement lookup_svg_element12(const char *string)
                                             case 'o':
                                                 switch(string[11]) {
                                                 case 'w':
-                                                    return SE_fedropshadow;
+                                                    return SvgElement_fedropshadow;
                                                 }
                                             }
                                         }
@@ -1428,7 +1428,7 @@ static enum SvgElement lookup_svg_element12(const char *string)
                                             case 'g':
                                                 switch(string[11]) {
                                                 case 'y':
-                                                    return SE_femorphology;
+                                                    return SvgElement_femorphology;
                                                 }
                                             }
                                         }
@@ -1458,7 +1458,7 @@ static enum SvgElement lookup_svg_element12(const char *string)
                                             case 'h':
                                                 switch(string[11]) {
                                                 case 't':
-                                                    return SE_fepointlight;
+                                                    return SvgElement_fepointlight;
                                                 }
                                             }
                                         }
@@ -1488,7 +1488,7 @@ static enum SvgElement lookup_svg_element12(const char *string)
                                             case 'c':
                                                 switch(string[11]) {
                                                 case 'e':
-                                                    return SE_feturbulence;
+                                                    return SvgElement_feturbulence;
                                                 }
                                             }
                                         }
@@ -1501,7 +1501,7 @@ static enum SvgElement lookup_svg_element12(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element13(const char *string)
 {
@@ -1531,7 +1531,7 @@ static enum SvgElement lookup_svg_element13(const char *string)
                                                 case 'o':
                                                     switch(string[12]) {
                                                     case 'n':
-                                                        return SE_animatemotion;
+                                                        return SvgElement_animatemotion;
                                                     }
                                                 }
                                             }
@@ -1570,7 +1570,7 @@ static enum SvgElement lookup_svg_element13(const char *string)
                                                 case 'i':
                                                     switch(string[12]) {
                                                     case 'x':
-                                                        return SE_fecolormatrix;
+                                                        return SvgElement_fecolormatrix;
                                                     }
                                                 }
                                             }
@@ -1606,7 +1606,7 @@ static enum SvgElement lookup_svg_element13(const char *string)
                                                 case 'c':
                                                     switch(string[12]) {
                                                     case 't':
-                                                        return SE_foreignobject;
+                                                        return SvgElement_foreignobject;
                                                     }
                                                 }
                                             }
@@ -1620,7 +1620,7 @@ static enum SvgElement lookup_svg_element13(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element14(const char *string)
 {
@@ -1652,7 +1652,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
                                                     case 'h':
                                                         switch(string[13]) {
                                                         case 't':
-                                                            return SE_fedistantlight;
+                                                            return SvgElement_fedistantlight;
                                                         }
                                                     }
                                                 }
@@ -1688,7 +1688,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
                                                     case 'u':
                                                         switch(string[13]) {
                                                         case 'r':
-                                                            return SE_fegaussianblur;
+                                                            return SvgElement_fegaussianblur;
                                                         }
                                                     }
                                                 }
@@ -1730,7 +1730,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
                                                     case 'n':
                                                         switch(string[13]) {
                                                         case 't':
-                                                            return SE_lineargradient;
+                                                            return SvgElement_lineargradient;
                                                         }
                                                     }
                                                 }
@@ -1772,7 +1772,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
                                                     case 'n':
                                                         switch(string[13]) {
                                                         case 't':
-                                                            return SE_radialgradient;
+                                                            return SvgElement_radialgradient;
                                                         }
                                                     }
                                                 }
@@ -1787,7 +1787,7 @@ static enum SvgElement lookup_svg_element14(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element16(const char *string)
 {
@@ -1823,7 +1823,7 @@ static enum SvgElement lookup_svg_element16(const char *string)
                                                             case 'r':
                                                                 switch(string[15]) {
                                                                 case 'm':
-                                                                    return SE_animatetransform;
+                                                                    return SvgElement_animatetransform;
                                                                 }
                                                             }
                                                         }
@@ -1871,7 +1871,7 @@ static enum SvgElement lookup_svg_element16(const char *string)
                                                             case 'i':
                                                                 switch(string[15]) {
                                                                 case 'x':
-                                                                    return SE_feconvolvematrix;
+                                                                    return SvgElement_feconvolvematrix;
                                                                 }
                                                             }
                                                         }
@@ -1888,7 +1888,7 @@ static enum SvgElement lookup_svg_element16(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element17(const char *string)
 {
@@ -1926,7 +1926,7 @@ static enum SvgElement lookup_svg_element17(const char *string)
                                                                 case 'n':
                                                                     switch(string[16]) {
                                                                     case 'g':
-                                                                        return SE_fediffuselighting;
+                                                                        return SvgElement_fediffuselighting;
                                                                     }
                                                                 }
                                                             }
@@ -1965,7 +1965,7 @@ static enum SvgElement lookup_svg_element17(const char *string)
                                                                 case 'a':
                                                                     switch(string[16]) {
                                                                     case 'p':
-                                                                        return SE_fedisplacementmap;
+                                                                        return SvgElement_fedisplacementmap;
                                                                     }
                                                                 }
                                                             }
@@ -1983,7 +1983,7 @@ static enum SvgElement lookup_svg_element17(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element18(const char *string)
 {
@@ -2023,7 +2023,7 @@ static enum SvgElement lookup_svg_element18(const char *string)
                                                                     case 'n':
                                                                         switch(string[17]) {
                                                                         case 'g':
-                                                                            return SE_fespecularlighting;
+                                                                            return SvgElement_fespecularlighting;
                                                                         }
                                                                     }
                                                                 }
@@ -2042,7 +2042,7 @@ static enum SvgElement lookup_svg_element18(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 static enum SvgElement lookup_svg_element19(const char *string)
 {
@@ -2084,7 +2084,7 @@ static enum SvgElement lookup_svg_element19(const char *string)
                                                                         case 'e':
                                                                             switch(string[18]) {
                                                                             case 'r':
-                                                                                return SE_fecomponenttransfer;
+                                                                                return SvgElement_fecomponenttransfer;
                                                                             }
                                                                         }
                                                                     }
@@ -2104,7 +2104,7 @@ static enum SvgElement lookup_svg_element19(const char *string)
             }
         }
     }
-    return SE_Unknown;
+    return SvgElement_Unknown;
 }
 #endif /* TRIE_HASH_MULTI_BYTE */
 static enum SvgElement lookup_svg_element(const char *string, size_t length)
@@ -2141,7 +2141,7 @@ static enum SvgElement lookup_svg_element(const char *string, size_t length)
     case 19:
         return lookup_svg_element19(string);
     default:
-        return SE_Unknown;
+        return SvgElement_Unknown;
     }
 }
 #endif                       /* TRIE_HASH_lookup_svg_element */

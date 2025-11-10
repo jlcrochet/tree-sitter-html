@@ -24,26 +24,26 @@
 // #define DEBUG
 
 enum HtmlTokenType {
-    HTT_StartTagName,
-    HTT_VoidStartTagName,
-    HTT_ScriptStartTagName,
-    HTT_StyleStartTagName,
-    HTT_EndTagName,
-    HTT_ErroneousEndTagName,
-    HTT_SelfClosingTagDelimiter,
-    HTT_Text,
-    HTT_CharacterReference,
-    HTT_AmbiguousAmpersand,
-    HTT_CdataText,
-    HTT_CommentText,
+    HtmlTokenType_StartTagName,
+    HtmlTokenType_VoidStartTagName,
+    HtmlTokenType_ScriptStartTagName,
+    HtmlTokenType_StyleStartTagName,
+    HtmlTokenType_EndTagName,
+    HtmlTokenType_ErroneousEndTagName,
+    HtmlTokenType_SelfClosingTagDelimiter,
+    HtmlTokenType_Text,
+    HtmlTokenType_CharacterReference,
+    HtmlTokenType_AmbiguousAmpersand,
+    HtmlTokenType_CdataText,
+    HtmlTokenType_CommentText,
     // This is *not* a token type; it is used by scanners for other languages that need to embed this scanner and add more token types.
-    _HTT_End
+    _HtmlTokenType_End
 };
 
 enum ElementNamespace {
-    EN_HTML,
-    EN_MathML,
-    EN_SVG
+    ElementNamespace_HTML,
+    ElementNamespace_MathML,
+    ElementNamespace_SVG
 };
 
 struct Scanner {
@@ -57,7 +57,7 @@ static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
         return *array_back(&scanner->namespaces);
     else
         // If no top-level elements have been pushed onto the stack yet, the default namespace is HTML
-        return EN_HTML;
+        return ElementNamespace_HTML;
 }
 
 void *tree_sitter_html_external_scanner_create() {
@@ -187,13 +187,13 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
         *element = 0;
     } else {
         switch (ns) {
-            case EN_HTML:
+            case ElementNamespace_HTML:
                 *element = lookup_html_element(tag_name.contents, tag_name.size);
                 break;
-            case EN_MathML:
+            case ElementNamespace_MathML:
                 *element = lookup_mathml_element(tag_name.contents, tag_name.size);
                 break;
-            case EN_SVG:
+            case ElementNamespace_SVG:
                 *element = lookup_svg_element(tag_name.contents, tag_name.size);
                 break;
         }
@@ -224,24 +224,24 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     #ifdef DEBUG
     fputs("---------------------------------------------\n", stderr);
     fprintf(stderr, "%d %c\n", lexer->get_column(lexer), lexer->lookahead);
-    fprintf(stderr, "%d HTT_StartTagName\n", valid_symbols[HTT_StartTagName]);
-    fprintf(stderr, "%d HTT_VoidStartTagName\n", valid_symbols[HTT_VoidStartTagName]);
-    fprintf(stderr, "%d HTT_ScriptStartTagName\n", valid_symbols[HTT_ScriptStartTagName]);
-    fprintf(stderr, "%d HTT_StyleStartTagName\n", valid_symbols[HTT_StyleStartTagName]);
-    fprintf(stderr, "%d HTT_EndTagName\n", valid_symbols[HTT_EndTagName]);
-    fprintf(stderr, "%d HTT_ErroneousEndTagName\n", valid_symbols[HTT_ErroneousEndTagName]);
-    fprintf(stderr, "%d HTT_SelfClosingTagDelimiter\n", valid_symbols[HTT_SelfClosingTagDelimiter]);
-    fprintf(stderr, "%d HTT_Text\n", valid_symbols[HTT_Text]);
-    fprintf(stderr, "%d HTT_CharacterReference\n", valid_symbols[HTT_CharacterReference]);
-    fprintf(stderr, "%d HTT_AmbiguousAmpersand\n", valid_symbols[HTT_AmbiguousAmpersand]);
-    fprintf(stderr, "%d HTT_CdataText\n", valid_symbols[HTT_CdataText]);
-    fprintf(stderr, "%d HTT_CommentText\n", valid_symbols[HTT_CommentText]);
+    fprintf(stderr, "%d HtmlTokenType_StartTagName\n", valid_symbols[HtmlTokenType_StartTagName]);
+    fprintf(stderr, "%d HtmlTokenType_VoidStartTagName\n", valid_symbols[HtmlTokenType_VoidStartTagName]);
+    fprintf(stderr, "%d HtmlTokenType_ScriptStartTagName\n", valid_symbols[HtmlTokenType_ScriptStartTagName]);
+    fprintf(stderr, "%d HtmlTokenType_StyleStartTagName\n", valid_symbols[HtmlTokenType_StyleStartTagName]);
+    fprintf(stderr, "%d HtmlTokenType_EndTagName\n", valid_symbols[HtmlTokenType_EndTagName]);
+    fprintf(stderr, "%d HtmlTokenType_ErroneousEndTagName\n", valid_symbols[HtmlTokenType_ErroneousEndTagName]);
+    fprintf(stderr, "%d HtmlTokenType_SelfClosingTagDelimiter\n", valid_symbols[HtmlTokenType_SelfClosingTagDelimiter]);
+    fprintf(stderr, "%d HtmlTokenType_Text\n", valid_symbols[HtmlTokenType_Text]);
+    fprintf(stderr, "%d HtmlTokenType_CharacterReference\n", valid_symbols[HtmlTokenType_CharacterReference]);
+    fprintf(stderr, "%d HtmlTokenType_AmbiguousAmpersand\n", valid_symbols[HtmlTokenType_AmbiguousAmpersand]);
+    fprintf(stderr, "%d HtmlTokenType_CdataText\n", valid_symbols[HtmlTokenType_CdataText]);
+    fprintf(stderr, "%d HtmlTokenType_CommentText\n", valid_symbols[HtmlTokenType_CommentText]);
     #endif
 
     // if (lexer->eof(lexer))
     //     return false;
 
-    if (valid_symbols[HTT_StartTagName]) {
+    if (valid_symbols[HtmlTokenType_StartTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);
         uint8_t e;
         XXH32_hash_t name_hash;
@@ -249,68 +249,68 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
 
         // Start with the default token for start tag names and disambiguate below
-        lexer->result_symbol = HTT_StartTagName;
+        lexer->result_symbol = HtmlTokenType_StartTagName;
 
         switch (ns) {
-            case EN_HTML:
+            case ElementNamespace_HTML:
                 switch (e) {
                     // Void elements
-                    case HE_area:
-                    case HE_base:
-                    case HE_br:
-                    case HE_col:
-                    case HE_embed:
-                    case HE_hr:
-                    case HE_img:
-                    case HE_input:
-                    case HE_link:
-                    case HE_meta:
-                    case HE_source:
-                    case HE_track:
-                    case HE_wbr:
-                        lexer->result_symbol = HTT_VoidStartTagName;
+                    case HtmlElement_area:
+                    case HtmlElement_base:
+                    case HtmlElement_br:
+                    case HtmlElement_col:
+                    case HtmlElement_embed:
+                    case HtmlElement_hr:
+                    case HtmlElement_img:
+                    case HtmlElement_input:
+                    case HtmlElement_link:
+                    case HtmlElement_meta:
+                    case HtmlElement_source:
+                    case HtmlElement_track:
+                    case HtmlElement_wbr:
+                        lexer->result_symbol = HtmlTokenType_VoidStartTagName;
                         break;
 
                     // Raw text elements
-                    case HE_script:
+                    case HtmlElement_script:
                         array_push(&scanner->tags, e);
-                        lexer->result_symbol = HTT_ScriptStartTagName;
+                        lexer->result_symbol = HtmlTokenType_ScriptStartTagName;
                         break;
-                    case HE_style:
+                    case HtmlElement_style:
                         array_push(&scanner->tags, e);
-                        lexer->result_symbol = HTT_StyleStartTagName;
+                        lexer->result_symbol = HtmlTokenType_StyleStartTagName;
                         break;
 
                     // Top-level elements
-                    case HE_html:
-                        array_push(&scanner->tags, HE_html);
-                        array_push(&scanner->namespaces, EN_HTML);
+                    case HtmlElement_html:
+                        array_push(&scanner->tags, HtmlElement_html);
+                        array_push(&scanner->namespaces, ElementNamespace_HTML);
                         break;
-                    // For top-level elements of foreign namespaces, we need to make sure that we are pushing the value from that namespace's enum onto the stack so that it can be matched with the end tag later. For example, `HE_math` and `HE_svg` are used for matching start tag names in HTML, but `ME_math` and `SE_svg` are what should be pushed onto the stack.
-                    case HE_math:
-                        array_push(&scanner->tags, ME_math);
-                        array_push(&scanner->namespaces, EN_MathML);
+                    // For top-level elements of foreign namespaces, we need to make sure that we are pushing the value from that namespace's enum onto the stack so that it can be matched with the end tag later. For example, `HtmlElement_math` and `HtmlElement_svg` are used for matching start tag names in HTML, but `MathmlElement_math` and `SvgElement_svg` are what should be pushed onto the stack.
+                    case HtmlElement_math:
+                        array_push(&scanner->tags, MathmlElement_math);
+                        array_push(&scanner->namespaces, ElementNamespace_MathML);
                         break;
-                    case HE_svg:
-                        array_push(&scanner->tags, SE_svg);
-                        array_push(&scanner->namespaces, EN_SVG);
+                    case HtmlElement_svg:
+                        array_push(&scanner->tags, SvgElement_svg);
+                        array_push(&scanner->namespaces, ElementNamespace_SVG);
                         break;
 
                     default:
                         array_push(&scanner->tags, e);
                 }
                 break;
-            case EN_MathML:
+            case ElementNamespace_MathML:
                 array_push(&scanner->tags, e);
                 // The top-level `math` element can be nested, so we need to push the MathML namespace again so that we know how many end tags to look for
-                if (e == ME_math)
-                    array_push(&scanner->namespaces, EN_MathML);
+                if (e == MathmlElement_math)
+                    array_push(&scanner->namespaces, ElementNamespace_MathML);
                 break;
-            case EN_SVG:
+            case ElementNamespace_SVG:
                 array_push(&scanner->tags, e);
                 // The top-level `svg` element can be nested, so we need to push the SVG namespace again so that we know how many end tags to look for
-                if (e == SE_svg)
-                    array_push(&scanner->namespaces, EN_SVG);
+                if (e == SvgElement_svg)
+                    array_push(&scanner->namespaces, ElementNamespace_SVG);
                 break;
         }
 
@@ -321,7 +321,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    if (valid_symbols[HTT_EndTagName]) {
+    if (valid_symbols[HtmlTokenType_EndTagName]) {
         ASSERT(scanner->tags.size > 0);
         
         enum ElementNamespace ns = get_current_namespace(scanner);
@@ -342,32 +342,32 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 array_pop(&scanner->custom_name_hashes);
 
             if (
-                (ns == EN_HTML && element == HE_html) ||
-                (ns == EN_MathML && element == ME_math) ||
-                (ns == EN_SVG && element == SE_svg)
+                (ns == ElementNamespace_HTML && element == HtmlElement_html) ||
+                (ns == ElementNamespace_MathML && element == MathmlElement_math) ||
+                (ns == ElementNamespace_SVG && element == SvgElement_svg)
             )
                 array_pop(&scanner->namespaces);
 
-            lexer->result_symbol = HTT_EndTagName;
+            lexer->result_symbol = HtmlTokenType_EndTagName;
             return true;
         } else {
-            lexer->result_symbol = HTT_ErroneousEndTagName;
+            lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
             return true;
         }
     }
 
-    if (valid_symbols[HTT_ErroneousEndTagName]) {
+    if (valid_symbols[HtmlTokenType_ErroneousEndTagName]) {
         ASSERT(isalpha(lexer->lookahead));
         advance(lexer);
         while (!lexer->eof(lexer) && !is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
             advance(lexer);
-        lexer->result_symbol = HTT_ErroneousEndTagName;
+        lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
         return true;
     }
 
-    if (valid_symbols[HTT_SelfClosingTagDelimiter]) {
+    if (valid_symbols[HtmlTokenType_SelfClosingTagDelimiter]) {
         #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
-        ASSERT(get_current_namespace(scanner) != EN_HTML);
+        ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);
         #endif
 
         // This is necessary for some reason, probably due to a bug in the grammar
@@ -378,11 +378,11 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         uint8_t e = array_pop(&scanner->tags);
         if (e == 0)
             array_pop(&scanner->custom_name_hashes);
-        lexer->result_symbol = HTT_SelfClosingTagDelimiter;
+        lexer->result_symbol = HtmlTokenType_SelfClosingTagDelimiter;
         return true;
     }
 
-    if (valid_symbols[HTT_Text]) {
+    if (valid_symbols[HtmlTokenType_Text]) {
         enum {
             Normal,
             RawText,
@@ -391,12 +391,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
         enum HtmlElement top_element;
 
-        if (get_current_namespace(scanner) == EN_HTML) {
+        if (get_current_namespace(scanner) == ElementNamespace_HTML) {
             if (scanner->tags.size > 0) {
                 top_element = *array_back(&scanner->tags);
-                if (top_element == HE_script || top_element == HE_style)
+                if (top_element == HtmlElement_script || top_element == HtmlElement_style)
                     text_type = RawText;
-                else if (top_element == HE_textarea || top_element == HE_title)
+                else if (top_element == HtmlElement_textarea || top_element == HtmlElement_title)
                     text_type = EscapableRawText;
             }
         }
@@ -430,12 +430,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                         // Check for the end tag
                         if (lexer->lookahead == '/') {
                             advance(lexer);
-                            if (top_element == HE_script) {
+                            if (top_element == HtmlElement_script) {
                                 if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
                                     if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                         goto finish;
                                 }
-                            } else if (top_element == HE_style) {
+                            } else if (top_element == HtmlElement_style) {
                                 if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
                                     if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                         goto finish;
@@ -460,12 +460,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                         // Check for the end tag
                         if (lexer->lookahead == '/') {
                             advance(lexer);
-                            if (top_element == HE_textarea) {
+                            if (top_element == HtmlElement_textarea) {
                                 if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
                                     if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                         goto finish;
                                 }
-                            } else if (top_element == HE_title) {
+                            } else if (top_element == HtmlElement_title) {
                                 if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
                                     if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                         goto finish;
@@ -483,12 +483,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
         
         finish: if (text_matched) {
-            lexer->result_symbol = HTT_Text;
+            lexer->result_symbol = HtmlTokenType_Text;
             return true;
         }
     }
 
-    if (valid_symbols[HTT_CharacterReference] || valid_symbols[HTT_AmbiguousAmpersand]) {
+    if (valid_symbols[HtmlTokenType_CharacterReference] || valid_symbols[HtmlTokenType_AmbiguousAmpersand]) {
         ASSERT(SCAN('&'));
         
         if (SCAN('#')) {
@@ -498,7 +498,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 ASSERT(isxdigit(lexer->lookahead));
                 do { advance(lexer); } while (isxdigit(lexer->lookahead));
                 ASSERT(SCAN(';'));
-                lexer->result_symbol = HTT_CharacterReference;
+                lexer->result_symbol = HtmlTokenType_CharacterReference;
                 lexer->mark_end(lexer);
                 return true;
             } else {
@@ -506,7 +506,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 ASSERT(isdigit(lexer->lookahead));
                 do { advance(lexer); } while (isdigit(lexer->lookahead));
                 ASSERT(SCAN(';'));
-                lexer->result_symbol = HTT_CharacterReference;
+                lexer->result_symbol = HtmlTokenType_CharacterReference;
                 lexer->mark_end(lexer);
                 return true;
             }
@@ -521,7 +521,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
                 if (lookup_character_reference_no_semicolon(entity_name.contents, entity_name.size)) {
                     SCAN(';');
-                    lexer->result_symbol = HTT_CharacterReference;
+                    lexer->result_symbol = HtmlTokenType_CharacterReference;
                     lexer->mark_end(lexer);
                     return true;
                 }
@@ -531,17 +531,17 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             ASSERT(SCAN(';'));
 
             if (lookup_character_reference(entity_name.contents, entity_name.size))
-                lexer->result_symbol = HTT_CharacterReference;
+                lexer->result_symbol = HtmlTokenType_CharacterReference;
             else
-                lexer->result_symbol = HTT_AmbiguousAmpersand;
+                lexer->result_symbol = HtmlTokenType_AmbiguousAmpersand;
 
             lexer->mark_end(lexer);
             return true;
         }
     }
 
-    if (valid_symbols[HTT_CdataText]) {
-        ASSERT(get_current_namespace(scanner) != EN_HTML);
+    if (valid_symbols[HtmlTokenType_CdataText]) {
+        ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);
         
         // Ref: https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-state
         enum {
@@ -588,7 +588,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                             lexer->mark_end(lexer);
                             break;
                         case '>':
-                            lexer->result_symbol = HTT_CdataText;
+                            lexer->result_symbol = HtmlTokenType_CdataText;
                             return true;
                         default:
                             lexer->mark_end(lexer);
@@ -598,7 +598,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
     }
 
-    if (valid_symbols[HTT_CommentText]) {
+    if (valid_symbols[HtmlTokenType_CommentText]) {
         // Ref: https://html.spec.whatwg.org/multipage/parsing.html#comment-start-state
         enum {
             CommentStart,
@@ -716,7 +716,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 case CommentEnd: CommentEnd:
                     switch (c) {
                         case '>':
-                            lexer->result_symbol = HTT_CommentText;
+                            lexer->result_symbol = HtmlTokenType_CommentText;
                             return true;
                         case '!':
                             state = CommentEndBang;

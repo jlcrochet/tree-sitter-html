@@ -3,122 +3,122 @@
 #include <stddef.h>
 #include <stdint.h>
 enum HtmlElement {
-    HE_a = 1,
-    HE_abbr = 2,
-    HE_address = 3,
-    HE_area = 4,
-    HE_article = 5,
-    HE_aside = 6,
-    HE_audio = 7,
-    HE_b = 8,
-    HE_bdi = 10,
-    HE_bdo = 11,
-    HE_br = 14,
-    HE_base = 9,
-    HE_blockquote = 12,
-    HE_body = 13,
-    HE_button = 15,
-    HE_col = 20,
-    HE_canvas = 16,
-    HE_caption = 17,
-    HE_cite = 18,
-    HE_code = 19,
-    HE_colgroup = 21,
-    HE_dd = 24,
-    HE_del = 25,
-    HE_dfn = 27,
-    HE_div = 29,
-    HE_dl = 30,
-    HE_dt = 31,
-    HE_data = 22,
-    HE_datalist = 23,
-    HE_details = 26,
-    HE_dialog = 28,
-    HE_em = 32,
-    HE_embed = 33,
-    HE_fieldset = 34,
-    HE_figcaption = 35,
-    HE_figure = 36,
-    HE_footer = 37,
-    HE_form = 38,
-    HE_h1 = 42,
-    HE_h2 = 43,
-    HE_h3 = 44,
-    HE_h4 = 45,
-    HE_h5 = 46,
-    HE_h6 = 47,
-    HE_hr = 48,
-    HE_head = 39,
-    HE_header = 40,
-    HE_hgroup = 41,
-    HE_html = 49,
-    HE_i = 50,
-    HE_img = 52,
-    HE_ins = 54,
-    HE_iframe = 51,
-    HE_input = 53,
-    HE_kbd = 55,
-    HE_keygen = 56,
-    HE_li = 59,
-    HE_label = 57,
-    HE_legend = 58,
-    HE_link = 60,
-    HE_map = 62,
-    HE_main = 61,
-    HE_mark = 63,
-    HE_math = 64,
-    HE_menu = 65,
-    HE_menuitem = 66,
-    HE_meta = 67,
-    HE_meter = 68,
-    HE_nav = 69,
-    HE_noscript = 70,
-    HE_ol = 72,
-    HE_object = 71,
-    HE_optgroup = 73,
-    HE_option = 74,
-    HE_output = 75,
-    HE_p = 76,
-    HE_pre = 79,
-    HE_param = 77,
-    HE_picture = 78,
-    HE_progress = 80,
-    HE_q = 81,
-    HE_rp = 82,
-    HE_rt = 83,
-    HE_ruby = 84,
-    HE_s = 85,
-    HE_sub = 95,
-    HE_sup = 97,
-    HE_svg = 98,
-    HE_samp = 86,
-    HE_script = 87,
-    HE_section = 88,
-    HE_select = 89,
-    HE_small = 90,
-    HE_source = 91,
-    HE_span = 92,
-    HE_strong = 93,
-    HE_style = 94,
-    HE_summary = 96,
-    HE_td = 101,
-    HE_th = 105,
-    HE_tr = 109,
-    HE_table = 99,
-    HE_tbody = 100,
-    HE_template = 102,
-    HE_textarea = 103,
-    HE_tfoot = 104,
-    HE_thead = 106,
-    HE_time = 107,
-    HE_title = 108,
-    HE_track = 110,
-    HE_u = 111,
-    HE_ul = 112,
-    HE_var = 113,
-    HE_video = 114,
-    HE_wbr = 115,
-    HE_Unknown = 0,
+    HtmlElement_a = 1,
+    HtmlElement_abbr = 2,
+    HtmlElement_address = 3,
+    HtmlElement_area = 4,
+    HtmlElement_article = 5,
+    HtmlElement_aside = 6,
+    HtmlElement_audio = 7,
+    HtmlElement_b = 8,
+    HtmlElement_bdi = 10,
+    HtmlElement_bdo = 11,
+    HtmlElement_br = 14,
+    HtmlElement_base = 9,
+    HtmlElement_blockquote = 12,
+    HtmlElement_body = 13,
+    HtmlElement_button = 15,
+    HtmlElement_col = 20,
+    HtmlElement_canvas = 16,
+    HtmlElement_caption = 17,
+    HtmlElement_cite = 18,
+    HtmlElement_code = 19,
+    HtmlElement_colgroup = 21,
+    HtmlElement_dd = 24,
+    HtmlElement_del = 25,
+    HtmlElement_dfn = 27,
+    HtmlElement_div = 29,
+    HtmlElement_dl = 30,
+    HtmlElement_dt = 31,
+    HtmlElement_data = 22,
+    HtmlElement_datalist = 23,
+    HtmlElement_details = 26,
+    HtmlElement_dialog = 28,
+    HtmlElement_em = 32,
+    HtmlElement_embed = 33,
+    HtmlElement_fieldset = 34,
+    HtmlElement_figcaption = 35,
+    HtmlElement_figure = 36,
+    HtmlElement_footer = 37,
+    HtmlElement_form = 38,
+    HtmlElement_h1 = 42,
+    HtmlElement_h2 = 43,
+    HtmlElement_h3 = 44,
+    HtmlElement_h4 = 45,
+    HtmlElement_h5 = 46,
+    HtmlElement_h6 = 47,
+    HtmlElement_hr = 48,
+    HtmlElement_head = 39,
+    HtmlElement_header = 40,
+    HtmlElement_hgroup = 41,
+    HtmlElement_html = 49,
+    HtmlElement_i = 50,
+    HtmlElement_img = 52,
+    HtmlElement_ins = 54,
+    HtmlElement_iframe = 51,
+    HtmlElement_input = 53,
+    HtmlElement_kbd = 55,
+    HtmlElement_keygen = 56,
+    HtmlElement_li = 59,
+    HtmlElement_label = 57,
+    HtmlElement_legend = 58,
+    HtmlElement_link = 60,
+    HtmlElement_map = 62,
+    HtmlElement_main = 61,
+    HtmlElement_mark = 63,
+    HtmlElement_math = 64,
+    HtmlElement_menu = 65,
+    HtmlElement_menuitem = 66,
+    HtmlElement_meta = 67,
+    HtmlElement_meter = 68,
+    HtmlElement_nav = 69,
+    HtmlElement_noscript = 70,
+    HtmlElement_ol = 72,
+    HtmlElement_object = 71,
+    HtmlElement_optgroup = 73,
+    HtmlElement_option = 74,
+    HtmlElement_output = 75,
+    HtmlElement_p = 76,
+    HtmlElement_pre = 79,
+    HtmlElement_param = 77,
+    HtmlElement_picture = 78,
+    HtmlElement_progress = 80,
+    HtmlElement_q = 81,
+    HtmlElement_rp = 82,
+    HtmlElement_rt = 83,
+    HtmlElement_ruby = 84,
+    HtmlElement_s = 85,
+    HtmlElement_sub = 95,
+    HtmlElement_sup = 97,
+    HtmlElement_svg = 98,
+    HtmlElement_samp = 86,
+    HtmlElement_script = 87,
+    HtmlElement_section = 88,
+    HtmlElement_select = 89,
+    HtmlElement_small = 90,
+    HtmlElement_source = 91,
+    HtmlElement_span = 92,
+    HtmlElement_strong = 93,
+    HtmlElement_style = 94,
+    HtmlElement_summary = 96,
+    HtmlElement_td = 101,
+    HtmlElement_th = 105,
+    HtmlElement_tr = 109,
+    HtmlElement_table = 99,
+    HtmlElement_tbody = 100,
+    HtmlElement_template = 102,
+    HtmlElement_textarea = 103,
+    HtmlElement_tfoot = 104,
+    HtmlElement_thead = 106,
+    HtmlElement_time = 107,
+    HtmlElement_title = 108,
+    HtmlElement_track = 110,
+    HtmlElement_u = 111,
+    HtmlElement_ul = 112,
+    HtmlElement_var = 113,
+    HtmlElement_video = 114,
+    HtmlElement_wbr = 115,
+    HtmlElement_Unknown = 0,
 };
 static enum HtmlElement lookup_html_element(const char *string, size_t length);
 #ifdef __GNUC__
@@ -142,27 +142,27 @@ static enum HtmlElement lookup_html_element1(const char *string)
 {
     switch(string[0]) {
     case 0| onechar('a', 0, 8):
-        return HE_a;
+        return HtmlElement_a;
         break;
     case 0| onechar('b', 0, 8):
-        return HE_b;
+        return HtmlElement_b;
         break;
     case 0| onechar('i', 0, 8):
-        return HE_i;
+        return HtmlElement_i;
         break;
     case 0| onechar('p', 0, 8):
-        return HE_p;
+        return HtmlElement_p;
         break;
     case 0| onechar('q', 0, 8):
-        return HE_q;
+        return HtmlElement_q;
         break;
     case 0| onechar('s', 0, 8):
-        return HE_s;
+        return HtmlElement_s;
         break;
     case 0| onechar('u', 0, 8):
-        return HE_u;
+        return HtmlElement_u;
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element2(const char *string)
 {
@@ -170,91 +170,91 @@ static enum HtmlElement lookup_html_element2(const char *string)
     case 0| onechar('b', 0, 8):
         switch(string[1]) {
         case 0| onechar('r', 0, 8):
-            return HE_br;
+            return HtmlElement_br;
         }
         break;
     case 0| onechar('d', 0, 8):
         switch(string[1]) {
         case 0| onechar('d', 0, 8):
-            return HE_dd;
+            return HtmlElement_dd;
             break;
         case 0| onechar('l', 0, 8):
-            return HE_dl;
+            return HtmlElement_dl;
             break;
         case 0| onechar('t', 0, 8):
-            return HE_dt;
+            return HtmlElement_dt;
         }
         break;
     case 0| onechar('e', 0, 8):
         switch(string[1]) {
         case 0| onechar('m', 0, 8):
-            return HE_em;
+            return HtmlElement_em;
         }
         break;
     case 0| onechar('h', 0, 8):
         switch(string[1]) {
         case 0| onechar('1', 0, 8):
-            return HE_h1;
+            return HtmlElement_h1;
             break;
         case 0| onechar('2', 0, 8):
-            return HE_h2;
+            return HtmlElement_h2;
             break;
         case 0| onechar('3', 0, 8):
-            return HE_h3;
+            return HtmlElement_h3;
             break;
         case 0| onechar('4', 0, 8):
-            return HE_h4;
+            return HtmlElement_h4;
             break;
         case 0| onechar('5', 0, 8):
-            return HE_h5;
+            return HtmlElement_h5;
             break;
         case 0| onechar('6', 0, 8):
-            return HE_h6;
+            return HtmlElement_h6;
             break;
         case 0| onechar('r', 0, 8):
-            return HE_hr;
+            return HtmlElement_hr;
         }
         break;
     case 0| onechar('l', 0, 8):
         switch(string[1]) {
         case 0| onechar('i', 0, 8):
-            return HE_li;
+            return HtmlElement_li;
         }
         break;
     case 0| onechar('o', 0, 8):
         switch(string[1]) {
         case 0| onechar('l', 0, 8):
-            return HE_ol;
+            return HtmlElement_ol;
         }
         break;
     case 0| onechar('r', 0, 8):
         switch(string[1]) {
         case 0| onechar('p', 0, 8):
-            return HE_rp;
+            return HtmlElement_rp;
             break;
         case 0| onechar('t', 0, 8):
-            return HE_rt;
+            return HtmlElement_rt;
         }
         break;
     case 0| onechar('t', 0, 8):
         switch(string[1]) {
         case 0| onechar('d', 0, 8):
-            return HE_td;
+            return HtmlElement_td;
             break;
         case 0| onechar('h', 0, 8):
-            return HE_th;
+            return HtmlElement_th;
             break;
         case 0| onechar('r', 0, 8):
-            return HE_tr;
+            return HtmlElement_tr;
         }
         break;
     case 0| onechar('u', 0, 8):
         switch(string[1]) {
         case 0| onechar('l', 0, 8):
-            return HE_ul;
+            return HtmlElement_ul;
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element3(const char *string)
 {
@@ -264,10 +264,10 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('d', 0, 8):
             switch(string[2]) {
             case 0| onechar('i', 0, 8):
-                return HE_bdi;
+                return HtmlElement_bdi;
                 break;
             case 0| onechar('o', 0, 8):
-                return HE_bdo;
+                return HtmlElement_bdo;
             }
         }
         break;
@@ -276,7 +276,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[2]) {
             case 0| onechar('l', 0, 8):
-                return HE_col;
+                return HtmlElement_col;
             }
         }
         break;
@@ -285,19 +285,19 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[2]) {
             case 0| onechar('l', 0, 8):
-                return HE_del;
+                return HtmlElement_del;
             }
             break;
         case 0| onechar('f', 0, 8):
             switch(string[2]) {
             case 0| onechar('n', 0, 8):
-                return HE_dfn;
+                return HtmlElement_dfn;
             }
             break;
         case 0| onechar('i', 0, 8):
             switch(string[2]) {
             case 0| onechar('v', 0, 8):
-                return HE_div;
+                return HtmlElement_div;
             }
         }
         break;
@@ -306,13 +306,13 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('m', 0, 8):
             switch(string[2]) {
             case 0| onechar('g', 0, 8):
-                return HE_img;
+                return HtmlElement_img;
             }
             break;
         case 0| onechar('n', 0, 8):
             switch(string[2]) {
             case 0| onechar('s', 0, 8):
-                return HE_ins;
+                return HtmlElement_ins;
             }
         }
         break;
@@ -321,7 +321,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('b', 0, 8):
             switch(string[2]) {
             case 0| onechar('d', 0, 8):
-                return HE_kbd;
+                return HtmlElement_kbd;
             }
         }
         break;
@@ -330,7 +330,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('a', 0, 8):
             switch(string[2]) {
             case 0| onechar('p', 0, 8):
-                return HE_map;
+                return HtmlElement_map;
             }
         }
         break;
@@ -339,7 +339,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('a', 0, 8):
             switch(string[2]) {
             case 0| onechar('v', 0, 8):
-                return HE_nav;
+                return HtmlElement_nav;
             }
         }
         break;
@@ -348,7 +348,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('r', 0, 8):
             switch(string[2]) {
             case 0| onechar('e', 0, 8):
-                return HE_pre;
+                return HtmlElement_pre;
             }
         }
         break;
@@ -357,16 +357,16 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('u', 0, 8):
             switch(string[2]) {
             case 0| onechar('b', 0, 8):
-                return HE_sub;
+                return HtmlElement_sub;
                 break;
             case 0| onechar('p', 0, 8):
-                return HE_sup;
+                return HtmlElement_sup;
             }
             break;
         case 0| onechar('v', 0, 8):
             switch(string[2]) {
             case 0| onechar('g', 0, 8):
-                return HE_svg;
+                return HtmlElement_svg;
             }
         }
         break;
@@ -375,7 +375,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('a', 0, 8):
             switch(string[2]) {
             case 0| onechar('r', 0, 8):
-                return HE_var;
+                return HtmlElement_var;
             }
         }
         break;
@@ -384,76 +384,76 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 0| onechar('b', 0, 8):
             switch(string[2]) {
             case 0| onechar('r', 0, 8):
-                return HE_wbr;
+                return HtmlElement_wbr;
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element4(const char *string)
 {
     switch(*((triehash_uu32*) &string[0])) {
     case 0| onechar('a', 0, 32)| onechar('b', 8, 32)| onechar('b', 16, 32)| onechar('r', 24, 32):
-        return HE_abbr;
+        return HtmlElement_abbr;
         break;
     case 0| onechar('a', 0, 32)| onechar('r', 8, 32)| onechar('e', 16, 32)| onechar('a', 24, 32):
-        return HE_area;
+        return HtmlElement_area;
         break;
     case 0| onechar('b', 0, 32)| onechar('a', 8, 32)| onechar('s', 16, 32)| onechar('e', 24, 32):
-        return HE_base;
+        return HtmlElement_base;
         break;
     case 0| onechar('b', 0, 32)| onechar('o', 8, 32)| onechar('d', 16, 32)| onechar('y', 24, 32):
-        return HE_body;
+        return HtmlElement_body;
         break;
     case 0| onechar('c', 0, 32)| onechar('i', 8, 32)| onechar('t', 16, 32)| onechar('e', 24, 32):
-        return HE_cite;
+        return HtmlElement_cite;
         break;
     case 0| onechar('c', 0, 32)| onechar('o', 8, 32)| onechar('d', 16, 32)| onechar('e', 24, 32):
-        return HE_code;
+        return HtmlElement_code;
         break;
     case 0| onechar('d', 0, 32)| onechar('a', 8, 32)| onechar('t', 16, 32)| onechar('a', 24, 32):
-        return HE_data;
+        return HtmlElement_data;
         break;
     case 0| onechar('f', 0, 32)| onechar('o', 8, 32)| onechar('r', 16, 32)| onechar('m', 24, 32):
-        return HE_form;
+        return HtmlElement_form;
         break;
     case 0| onechar('h', 0, 32)| onechar('e', 8, 32)| onechar('a', 16, 32)| onechar('d', 24, 32):
-        return HE_head;
+        return HtmlElement_head;
         break;
     case 0| onechar('h', 0, 32)| onechar('t', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return HE_html;
+        return HtmlElement_html;
         break;
     case 0| onechar('l', 0, 32)| onechar('i', 8, 32)| onechar('n', 16, 32)| onechar('k', 24, 32):
-        return HE_link;
+        return HtmlElement_link;
         break;
     case 0| onechar('m', 0, 32)| onechar('a', 8, 32)| onechar('i', 16, 32)| onechar('n', 24, 32):
-        return HE_main;
+        return HtmlElement_main;
         break;
     case 0| onechar('m', 0, 32)| onechar('a', 8, 32)| onechar('r', 16, 32)| onechar('k', 24, 32):
-        return HE_mark;
+        return HtmlElement_mark;
         break;
     case 0| onechar('m', 0, 32)| onechar('a', 8, 32)| onechar('t', 16, 32)| onechar('h', 24, 32):
-        return HE_math;
+        return HtmlElement_math;
         break;
     case 0| onechar('m', 0, 32)| onechar('e', 8, 32)| onechar('n', 16, 32)| onechar('u', 24, 32):
-        return HE_menu;
+        return HtmlElement_menu;
         break;
     case 0| onechar('m', 0, 32)| onechar('e', 8, 32)| onechar('t', 16, 32)| onechar('a', 24, 32):
-        return HE_meta;
+        return HtmlElement_meta;
         break;
     case 0| onechar('r', 0, 32)| onechar('u', 8, 32)| onechar('b', 16, 32)| onechar('y', 24, 32):
-        return HE_ruby;
+        return HtmlElement_ruby;
         break;
     case 0| onechar('s', 0, 32)| onechar('a', 8, 32)| onechar('m', 16, 32)| onechar('p', 24, 32):
-        return HE_samp;
+        return HtmlElement_samp;
         break;
     case 0| onechar('s', 0, 32)| onechar('p', 8, 32)| onechar('a', 16, 32)| onechar('n', 24, 32):
-        return HE_span;
+        return HtmlElement_span;
         break;
     case 0| onechar('t', 0, 32)| onechar('i', 8, 32)| onechar('m', 16, 32)| onechar('e', 24, 32):
-        return HE_time;
+        return HtmlElement_time;
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element5(const char *string)
 {
@@ -461,100 +461,100 @@ static enum HtmlElement lookup_html_element5(const char *string)
     case 0| onechar('a', 0, 32)| onechar('s', 8, 32)| onechar('i', 16, 32)| onechar('d', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return HE_aside;
+            return HtmlElement_aside;
         }
         break;
     case 0| onechar('a', 0, 32)| onechar('u', 8, 32)| onechar('d', 16, 32)| onechar('i', 24, 32):
         switch(string[4]) {
         case 0| onechar('o', 0, 8):
-            return HE_audio;
+            return HtmlElement_audio;
         }
         break;
     case 0| onechar('e', 0, 32)| onechar('m', 8, 32)| onechar('b', 16, 32)| onechar('e', 24, 32):
         switch(string[4]) {
         case 0| onechar('d', 0, 8):
-            return HE_embed;
+            return HtmlElement_embed;
         }
         break;
     case 0| onechar('i', 0, 32)| onechar('n', 8, 32)| onechar('p', 16, 32)| onechar('u', 24, 32):
         switch(string[4]) {
         case 0| onechar('t', 0, 8):
-            return HE_input;
+            return HtmlElement_input;
         }
         break;
     case 0| onechar('l', 0, 32)| onechar('a', 8, 32)| onechar('b', 16, 32)| onechar('e', 24, 32):
         switch(string[4]) {
         case 0| onechar('l', 0, 8):
-            return HE_label;
+            return HtmlElement_label;
         }
         break;
     case 0| onechar('m', 0, 32)| onechar('e', 8, 32)| onechar('t', 16, 32)| onechar('e', 24, 32):
         switch(string[4]) {
         case 0| onechar('r', 0, 8):
-            return HE_meter;
+            return HtmlElement_meter;
         }
         break;
     case 0| onechar('p', 0, 32)| onechar('a', 8, 32)| onechar('r', 16, 32)| onechar('a', 24, 32):
         switch(string[4]) {
         case 0| onechar('m', 0, 8):
-            return HE_param;
+            return HtmlElement_param;
         }
         break;
     case 0| onechar('s', 0, 32)| onechar('m', 8, 32)| onechar('a', 16, 32)| onechar('l', 24, 32):
         switch(string[4]) {
         case 0| onechar('l', 0, 8):
-            return HE_small;
+            return HtmlElement_small;
         }
         break;
     case 0| onechar('s', 0, 32)| onechar('t', 8, 32)| onechar('y', 16, 32)| onechar('l', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return HE_style;
+            return HtmlElement_style;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('a', 8, 32)| onechar('b', 16, 32)| onechar('l', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return HE_table;
+            return HtmlElement_table;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('b', 8, 32)| onechar('o', 16, 32)| onechar('d', 24, 32):
         switch(string[4]) {
         case 0| onechar('y', 0, 8):
-            return HE_tbody;
+            return HtmlElement_tbody;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('f', 8, 32)| onechar('o', 16, 32)| onechar('o', 24, 32):
         switch(string[4]) {
         case 0| onechar('t', 0, 8):
-            return HE_tfoot;
+            return HtmlElement_tfoot;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('h', 8, 32)| onechar('e', 16, 32)| onechar('a', 24, 32):
         switch(string[4]) {
         case 0| onechar('d', 0, 8):
-            return HE_thead;
+            return HtmlElement_thead;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('i', 8, 32)| onechar('t', 16, 32)| onechar('l', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return HE_title;
+            return HtmlElement_title;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('r', 8, 32)| onechar('a', 16, 32)| onechar('c', 24, 32):
         switch(string[4]) {
         case 0| onechar('k', 0, 8):
-            return HE_track;
+            return HtmlElement_track;
         }
         break;
     case 0| onechar('v', 0, 32)| onechar('i', 8, 32)| onechar('d', 16, 32)| onechar('e', 24, 32):
         switch(string[4]) {
         case 0| onechar('o', 0, 8):
-            return HE_video;
+            return HtmlElement_video;
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element6(const char *string)
 {
@@ -564,7 +564,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[5]) {
             case 0| onechar('n', 0, 8):
-                return HE_button;
+                return HtmlElement_button;
             }
         }
         break;
@@ -573,7 +573,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('a', 0, 8):
             switch(string[5]) {
             case 0| onechar('s', 0, 8):
-                return HE_canvas;
+                return HtmlElement_canvas;
             }
         }
         break;
@@ -582,7 +582,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[5]) {
             case 0| onechar('g', 0, 8):
-                return HE_dialog;
+                return HtmlElement_dialog;
             }
         }
         break;
@@ -591,7 +591,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('r', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return HE_figure;
+                return HtmlElement_figure;
             }
         }
         break;
@@ -600,7 +600,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[5]) {
             case 0| onechar('r', 0, 8):
-                return HE_footer;
+                return HtmlElement_footer;
             }
         }
         break;
@@ -609,7 +609,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[5]) {
             case 0| onechar('r', 0, 8):
-                return HE_header;
+                return HtmlElement_header;
             }
         }
         break;
@@ -618,7 +618,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('u', 0, 8):
             switch(string[5]) {
             case 0| onechar('p', 0, 8):
-                return HE_hgroup;
+                return HtmlElement_hgroup;
             }
         }
         break;
@@ -627,7 +627,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('m', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return HE_iframe;
+                return HtmlElement_iframe;
             }
         }
         break;
@@ -636,7 +636,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[5]) {
             case 0| onechar('n', 0, 8):
-                return HE_keygen;
+                return HtmlElement_keygen;
             }
         }
         break;
@@ -645,7 +645,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('n', 0, 8):
             switch(string[5]) {
             case 0| onechar('d', 0, 8):
-                return HE_legend;
+                return HtmlElement_legend;
             }
         }
         break;
@@ -654,7 +654,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('c', 0, 8):
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
-                return HE_object;
+                return HtmlElement_object;
             }
         }
         break;
@@ -663,7 +663,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[5]) {
             case 0| onechar('n', 0, 8):
-                return HE_option;
+                return HtmlElement_option;
             }
         }
         break;
@@ -672,7 +672,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('u', 0, 8):
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
-                return HE_output;
+                return HtmlElement_output;
             }
         }
         break;
@@ -681,7 +681,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('p', 0, 8):
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
-                return HE_script;
+                return HtmlElement_script;
             }
         }
         break;
@@ -690,7 +690,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('c', 0, 8):
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
-                return HE_select;
+                return HtmlElement_select;
             }
         }
         break;
@@ -699,7 +699,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('c', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return HE_source;
+                return HtmlElement_source;
             }
         }
         break;
@@ -708,11 +708,11 @@ static enum HtmlElement lookup_html_element6(const char *string)
         case 0| onechar('n', 0, 8):
             switch(string[5]) {
             case 0| onechar('g', 0, 8):
-                return HE_strong;
+                return HtmlElement_strong;
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element7(const char *string)
 {
@@ -724,7 +724,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
             case 0| onechar('s', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('s', 0, 8):
-                    return HE_address;
+                    return HtmlElement_address;
                 }
             }
         }
@@ -736,7 +736,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
             case 0| onechar('l', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('e', 0, 8):
-                    return HE_article;
+                    return HtmlElement_article;
                 }
             }
         }
@@ -748,7 +748,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
             case 0| onechar('o', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('n', 0, 8):
-                    return HE_caption;
+                    return HtmlElement_caption;
                 }
             }
         }
@@ -760,7 +760,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
             case 0| onechar('l', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('s', 0, 8):
-                    return HE_details;
+                    return HtmlElement_details;
                 }
             }
         }
@@ -772,7 +772,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
             case 0| onechar('r', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('e', 0, 8):
-                    return HE_picture;
+                    return HtmlElement_picture;
                 }
             }
         }
@@ -784,7 +784,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
             case 0| onechar('o', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('n', 0, 8):
-                    return HE_section;
+                    return HtmlElement_section;
                 }
             }
         }
@@ -796,44 +796,44 @@ static enum HtmlElement lookup_html_element7(const char *string)
             case 0| onechar('r', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('y', 0, 8):
-                    return HE_summary;
+                    return HtmlElement_summary;
                 }
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element8(const char *string)
 {
     switch(*((triehash_uu64*) &string[0])) {
     case 0| onechar('c', 0, 64)| onechar('o', 8, 64)| onechar('l', 16, 64)| onechar('g', 24, 64)| onechar('r', 32, 64)| onechar('o', 40, 64)| onechar('u', 48, 64)| onechar('p', 56, 64):
-        return HE_colgroup;
+        return HtmlElement_colgroup;
         break;
     case 0| onechar('d', 0, 64)| onechar('a', 8, 64)| onechar('t', 16, 64)| onechar('a', 24, 64)| onechar('l', 32, 64)| onechar('i', 40, 64)| onechar('s', 48, 64)| onechar('t', 56, 64):
-        return HE_datalist;
+        return HtmlElement_datalist;
         break;
     case 0| onechar('f', 0, 64)| onechar('i', 8, 64)| onechar('e', 16, 64)| onechar('l', 24, 64)| onechar('d', 32, 64)| onechar('s', 40, 64)| onechar('e', 48, 64)| onechar('t', 56, 64):
-        return HE_fieldset;
+        return HtmlElement_fieldset;
         break;
     case 0| onechar('m', 0, 64)| onechar('e', 8, 64)| onechar('n', 16, 64)| onechar('u', 24, 64)| onechar('i', 32, 64)| onechar('t', 40, 64)| onechar('e', 48, 64)| onechar('m', 56, 64):
-        return HE_menuitem;
+        return HtmlElement_menuitem;
         break;
     case 0| onechar('n', 0, 64)| onechar('o', 8, 64)| onechar('s', 16, 64)| onechar('c', 24, 64)| onechar('r', 32, 64)| onechar('i', 40, 64)| onechar('p', 48, 64)| onechar('t', 56, 64):
-        return HE_noscript;
+        return HtmlElement_noscript;
         break;
     case 0| onechar('o', 0, 64)| onechar('p', 8, 64)| onechar('t', 16, 64)| onechar('g', 24, 64)| onechar('r', 32, 64)| onechar('o', 40, 64)| onechar('u', 48, 64)| onechar('p', 56, 64):
-        return HE_optgroup;
+        return HtmlElement_optgroup;
         break;
     case 0| onechar('p', 0, 64)| onechar('r', 8, 64)| onechar('o', 16, 64)| onechar('g', 24, 64)| onechar('r', 32, 64)| onechar('e', 40, 64)| onechar('s', 48, 64)| onechar('s', 56, 64):
-        return HE_progress;
+        return HtmlElement_progress;
         break;
     case 0| onechar('t', 0, 64)| onechar('e', 8, 64)| onechar('m', 16, 64)| onechar('p', 24, 64)| onechar('l', 32, 64)| onechar('a', 40, 64)| onechar('t', 48, 64)| onechar('e', 56, 64):
-        return HE_template;
+        return HtmlElement_template;
         break;
     case 0| onechar('t', 0, 64)| onechar('e', 8, 64)| onechar('x', 16, 64)| onechar('t', 24, 64)| onechar('a', 32, 64)| onechar('r', 40, 64)| onechar('e', 48, 64)| onechar('a', 56, 64):
-        return HE_textarea;
+        return HtmlElement_textarea;
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element10(const char *string)
 {
@@ -843,7 +843,7 @@ static enum HtmlElement lookup_html_element10(const char *string)
         case 0| onechar('t', 0, 8):
             switch(string[9]) {
             case 0| onechar('e', 0, 8):
-                return HE_blockquote;
+                return HtmlElement_blockquote;
             }
         }
         break;
@@ -852,38 +852,38 @@ static enum HtmlElement lookup_html_element10(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[9]) {
             case 0| onechar('n', 0, 8):
-                return HE_figcaption;
+                return HtmlElement_figcaption;
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 #else
 static enum HtmlElement lookup_html_element1(const char *string)
 {
     switch(string[0]) {
     case 'a':
-        return HE_a;
+        return HtmlElement_a;
         break;
     case 'b':
-        return HE_b;
+        return HtmlElement_b;
         break;
     case 'i':
-        return HE_i;
+        return HtmlElement_i;
         break;
     case 'p':
-        return HE_p;
+        return HtmlElement_p;
         break;
     case 'q':
-        return HE_q;
+        return HtmlElement_q;
         break;
     case 's':
-        return HE_s;
+        return HtmlElement_s;
         break;
     case 'u':
-        return HE_u;
+        return HtmlElement_u;
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element2(const char *string)
 {
@@ -891,91 +891,91 @@ static enum HtmlElement lookup_html_element2(const char *string)
     case 'b':
         switch(string[1]) {
         case 'r':
-            return HE_br;
+            return HtmlElement_br;
         }
         break;
     case 'd':
         switch(string[1]) {
         case 'd':
-            return HE_dd;
+            return HtmlElement_dd;
             break;
         case 'l':
-            return HE_dl;
+            return HtmlElement_dl;
             break;
         case 't':
-            return HE_dt;
+            return HtmlElement_dt;
         }
         break;
     case 'e':
         switch(string[1]) {
         case 'm':
-            return HE_em;
+            return HtmlElement_em;
         }
         break;
     case 'h':
         switch(string[1]) {
         case '1':
-            return HE_h1;
+            return HtmlElement_h1;
             break;
         case '2':
-            return HE_h2;
+            return HtmlElement_h2;
             break;
         case '3':
-            return HE_h3;
+            return HtmlElement_h3;
             break;
         case '4':
-            return HE_h4;
+            return HtmlElement_h4;
             break;
         case '5':
-            return HE_h5;
+            return HtmlElement_h5;
             break;
         case '6':
-            return HE_h6;
+            return HtmlElement_h6;
             break;
         case 'r':
-            return HE_hr;
+            return HtmlElement_hr;
         }
         break;
     case 'l':
         switch(string[1]) {
         case 'i':
-            return HE_li;
+            return HtmlElement_li;
         }
         break;
     case 'o':
         switch(string[1]) {
         case 'l':
-            return HE_ol;
+            return HtmlElement_ol;
         }
         break;
     case 'r':
         switch(string[1]) {
         case 'p':
-            return HE_rp;
+            return HtmlElement_rp;
             break;
         case 't':
-            return HE_rt;
+            return HtmlElement_rt;
         }
         break;
     case 't':
         switch(string[1]) {
         case 'd':
-            return HE_td;
+            return HtmlElement_td;
             break;
         case 'h':
-            return HE_th;
+            return HtmlElement_th;
             break;
         case 'r':
-            return HE_tr;
+            return HtmlElement_tr;
         }
         break;
     case 'u':
         switch(string[1]) {
         case 'l':
-            return HE_ul;
+            return HtmlElement_ul;
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element3(const char *string)
 {
@@ -985,10 +985,10 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'd':
             switch(string[2]) {
             case 'i':
-                return HE_bdi;
+                return HtmlElement_bdi;
                 break;
             case 'o':
-                return HE_bdo;
+                return HtmlElement_bdo;
             }
         }
         break;
@@ -997,7 +997,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'o':
             switch(string[2]) {
             case 'l':
-                return HE_col;
+                return HtmlElement_col;
             }
         }
         break;
@@ -1006,19 +1006,19 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'e':
             switch(string[2]) {
             case 'l':
-                return HE_del;
+                return HtmlElement_del;
             }
             break;
         case 'f':
             switch(string[2]) {
             case 'n':
-                return HE_dfn;
+                return HtmlElement_dfn;
             }
             break;
         case 'i':
             switch(string[2]) {
             case 'v':
-                return HE_div;
+                return HtmlElement_div;
             }
         }
         break;
@@ -1027,13 +1027,13 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'm':
             switch(string[2]) {
             case 'g':
-                return HE_img;
+                return HtmlElement_img;
             }
             break;
         case 'n':
             switch(string[2]) {
             case 's':
-                return HE_ins;
+                return HtmlElement_ins;
             }
         }
         break;
@@ -1042,7 +1042,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'b':
             switch(string[2]) {
             case 'd':
-                return HE_kbd;
+                return HtmlElement_kbd;
             }
         }
         break;
@@ -1051,7 +1051,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'a':
             switch(string[2]) {
             case 'p':
-                return HE_map;
+                return HtmlElement_map;
             }
         }
         break;
@@ -1060,7 +1060,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'a':
             switch(string[2]) {
             case 'v':
-                return HE_nav;
+                return HtmlElement_nav;
             }
         }
         break;
@@ -1069,7 +1069,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'r':
             switch(string[2]) {
             case 'e':
-                return HE_pre;
+                return HtmlElement_pre;
             }
         }
         break;
@@ -1078,16 +1078,16 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'u':
             switch(string[2]) {
             case 'b':
-                return HE_sub;
+                return HtmlElement_sub;
                 break;
             case 'p':
-                return HE_sup;
+                return HtmlElement_sup;
             }
             break;
         case 'v':
             switch(string[2]) {
             case 'g':
-                return HE_svg;
+                return HtmlElement_svg;
             }
         }
         break;
@@ -1096,7 +1096,7 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'a':
             switch(string[2]) {
             case 'r':
-                return HE_var;
+                return HtmlElement_var;
             }
         }
         break;
@@ -1105,11 +1105,11 @@ static enum HtmlElement lookup_html_element3(const char *string)
         case 'b':
             switch(string[2]) {
             case 'r':
-                return HE_wbr;
+                return HtmlElement_wbr;
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element4(const char *string)
 {
@@ -1121,7 +1121,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'b':
                 switch(string[3]) {
                 case 'r':
-                    return HE_abbr;
+                    return HtmlElement_abbr;
                 }
             }
             break;
@@ -1130,7 +1130,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'e':
                 switch(string[3]) {
                 case 'a':
-                    return HE_area;
+                    return HtmlElement_area;
                 }
             }
         }
@@ -1142,7 +1142,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 's':
                 switch(string[3]) {
                 case 'e':
-                    return HE_base;
+                    return HtmlElement_base;
                 }
             }
             break;
@@ -1151,7 +1151,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'd':
                 switch(string[3]) {
                 case 'y':
-                    return HE_body;
+                    return HtmlElement_body;
                 }
             }
         }
@@ -1163,7 +1163,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 't':
                 switch(string[3]) {
                 case 'e':
-                    return HE_cite;
+                    return HtmlElement_cite;
                 }
             }
             break;
@@ -1172,7 +1172,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'd':
                 switch(string[3]) {
                 case 'e':
-                    return HE_code;
+                    return HtmlElement_code;
                 }
             }
         }
@@ -1184,7 +1184,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 't':
                 switch(string[3]) {
                 case 'a':
-                    return HE_data;
+                    return HtmlElement_data;
                 }
             }
         }
@@ -1196,7 +1196,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'r':
                 switch(string[3]) {
                 case 'm':
-                    return HE_form;
+                    return HtmlElement_form;
                 }
             }
         }
@@ -1208,7 +1208,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'a':
                 switch(string[3]) {
                 case 'd':
-                    return HE_head;
+                    return HtmlElement_head;
                 }
             }
             break;
@@ -1217,7 +1217,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return HE_html;
+                    return HtmlElement_html;
                 }
             }
         }
@@ -1229,7 +1229,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'n':
                 switch(string[3]) {
                 case 'k':
-                    return HE_link;
+                    return HtmlElement_link;
                 }
             }
         }
@@ -1241,19 +1241,19 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'i':
                 switch(string[3]) {
                 case 'n':
-                    return HE_main;
+                    return HtmlElement_main;
                 }
                 break;
             case 'r':
                 switch(string[3]) {
                 case 'k':
-                    return HE_mark;
+                    return HtmlElement_mark;
                 }
                 break;
             case 't':
                 switch(string[3]) {
                 case 'h':
-                    return HE_math;
+                    return HtmlElement_math;
                 }
             }
             break;
@@ -1262,13 +1262,13 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'n':
                 switch(string[3]) {
                 case 'u':
-                    return HE_menu;
+                    return HtmlElement_menu;
                 }
                 break;
             case 't':
                 switch(string[3]) {
                 case 'a':
-                    return HE_meta;
+                    return HtmlElement_meta;
                 }
             }
         }
@@ -1280,7 +1280,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'b':
                 switch(string[3]) {
                 case 'y':
-                    return HE_ruby;
+                    return HtmlElement_ruby;
                 }
             }
         }
@@ -1292,7 +1292,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'm':
                 switch(string[3]) {
                 case 'p':
-                    return HE_samp;
+                    return HtmlElement_samp;
                 }
             }
             break;
@@ -1301,7 +1301,7 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'a':
                 switch(string[3]) {
                 case 'n':
-                    return HE_span;
+                    return HtmlElement_span;
                 }
             }
         }
@@ -1313,12 +1313,12 @@ static enum HtmlElement lookup_html_element4(const char *string)
             case 'm':
                 switch(string[3]) {
                 case 'e':
-                    return HE_time;
+                    return HtmlElement_time;
                 }
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element5(const char *string)
 {
@@ -1332,7 +1332,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'd':
                     switch(string[4]) {
                     case 'e':
-                        return HE_aside;
+                        return HtmlElement_aside;
                     }
                 }
             }
@@ -1344,7 +1344,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'i':
                     switch(string[4]) {
                     case 'o':
-                        return HE_audio;
+                        return HtmlElement_audio;
                     }
                 }
             }
@@ -1359,7 +1359,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'e':
                     switch(string[4]) {
                     case 'd':
-                        return HE_embed;
+                        return HtmlElement_embed;
                     }
                 }
             }
@@ -1374,7 +1374,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'u':
                     switch(string[4]) {
                     case 't':
-                        return HE_input;
+                        return HtmlElement_input;
                     }
                 }
             }
@@ -1389,7 +1389,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'e':
                     switch(string[4]) {
                     case 'l':
-                        return HE_label;
+                        return HtmlElement_label;
                     }
                 }
             }
@@ -1404,7 +1404,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'e':
                     switch(string[4]) {
                     case 'r':
-                        return HE_meter;
+                        return HtmlElement_meter;
                     }
                 }
             }
@@ -1419,7 +1419,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'a':
                     switch(string[4]) {
                     case 'm':
-                        return HE_param;
+                        return HtmlElement_param;
                     }
                 }
             }
@@ -1434,7 +1434,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'l':
                     switch(string[4]) {
                     case 'l':
-                        return HE_small;
+                        return HtmlElement_small;
                     }
                 }
             }
@@ -1446,7 +1446,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'l':
                     switch(string[4]) {
                     case 'e':
-                        return HE_style;
+                        return HtmlElement_style;
                     }
                 }
             }
@@ -1461,7 +1461,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'l':
                     switch(string[4]) {
                     case 'e':
-                        return HE_table;
+                        return HtmlElement_table;
                     }
                 }
             }
@@ -1473,7 +1473,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'd':
                     switch(string[4]) {
                     case 'y':
-                        return HE_tbody;
+                        return HtmlElement_tbody;
                     }
                 }
             }
@@ -1485,7 +1485,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'o':
                     switch(string[4]) {
                     case 't':
-                        return HE_tfoot;
+                        return HtmlElement_tfoot;
                     }
                 }
             }
@@ -1497,7 +1497,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'a':
                     switch(string[4]) {
                     case 'd':
-                        return HE_thead;
+                        return HtmlElement_thead;
                     }
                 }
             }
@@ -1509,7 +1509,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'l':
                     switch(string[4]) {
                     case 'e':
-                        return HE_title;
+                        return HtmlElement_title;
                     }
                 }
             }
@@ -1521,7 +1521,7 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'c':
                     switch(string[4]) {
                     case 'k':
-                        return HE_track;
+                        return HtmlElement_track;
                     }
                 }
             }
@@ -1536,13 +1536,13 @@ static enum HtmlElement lookup_html_element5(const char *string)
                 case 'e':
                     switch(string[4]) {
                     case 'o':
-                        return HE_video;
+                        return HtmlElement_video;
                     }
                 }
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element6(const char *string)
 {
@@ -1558,7 +1558,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'o':
                         switch(string[5]) {
                         case 'n':
-                            return HE_button;
+                            return HtmlElement_button;
                         }
                     }
                 }
@@ -1576,7 +1576,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'a':
                         switch(string[5]) {
                         case 's':
-                            return HE_canvas;
+                            return HtmlElement_canvas;
                         }
                     }
                 }
@@ -1594,7 +1594,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'o':
                         switch(string[5]) {
                         case 'g':
-                            return HE_dialog;
+                            return HtmlElement_dialog;
                         }
                     }
                 }
@@ -1612,7 +1612,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'r':
                         switch(string[5]) {
                         case 'e':
-                            return HE_figure;
+                            return HtmlElement_figure;
                         }
                     }
                 }
@@ -1627,7 +1627,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'e':
                         switch(string[5]) {
                         case 'r':
-                            return HE_footer;
+                            return HtmlElement_footer;
                         }
                     }
                 }
@@ -1645,7 +1645,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'e':
                         switch(string[5]) {
                         case 'r':
-                            return HE_header;
+                            return HtmlElement_header;
                         }
                     }
                 }
@@ -1660,7 +1660,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'u':
                         switch(string[5]) {
                         case 'p':
-                            return HE_hgroup;
+                            return HtmlElement_hgroup;
                         }
                     }
                 }
@@ -1678,7 +1678,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'm':
                         switch(string[5]) {
                         case 'e':
-                            return HE_iframe;
+                            return HtmlElement_iframe;
                         }
                     }
                 }
@@ -1696,7 +1696,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'e':
                         switch(string[5]) {
                         case 'n':
-                            return HE_keygen;
+                            return HtmlElement_keygen;
                         }
                     }
                 }
@@ -1714,7 +1714,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'n':
                         switch(string[5]) {
                         case 'd':
-                            return HE_legend;
+                            return HtmlElement_legend;
                         }
                     }
                 }
@@ -1732,7 +1732,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'c':
                         switch(string[5]) {
                         case 't':
-                            return HE_object;
+                            return HtmlElement_object;
                         }
                     }
                 }
@@ -1747,7 +1747,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'o':
                         switch(string[5]) {
                         case 'n':
-                            return HE_option;
+                            return HtmlElement_option;
                         }
                     }
                 }
@@ -1762,7 +1762,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'u':
                         switch(string[5]) {
                         case 't':
-                            return HE_output;
+                            return HtmlElement_output;
                         }
                     }
                 }
@@ -1780,7 +1780,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'p':
                         switch(string[5]) {
                         case 't':
-                            return HE_script;
+                            return HtmlElement_script;
                         }
                     }
                 }
@@ -1795,7 +1795,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'c':
                         switch(string[5]) {
                         case 't':
-                            return HE_select;
+                            return HtmlElement_select;
                         }
                     }
                 }
@@ -1810,7 +1810,7 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'c':
                         switch(string[5]) {
                         case 'e':
-                            return HE_source;
+                            return HtmlElement_source;
                         }
                     }
                 }
@@ -1825,14 +1825,14 @@ static enum HtmlElement lookup_html_element6(const char *string)
                     case 'n':
                         switch(string[5]) {
                         case 'g':
-                            return HE_strong;
+                            return HtmlElement_strong;
                         }
                     }
                 }
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element7(const char *string)
 {
@@ -1850,7 +1850,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
                         case 's':
                             switch(string[6]) {
                             case 's':
-                                return HE_address;
+                                return HtmlElement_address;
                             }
                         }
                     }
@@ -1868,7 +1868,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
                         case 'l':
                             switch(string[6]) {
                             case 'e':
-                                return HE_article;
+                                return HtmlElement_article;
                             }
                         }
                     }
@@ -1889,7 +1889,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
                         case 'o':
                             switch(string[6]) {
                             case 'n':
-                                return HE_caption;
+                                return HtmlElement_caption;
                             }
                         }
                     }
@@ -1910,7 +1910,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
                         case 'l':
                             switch(string[6]) {
                             case 's':
-                                return HE_details;
+                                return HtmlElement_details;
                             }
                         }
                     }
@@ -1931,7 +1931,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
                         case 'r':
                             switch(string[6]) {
                             case 'e':
-                                return HE_picture;
+                                return HtmlElement_picture;
                             }
                         }
                     }
@@ -1952,7 +1952,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
                         case 'o':
                             switch(string[6]) {
                             case 'n':
-                                return HE_section;
+                                return HtmlElement_section;
                             }
                         }
                     }
@@ -1970,7 +1970,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
                         case 'r':
                             switch(string[6]) {
                             case 'y':
-                                return HE_summary;
+                                return HtmlElement_summary;
                             }
                         }
                     }
@@ -1978,7 +1978,7 @@ static enum HtmlElement lookup_html_element7(const char *string)
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element8(const char *string)
 {
@@ -1998,7 +1998,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 'u':
                                 switch(string[7]) {
                                 case 'p':
-                                    return HE_colgroup;
+                                    return HtmlElement_colgroup;
                                 }
                             }
                         }
@@ -2022,7 +2022,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 's':
                                 switch(string[7]) {
                                 case 't':
-                                    return HE_datalist;
+                                    return HtmlElement_datalist;
                                 }
                             }
                         }
@@ -2046,7 +2046,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 'e':
                                 switch(string[7]) {
                                 case 't':
-                                    return HE_fieldset;
+                                    return HtmlElement_fieldset;
                                 }
                             }
                         }
@@ -2070,7 +2070,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 'e':
                                 switch(string[7]) {
                                 case 'm':
-                                    return HE_menuitem;
+                                    return HtmlElement_menuitem;
                                 }
                             }
                         }
@@ -2094,7 +2094,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 'p':
                                 switch(string[7]) {
                                 case 't':
-                                    return HE_noscript;
+                                    return HtmlElement_noscript;
                                 }
                             }
                         }
@@ -2118,7 +2118,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 'u':
                                 switch(string[7]) {
                                 case 'p':
-                                    return HE_optgroup;
+                                    return HtmlElement_optgroup;
                                 }
                             }
                         }
@@ -2142,7 +2142,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 's':
                                 switch(string[7]) {
                                 case 's':
-                                    return HE_progress;
+                                    return HtmlElement_progress;
                                 }
                             }
                         }
@@ -2166,7 +2166,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 't':
                                 switch(string[7]) {
                                 case 'e':
-                                    return HE_template;
+                                    return HtmlElement_template;
                                 }
                             }
                         }
@@ -2184,7 +2184,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
                             case 'e':
                                 switch(string[7]) {
                                 case 'a':
-                                    return HE_textarea;
+                                    return HtmlElement_textarea;
                                 }
                             }
                         }
@@ -2193,7 +2193,7 @@ static enum HtmlElement lookup_html_element8(const char *string)
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 static enum HtmlElement lookup_html_element10(const char *string)
 {
@@ -2217,7 +2217,7 @@ static enum HtmlElement lookup_html_element10(const char *string)
                                     case 't':
                                         switch(string[9]) {
                                         case 'e':
-                                            return HE_blockquote;
+                                            return HtmlElement_blockquote;
                                         }
                                     }
                                 }
@@ -2247,7 +2247,7 @@ static enum HtmlElement lookup_html_element10(const char *string)
                                     case 'o':
                                         switch(string[9]) {
                                         case 'n':
-                                            return HE_figcaption;
+                                            return HtmlElement_figcaption;
                                         }
                                     }
                                 }
@@ -2258,7 +2258,7 @@ static enum HtmlElement lookup_html_element10(const char *string)
             }
         }
     }
-    return HE_Unknown;
+    return HtmlElement_Unknown;
 }
 #endif /* TRIE_HASH_MULTI_BYTE */
 static enum HtmlElement lookup_html_element(const char *string, size_t length)
@@ -2283,7 +2283,7 @@ static enum HtmlElement lookup_html_element(const char *string, size_t length)
     case 10:
         return lookup_html_element10(string);
     default:
-        return HE_Unknown;
+        return HtmlElement_Unknown;
     }
 }
 #endif                       /* TRIE_HASH_lookup_html_element */

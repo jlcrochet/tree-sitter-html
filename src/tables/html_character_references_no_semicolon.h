@@ -3,113 +3,113 @@
 #include <stddef.h>
 #include <stdint.h>
 enum CharacterReferenceNoSemicolon {
-    CRNS_AMP = 2,
-    CRNS_AElig = 1,
-    CRNS_Aacute = 3,
-    CRNS_Acirc = 4,
-    CRNS_Agrave = 5,
-    CRNS_Aring = 6,
-    CRNS_Atilde = 7,
-    CRNS_Auml = 8,
-    CRNS_COPY = 9,
-    CRNS_Ccedil = 10,
-    CRNS_ETH = 11,
-    CRNS_Eacute = 12,
-    CRNS_Ecirc = 13,
-    CRNS_Egrave = 14,
-    CRNS_Euml = 15,
-    CRNS_GT = 16,
-    CRNS_Iacute = 17,
-    CRNS_Icirc = 18,
-    CRNS_Igrave = 19,
-    CRNS_Iuml = 20,
-    CRNS_LT = 21,
-    CRNS_Ntilde = 22,
-    CRNS_Oacute = 23,
-    CRNS_Ocirc = 24,
-    CRNS_Ograve = 25,
-    CRNS_Oslash = 26,
-    CRNS_Otilde = 27,
-    CRNS_Ouml = 28,
-    CRNS_QUOT = 29,
-    CRNS_REG = 30,
-    CRNS_THORN = 31,
-    CRNS_Uacute = 32,
-    CRNS_Ucirc = 33,
-    CRNS_Ugrave = 34,
-    CRNS_Uuml = 35,
-    CRNS_Yacute = 36,
-    CRNS_amp = 42,
-    CRNS_aacute = 37,
-    CRNS_acirc = 38,
-    CRNS_acute = 39,
-    CRNS_aelig = 40,
-    CRNS_agrave = 41,
-    CRNS_aring = 43,
-    CRNS_atilde = 44,
-    CRNS_auml = 45,
-    CRNS_brvbar = 46,
-    CRNS_ccedil = 47,
-    CRNS_cedil = 48,
-    CRNS_cent = 49,
-    CRNS_copy = 50,
-    CRNS_curren = 51,
-    CRNS_deg = 52,
-    CRNS_divide = 53,
-    CRNS_eth = 57,
-    CRNS_eacute = 54,
-    CRNS_ecirc = 55,
-    CRNS_egrave = 56,
-    CRNS_euml = 58,
-    CRNS_frac12 = 59,
-    CRNS_frac14 = 60,
-    CRNS_frac34 = 61,
-    CRNS_gt = 62,
-    CRNS_iacute = 63,
-    CRNS_icirc = 64,
-    CRNS_iexcl = 65,
-    CRNS_igrave = 66,
-    CRNS_iquest = 67,
-    CRNS_iuml = 68,
-    CRNS_lt = 70,
-    CRNS_laquo = 69,
-    CRNS_macr = 71,
-    CRNS_micro = 72,
-    CRNS_middot = 73,
-    CRNS_not = 75,
-    CRNS_nbsp = 74,
-    CRNS_ntilde = 76,
-    CRNS_oacute = 77,
-    CRNS_ocirc = 78,
-    CRNS_ograve = 79,
-    CRNS_ordf = 80,
-    CRNS_ordm = 81,
-    CRNS_oslash = 82,
-    CRNS_otilde = 83,
-    CRNS_ouml = 84,
-    CRNS_para = 85,
-    CRNS_plusmn = 86,
-    CRNS_pound = 87,
-    CRNS_quot = 88,
-    CRNS_reg = 90,
-    CRNS_raquo = 89,
-    CRNS_shy = 92,
-    CRNS_sect = 91,
-    CRNS_sup1 = 93,
-    CRNS_sup2 = 94,
-    CRNS_sup3 = 95,
-    CRNS_szlig = 96,
-    CRNS_thorn = 97,
-    CRNS_times = 98,
-    CRNS_uml = 102,
-    CRNS_uacute = 99,
-    CRNS_ucirc = 100,
-    CRNS_ugrave = 101,
-    CRNS_uuml = 103,
-    CRNS_yen = 105,
-    CRNS_yacute = 104,
-    CRNS_yuml = 106,
-    CRNS_Unknown = 0,
+    CharacterReferenceNoSemicolon_AMP = 2,
+    CharacterReferenceNoSemicolon_AElig = 1,
+    CharacterReferenceNoSemicolon_Aacute = 3,
+    CharacterReferenceNoSemicolon_Acirc = 4,
+    CharacterReferenceNoSemicolon_Agrave = 5,
+    CharacterReferenceNoSemicolon_Aring = 6,
+    CharacterReferenceNoSemicolon_Atilde = 7,
+    CharacterReferenceNoSemicolon_Auml = 8,
+    CharacterReferenceNoSemicolon_COPY = 9,
+    CharacterReferenceNoSemicolon_Ccedil = 10,
+    CharacterReferenceNoSemicolon_ETH = 11,
+    CharacterReferenceNoSemicolon_Eacute = 12,
+    CharacterReferenceNoSemicolon_Ecirc = 13,
+    CharacterReferenceNoSemicolon_Egrave = 14,
+    CharacterReferenceNoSemicolon_Euml = 15,
+    CharacterReferenceNoSemicolon_GT = 16,
+    CharacterReferenceNoSemicolon_Iacute = 17,
+    CharacterReferenceNoSemicolon_Icirc = 18,
+    CharacterReferenceNoSemicolon_Igrave = 19,
+    CharacterReferenceNoSemicolon_Iuml = 20,
+    CharacterReferenceNoSemicolon_LT = 21,
+    CharacterReferenceNoSemicolon_Ntilde = 22,
+    CharacterReferenceNoSemicolon_Oacute = 23,
+    CharacterReferenceNoSemicolon_Ocirc = 24,
+    CharacterReferenceNoSemicolon_Ograve = 25,
+    CharacterReferenceNoSemicolon_Oslash = 26,
+    CharacterReferenceNoSemicolon_Otilde = 27,
+    CharacterReferenceNoSemicolon_Ouml = 28,
+    CharacterReferenceNoSemicolon_QUOT = 29,
+    CharacterReferenceNoSemicolon_REG = 30,
+    CharacterReferenceNoSemicolon_THORN = 31,
+    CharacterReferenceNoSemicolon_Uacute = 32,
+    CharacterReferenceNoSemicolon_Ucirc = 33,
+    CharacterReferenceNoSemicolon_Ugrave = 34,
+    CharacterReferenceNoSemicolon_Uuml = 35,
+    CharacterReferenceNoSemicolon_Yacute = 36,
+    CharacterReferenceNoSemicolon_amp = 42,
+    CharacterReferenceNoSemicolon_aacute = 37,
+    CharacterReferenceNoSemicolon_acirc = 38,
+    CharacterReferenceNoSemicolon_acute = 39,
+    CharacterReferenceNoSemicolon_aelig = 40,
+    CharacterReferenceNoSemicolon_agrave = 41,
+    CharacterReferenceNoSemicolon_aring = 43,
+    CharacterReferenceNoSemicolon_atilde = 44,
+    CharacterReferenceNoSemicolon_auml = 45,
+    CharacterReferenceNoSemicolon_brvbar = 46,
+    CharacterReferenceNoSemicolon_ccedil = 47,
+    CharacterReferenceNoSemicolon_cedil = 48,
+    CharacterReferenceNoSemicolon_cent = 49,
+    CharacterReferenceNoSemicolon_copy = 50,
+    CharacterReferenceNoSemicolon_curren = 51,
+    CharacterReferenceNoSemicolon_deg = 52,
+    CharacterReferenceNoSemicolon_divide = 53,
+    CharacterReferenceNoSemicolon_eth = 57,
+    CharacterReferenceNoSemicolon_eacute = 54,
+    CharacterReferenceNoSemicolon_ecirc = 55,
+    CharacterReferenceNoSemicolon_egrave = 56,
+    CharacterReferenceNoSemicolon_euml = 58,
+    CharacterReferenceNoSemicolon_frac12 = 59,
+    CharacterReferenceNoSemicolon_frac14 = 60,
+    CharacterReferenceNoSemicolon_frac34 = 61,
+    CharacterReferenceNoSemicolon_gt = 62,
+    CharacterReferenceNoSemicolon_iacute = 63,
+    CharacterReferenceNoSemicolon_icirc = 64,
+    CharacterReferenceNoSemicolon_iexcl = 65,
+    CharacterReferenceNoSemicolon_igrave = 66,
+    CharacterReferenceNoSemicolon_iquest = 67,
+    CharacterReferenceNoSemicolon_iuml = 68,
+    CharacterReferenceNoSemicolon_lt = 70,
+    CharacterReferenceNoSemicolon_laquo = 69,
+    CharacterReferenceNoSemicolon_macr = 71,
+    CharacterReferenceNoSemicolon_micro = 72,
+    CharacterReferenceNoSemicolon_middot = 73,
+    CharacterReferenceNoSemicolon_not = 75,
+    CharacterReferenceNoSemicolon_nbsp = 74,
+    CharacterReferenceNoSemicolon_ntilde = 76,
+    CharacterReferenceNoSemicolon_oacute = 77,
+    CharacterReferenceNoSemicolon_ocirc = 78,
+    CharacterReferenceNoSemicolon_ograve = 79,
+    CharacterReferenceNoSemicolon_ordf = 80,
+    CharacterReferenceNoSemicolon_ordm = 81,
+    CharacterReferenceNoSemicolon_oslash = 82,
+    CharacterReferenceNoSemicolon_otilde = 83,
+    CharacterReferenceNoSemicolon_ouml = 84,
+    CharacterReferenceNoSemicolon_para = 85,
+    CharacterReferenceNoSemicolon_plusmn = 86,
+    CharacterReferenceNoSemicolon_pound = 87,
+    CharacterReferenceNoSemicolon_quot = 88,
+    CharacterReferenceNoSemicolon_reg = 90,
+    CharacterReferenceNoSemicolon_raquo = 89,
+    CharacterReferenceNoSemicolon_shy = 92,
+    CharacterReferenceNoSemicolon_sect = 91,
+    CharacterReferenceNoSemicolon_sup1 = 93,
+    CharacterReferenceNoSemicolon_sup2 = 94,
+    CharacterReferenceNoSemicolon_sup3 = 95,
+    CharacterReferenceNoSemicolon_szlig = 96,
+    CharacterReferenceNoSemicolon_thorn = 97,
+    CharacterReferenceNoSemicolon_times = 98,
+    CharacterReferenceNoSemicolon_uml = 102,
+    CharacterReferenceNoSemicolon_uacute = 99,
+    CharacterReferenceNoSemicolon_ucirc = 100,
+    CharacterReferenceNoSemicolon_ugrave = 101,
+    CharacterReferenceNoSemicolon_uuml = 103,
+    CharacterReferenceNoSemicolon_yen = 105,
+    CharacterReferenceNoSemicolon_yacute = 104,
+    CharacterReferenceNoSemicolon_yuml = 106,
+    CharacterReferenceNoSemicolon_Unknown = 0,
 };
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon(const char *string, size_t length);
 #ifdef __GNUC__
@@ -135,28 +135,28 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
     case 0| onechar('G', 0, 8):
         switch(string[1]) {
         case 0| onechar('T', 0, 8):
-            return CRNS_GT;
+            return CharacterReferenceNoSemicolon_GT;
         }
         break;
     case 0| onechar('L', 0, 8):
         switch(string[1]) {
         case 0| onechar('T', 0, 8):
-            return CRNS_LT;
+            return CharacterReferenceNoSemicolon_LT;
         }
         break;
     case 0| onechar('g', 0, 8):
         switch(string[1]) {
         case 0| onechar('t', 0, 8):
-            return CRNS_gt;
+            return CharacterReferenceNoSemicolon_gt;
         }
         break;
     case 0| onechar('l', 0, 8):
         switch(string[1]) {
         case 0| onechar('t', 0, 8):
-            return CRNS_lt;
+            return CharacterReferenceNoSemicolon_lt;
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon3(const char *string)
 {
@@ -166,7 +166,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('M', 0, 8):
             switch(string[2]) {
             case 0| onechar('P', 0, 8):
-                return CRNS_AMP;
+                return CharacterReferenceNoSemicolon_AMP;
             }
         }
         break;
@@ -175,7 +175,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('T', 0, 8):
             switch(string[2]) {
             case 0| onechar('H', 0, 8):
-                return CRNS_ETH;
+                return CharacterReferenceNoSemicolon_ETH;
             }
         }
         break;
@@ -184,7 +184,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('E', 0, 8):
             switch(string[2]) {
             case 0| onechar('G', 0, 8):
-                return CRNS_REG;
+                return CharacterReferenceNoSemicolon_REG;
             }
         }
         break;
@@ -193,7 +193,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('m', 0, 8):
             switch(string[2]) {
             case 0| onechar('p', 0, 8):
-                return CRNS_amp;
+                return CharacterReferenceNoSemicolon_amp;
             }
         }
         break;
@@ -202,7 +202,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('e', 0, 8):
             switch(string[2]) {
             case 0| onechar('g', 0, 8):
-                return CRNS_deg;
+                return CharacterReferenceNoSemicolon_deg;
             }
         }
         break;
@@ -211,7 +211,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[2]) {
             case 0| onechar('h', 0, 8):
-                return CRNS_eth;
+                return CharacterReferenceNoSemicolon_eth;
             }
         }
         break;
@@ -220,7 +220,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('o', 0, 8):
             switch(string[2]) {
             case 0| onechar('t', 0, 8):
-                return CRNS_not;
+                return CharacterReferenceNoSemicolon_not;
             }
         }
         break;
@@ -229,7 +229,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('e', 0, 8):
             switch(string[2]) {
             case 0| onechar('g', 0, 8):
-                return CRNS_reg;
+                return CharacterReferenceNoSemicolon_reg;
             }
         }
         break;
@@ -238,7 +238,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('h', 0, 8):
             switch(string[2]) {
             case 0| onechar('y', 0, 8):
-                return CRNS_shy;
+                return CharacterReferenceNoSemicolon_shy;
             }
         }
         break;
@@ -247,7 +247,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('m', 0, 8):
             switch(string[2]) {
             case 0| onechar('l', 0, 8):
-                return CRNS_uml;
+                return CharacterReferenceNoSemicolon_uml;
             }
         }
         break;
@@ -256,91 +256,91 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('e', 0, 8):
             switch(string[2]) {
             case 0| onechar('n', 0, 8):
-                return CRNS_yen;
+                return CharacterReferenceNoSemicolon_yen;
             }
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon4(const char *string)
 {
     switch(*((triehash_uu32*) &string[0])) {
     case 0| onechar('A', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_Auml;
+        return CharacterReferenceNoSemicolon_Auml;
         break;
     case 0| onechar('C', 0, 32)| onechar('O', 8, 32)| onechar('P', 16, 32)| onechar('Y', 24, 32):
-        return CRNS_COPY;
+        return CharacterReferenceNoSemicolon_COPY;
         break;
     case 0| onechar('E', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_Euml;
+        return CharacterReferenceNoSemicolon_Euml;
         break;
     case 0| onechar('I', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_Iuml;
+        return CharacterReferenceNoSemicolon_Iuml;
         break;
     case 0| onechar('O', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_Ouml;
+        return CharacterReferenceNoSemicolon_Ouml;
         break;
     case 0| onechar('Q', 0, 32)| onechar('U', 8, 32)| onechar('O', 16, 32)| onechar('T', 24, 32):
-        return CRNS_QUOT;
+        return CharacterReferenceNoSemicolon_QUOT;
         break;
     case 0| onechar('U', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_Uuml;
+        return CharacterReferenceNoSemicolon_Uuml;
         break;
     case 0| onechar('a', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_auml;
+        return CharacterReferenceNoSemicolon_auml;
         break;
     case 0| onechar('c', 0, 32)| onechar('e', 8, 32)| onechar('n', 16, 32)| onechar('t', 24, 32):
-        return CRNS_cent;
+        return CharacterReferenceNoSemicolon_cent;
         break;
     case 0| onechar('c', 0, 32)| onechar('o', 8, 32)| onechar('p', 16, 32)| onechar('y', 24, 32):
-        return CRNS_copy;
+        return CharacterReferenceNoSemicolon_copy;
         break;
     case 0| onechar('e', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_euml;
+        return CharacterReferenceNoSemicolon_euml;
         break;
     case 0| onechar('i', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_iuml;
+        return CharacterReferenceNoSemicolon_iuml;
         break;
     case 0| onechar('m', 0, 32)| onechar('a', 8, 32)| onechar('c', 16, 32)| onechar('r', 24, 32):
-        return CRNS_macr;
+        return CharacterReferenceNoSemicolon_macr;
         break;
     case 0| onechar('n', 0, 32)| onechar('b', 8, 32)| onechar('s', 16, 32)| onechar('p', 24, 32):
-        return CRNS_nbsp;
+        return CharacterReferenceNoSemicolon_nbsp;
         break;
     case 0| onechar('o', 0, 32)| onechar('r', 8, 32)| onechar('d', 16, 32)| onechar('f', 24, 32):
-        return CRNS_ordf;
+        return CharacterReferenceNoSemicolon_ordf;
         break;
     case 0| onechar('o', 0, 32)| onechar('r', 8, 32)| onechar('d', 16, 32)| onechar('m', 24, 32):
-        return CRNS_ordm;
+        return CharacterReferenceNoSemicolon_ordm;
         break;
     case 0| onechar('o', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_ouml;
+        return CharacterReferenceNoSemicolon_ouml;
         break;
     case 0| onechar('p', 0, 32)| onechar('a', 8, 32)| onechar('r', 16, 32)| onechar('a', 24, 32):
-        return CRNS_para;
+        return CharacterReferenceNoSemicolon_para;
         break;
     case 0| onechar('q', 0, 32)| onechar('u', 8, 32)| onechar('o', 16, 32)| onechar('t', 24, 32):
-        return CRNS_quot;
+        return CharacterReferenceNoSemicolon_quot;
         break;
     case 0| onechar('s', 0, 32)| onechar('e', 8, 32)| onechar('c', 16, 32)| onechar('t', 24, 32):
-        return CRNS_sect;
+        return CharacterReferenceNoSemicolon_sect;
         break;
     case 0| onechar('s', 0, 32)| onechar('u', 8, 32)| onechar('p', 16, 32)| onechar('1', 24, 32):
-        return CRNS_sup1;
+        return CharacterReferenceNoSemicolon_sup1;
         break;
     case 0| onechar('s', 0, 32)| onechar('u', 8, 32)| onechar('p', 16, 32)| onechar('2', 24, 32):
-        return CRNS_sup2;
+        return CharacterReferenceNoSemicolon_sup2;
         break;
     case 0| onechar('s', 0, 32)| onechar('u', 8, 32)| onechar('p', 16, 32)| onechar('3', 24, 32):
-        return CRNS_sup3;
+        return CharacterReferenceNoSemicolon_sup3;
         break;
     case 0| onechar('u', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_uuml;
+        return CharacterReferenceNoSemicolon_uuml;
         break;
     case 0| onechar('y', 0, 32)| onechar('u', 8, 32)| onechar('m', 16, 32)| onechar('l', 24, 32):
-        return CRNS_yuml;
+        return CharacterReferenceNoSemicolon_yuml;
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon5(const char *string)
 {
@@ -348,154 +348,154 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
     case 0| onechar('A', 0, 32)| onechar('E', 8, 32)| onechar('l', 16, 32)| onechar('i', 24, 32):
         switch(string[4]) {
         case 0| onechar('g', 0, 8):
-            return CRNS_AElig;
+            return CharacterReferenceNoSemicolon_AElig;
         }
         break;
     case 0| onechar('A', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_Acirc;
+            return CharacterReferenceNoSemicolon_Acirc;
         }
         break;
     case 0| onechar('A', 0, 32)| onechar('r', 8, 32)| onechar('i', 16, 32)| onechar('n', 24, 32):
         switch(string[4]) {
         case 0| onechar('g', 0, 8):
-            return CRNS_Aring;
+            return CharacterReferenceNoSemicolon_Aring;
         }
         break;
     case 0| onechar('E', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_Ecirc;
+            return CharacterReferenceNoSemicolon_Ecirc;
         }
         break;
     case 0| onechar('I', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_Icirc;
+            return CharacterReferenceNoSemicolon_Icirc;
         }
         break;
     case 0| onechar('O', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_Ocirc;
+            return CharacterReferenceNoSemicolon_Ocirc;
         }
         break;
     case 0| onechar('T', 0, 32)| onechar('H', 8, 32)| onechar('O', 16, 32)| onechar('R', 24, 32):
         switch(string[4]) {
         case 0| onechar('N', 0, 8):
-            return CRNS_THORN;
+            return CharacterReferenceNoSemicolon_THORN;
         }
         break;
     case 0| onechar('U', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_Ucirc;
+            return CharacterReferenceNoSemicolon_Ucirc;
         }
         break;
     case 0| onechar('a', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_acirc;
+            return CharacterReferenceNoSemicolon_acirc;
         }
         break;
     case 0| onechar('a', 0, 32)| onechar('c', 8, 32)| onechar('u', 16, 32)| onechar('t', 24, 32):
         switch(string[4]) {
         case 0| onechar('e', 0, 8):
-            return CRNS_acute;
+            return CharacterReferenceNoSemicolon_acute;
         }
         break;
     case 0| onechar('a', 0, 32)| onechar('e', 8, 32)| onechar('l', 16, 32)| onechar('i', 24, 32):
         switch(string[4]) {
         case 0| onechar('g', 0, 8):
-            return CRNS_aelig;
+            return CharacterReferenceNoSemicolon_aelig;
         }
         break;
     case 0| onechar('a', 0, 32)| onechar('r', 8, 32)| onechar('i', 16, 32)| onechar('n', 24, 32):
         switch(string[4]) {
         case 0| onechar('g', 0, 8):
-            return CRNS_aring;
+            return CharacterReferenceNoSemicolon_aring;
         }
         break;
     case 0| onechar('c', 0, 32)| onechar('e', 8, 32)| onechar('d', 16, 32)| onechar('i', 24, 32):
         switch(string[4]) {
         case 0| onechar('l', 0, 8):
-            return CRNS_cedil;
+            return CharacterReferenceNoSemicolon_cedil;
         }
         break;
     case 0| onechar('e', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_ecirc;
+            return CharacterReferenceNoSemicolon_ecirc;
         }
         break;
     case 0| onechar('i', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_icirc;
+            return CharacterReferenceNoSemicolon_icirc;
         }
         break;
     case 0| onechar('i', 0, 32)| onechar('e', 8, 32)| onechar('x', 16, 32)| onechar('c', 24, 32):
         switch(string[4]) {
         case 0| onechar('l', 0, 8):
-            return CRNS_iexcl;
+            return CharacterReferenceNoSemicolon_iexcl;
         }
         break;
     case 0| onechar('l', 0, 32)| onechar('a', 8, 32)| onechar('q', 16, 32)| onechar('u', 24, 32):
         switch(string[4]) {
         case 0| onechar('o', 0, 8):
-            return CRNS_laquo;
+            return CharacterReferenceNoSemicolon_laquo;
         }
         break;
     case 0| onechar('m', 0, 32)| onechar('i', 8, 32)| onechar('c', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('o', 0, 8):
-            return CRNS_micro;
+            return CharacterReferenceNoSemicolon_micro;
         }
         break;
     case 0| onechar('o', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_ocirc;
+            return CharacterReferenceNoSemicolon_ocirc;
         }
         break;
     case 0| onechar('p', 0, 32)| onechar('o', 8, 32)| onechar('u', 16, 32)| onechar('n', 24, 32):
         switch(string[4]) {
         case 0| onechar('d', 0, 8):
-            return CRNS_pound;
+            return CharacterReferenceNoSemicolon_pound;
         }
         break;
     case 0| onechar('r', 0, 32)| onechar('a', 8, 32)| onechar('q', 16, 32)| onechar('u', 24, 32):
         switch(string[4]) {
         case 0| onechar('o', 0, 8):
-            return CRNS_raquo;
+            return CharacterReferenceNoSemicolon_raquo;
         }
         break;
     case 0| onechar('s', 0, 32)| onechar('z', 8, 32)| onechar('l', 16, 32)| onechar('i', 24, 32):
         switch(string[4]) {
         case 0| onechar('g', 0, 8):
-            return CRNS_szlig;
+            return CharacterReferenceNoSemicolon_szlig;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('h', 8, 32)| onechar('o', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('n', 0, 8):
-            return CRNS_thorn;
+            return CharacterReferenceNoSemicolon_thorn;
         }
         break;
     case 0| onechar('t', 0, 32)| onechar('i', 8, 32)| onechar('m', 16, 32)| onechar('e', 24, 32):
         switch(string[4]) {
         case 0| onechar('s', 0, 8):
-            return CRNS_times;
+            return CharacterReferenceNoSemicolon_times;
         }
         break;
     case 0| onechar('u', 0, 32)| onechar('c', 8, 32)| onechar('i', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return CRNS_ucirc;
+            return CharacterReferenceNoSemicolon_ucirc;
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon6(const char *string)
 {
@@ -505,7 +505,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Aacute;
+                return CharacterReferenceNoSemicolon_Aacute;
             }
         }
         break;
@@ -514,7 +514,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Agrave;
+                return CharacterReferenceNoSemicolon_Agrave;
             }
         }
         break;
@@ -523,7 +523,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('d', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Atilde;
+                return CharacterReferenceNoSemicolon_Atilde;
             }
         }
         break;
@@ -532,7 +532,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('i', 0, 8):
             switch(string[5]) {
             case 0| onechar('l', 0, 8):
-                return CRNS_Ccedil;
+                return CharacterReferenceNoSemicolon_Ccedil;
             }
         }
         break;
@@ -541,7 +541,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Eacute;
+                return CharacterReferenceNoSemicolon_Eacute;
             }
         }
         break;
@@ -550,7 +550,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Egrave;
+                return CharacterReferenceNoSemicolon_Egrave;
             }
         }
         break;
@@ -559,7 +559,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Iacute;
+                return CharacterReferenceNoSemicolon_Iacute;
             }
         }
         break;
@@ -568,7 +568,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Igrave;
+                return CharacterReferenceNoSemicolon_Igrave;
             }
         }
         break;
@@ -577,7 +577,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('d', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Ntilde;
+                return CharacterReferenceNoSemicolon_Ntilde;
             }
         }
         break;
@@ -586,7 +586,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Oacute;
+                return CharacterReferenceNoSemicolon_Oacute;
             }
         }
         break;
@@ -595,7 +595,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Ograve;
+                return CharacterReferenceNoSemicolon_Ograve;
             }
         }
         break;
@@ -604,7 +604,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('s', 0, 8):
             switch(string[5]) {
             case 0| onechar('h', 0, 8):
-                return CRNS_Oslash;
+                return CharacterReferenceNoSemicolon_Oslash;
             }
         }
         break;
@@ -613,7 +613,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('d', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Otilde;
+                return CharacterReferenceNoSemicolon_Otilde;
             }
         }
         break;
@@ -622,7 +622,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Uacute;
+                return CharacterReferenceNoSemicolon_Uacute;
             }
         }
         break;
@@ -631,7 +631,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Ugrave;
+                return CharacterReferenceNoSemicolon_Ugrave;
             }
         }
         break;
@@ -640,7 +640,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_Yacute;
+                return CharacterReferenceNoSemicolon_Yacute;
             }
         }
         break;
@@ -649,7 +649,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_aacute;
+                return CharacterReferenceNoSemicolon_aacute;
             }
         }
         break;
@@ -658,7 +658,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_agrave;
+                return CharacterReferenceNoSemicolon_agrave;
             }
         }
         break;
@@ -667,7 +667,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('d', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_atilde;
+                return CharacterReferenceNoSemicolon_atilde;
             }
         }
         break;
@@ -676,7 +676,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('a', 0, 8):
             switch(string[5]) {
             case 0| onechar('r', 0, 8):
-                return CRNS_brvbar;
+                return CharacterReferenceNoSemicolon_brvbar;
             }
         }
         break;
@@ -685,7 +685,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('i', 0, 8):
             switch(string[5]) {
             case 0| onechar('l', 0, 8):
-                return CRNS_ccedil;
+                return CharacterReferenceNoSemicolon_ccedil;
             }
         }
         break;
@@ -694,7 +694,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('e', 0, 8):
             switch(string[5]) {
             case 0| onechar('n', 0, 8):
-                return CRNS_curren;
+                return CharacterReferenceNoSemicolon_curren;
             }
         }
         break;
@@ -703,7 +703,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('d', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_divide;
+                return CharacterReferenceNoSemicolon_divide;
             }
         }
         break;
@@ -712,7 +712,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_eacute;
+                return CharacterReferenceNoSemicolon_eacute;
             }
         }
         break;
@@ -721,7 +721,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_egrave;
+                return CharacterReferenceNoSemicolon_egrave;
             }
         }
         break;
@@ -730,16 +730,16 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('1', 0, 8):
             switch(string[5]) {
             case 0| onechar('2', 0, 8):
-                return CRNS_frac12;
+                return CharacterReferenceNoSemicolon_frac12;
                 break;
             case 0| onechar('4', 0, 8):
-                return CRNS_frac14;
+                return CharacterReferenceNoSemicolon_frac14;
             }
             break;
         case 0| onechar('3', 0, 8):
             switch(string[5]) {
             case 0| onechar('4', 0, 8):
-                return CRNS_frac34;
+                return CharacterReferenceNoSemicolon_frac34;
             }
         }
         break;
@@ -748,7 +748,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_iacute;
+                return CharacterReferenceNoSemicolon_iacute;
             }
         }
         break;
@@ -757,7 +757,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_igrave;
+                return CharacterReferenceNoSemicolon_igrave;
             }
         }
         break;
@@ -766,7 +766,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('s', 0, 8):
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
-                return CRNS_iquest;
+                return CharacterReferenceNoSemicolon_iquest;
             }
         }
         break;
@@ -775,7 +775,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('o', 0, 8):
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
-                return CRNS_middot;
+                return CharacterReferenceNoSemicolon_middot;
             }
         }
         break;
@@ -784,7 +784,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('d', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_ntilde;
+                return CharacterReferenceNoSemicolon_ntilde;
             }
         }
         break;
@@ -793,7 +793,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_oacute;
+                return CharacterReferenceNoSemicolon_oacute;
             }
         }
         break;
@@ -802,7 +802,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_ograve;
+                return CharacterReferenceNoSemicolon_ograve;
             }
         }
         break;
@@ -811,7 +811,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('s', 0, 8):
             switch(string[5]) {
             case 0| onechar('h', 0, 8):
-                return CRNS_oslash;
+                return CharacterReferenceNoSemicolon_oslash;
             }
         }
         break;
@@ -820,7 +820,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('d', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_otilde;
+                return CharacterReferenceNoSemicolon_otilde;
             }
         }
         break;
@@ -829,7 +829,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('m', 0, 8):
             switch(string[5]) {
             case 0| onechar('n', 0, 8):
-                return CRNS_plusmn;
+                return CharacterReferenceNoSemicolon_plusmn;
             }
         }
         break;
@@ -838,7 +838,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_uacute;
+                return CharacterReferenceNoSemicolon_uacute;
             }
         }
         break;
@@ -847,7 +847,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('v', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_ugrave;
+                return CharacterReferenceNoSemicolon_ugrave;
             }
         }
         break;
@@ -856,11 +856,11 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 0| onechar('t', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return CRNS_yacute;
+                return CharacterReferenceNoSemicolon_yacute;
             }
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 #else
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon2(const char *string)
@@ -869,28 +869,28 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
     case 'G':
         switch(string[1]) {
         case 'T':
-            return CRNS_GT;
+            return CharacterReferenceNoSemicolon_GT;
         }
         break;
     case 'L':
         switch(string[1]) {
         case 'T':
-            return CRNS_LT;
+            return CharacterReferenceNoSemicolon_LT;
         }
         break;
     case 'g':
         switch(string[1]) {
         case 't':
-            return CRNS_gt;
+            return CharacterReferenceNoSemicolon_gt;
         }
         break;
     case 'l':
         switch(string[1]) {
         case 't':
-            return CRNS_lt;
+            return CharacterReferenceNoSemicolon_lt;
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon3(const char *string)
 {
@@ -900,7 +900,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'M':
             switch(string[2]) {
             case 'P':
-                return CRNS_AMP;
+                return CharacterReferenceNoSemicolon_AMP;
             }
         }
         break;
@@ -909,7 +909,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'T':
             switch(string[2]) {
             case 'H':
-                return CRNS_ETH;
+                return CharacterReferenceNoSemicolon_ETH;
             }
         }
         break;
@@ -918,7 +918,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'E':
             switch(string[2]) {
             case 'G':
-                return CRNS_REG;
+                return CharacterReferenceNoSemicolon_REG;
             }
         }
         break;
@@ -927,7 +927,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'm':
             switch(string[2]) {
             case 'p':
-                return CRNS_amp;
+                return CharacterReferenceNoSemicolon_amp;
             }
         }
         break;
@@ -936,7 +936,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'e':
             switch(string[2]) {
             case 'g':
-                return CRNS_deg;
+                return CharacterReferenceNoSemicolon_deg;
             }
         }
         break;
@@ -945,7 +945,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 't':
             switch(string[2]) {
             case 'h':
-                return CRNS_eth;
+                return CharacterReferenceNoSemicolon_eth;
             }
         }
         break;
@@ -954,7 +954,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'o':
             switch(string[2]) {
             case 't':
-                return CRNS_not;
+                return CharacterReferenceNoSemicolon_not;
             }
         }
         break;
@@ -963,7 +963,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'e':
             switch(string[2]) {
             case 'g':
-                return CRNS_reg;
+                return CharacterReferenceNoSemicolon_reg;
             }
         }
         break;
@@ -972,7 +972,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'h':
             switch(string[2]) {
             case 'y':
-                return CRNS_shy;
+                return CharacterReferenceNoSemicolon_shy;
             }
         }
         break;
@@ -981,7 +981,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'm':
             switch(string[2]) {
             case 'l':
-                return CRNS_uml;
+                return CharacterReferenceNoSemicolon_uml;
             }
         }
         break;
@@ -990,11 +990,11 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
         case 'e':
             switch(string[2]) {
             case 'n':
-                return CRNS_yen;
+                return CharacterReferenceNoSemicolon_yen;
             }
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon4(const char *string)
 {
@@ -1006,7 +1006,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_Auml;
+                    return CharacterReferenceNoSemicolon_Auml;
                 }
             }
         }
@@ -1018,7 +1018,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'P':
                 switch(string[3]) {
                 case 'Y':
-                    return CRNS_COPY;
+                    return CharacterReferenceNoSemicolon_COPY;
                 }
             }
         }
@@ -1030,7 +1030,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_Euml;
+                    return CharacterReferenceNoSemicolon_Euml;
                 }
             }
         }
@@ -1042,7 +1042,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_Iuml;
+                    return CharacterReferenceNoSemicolon_Iuml;
                 }
             }
         }
@@ -1054,7 +1054,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_Ouml;
+                    return CharacterReferenceNoSemicolon_Ouml;
                 }
             }
         }
@@ -1066,7 +1066,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'O':
                 switch(string[3]) {
                 case 'T':
-                    return CRNS_QUOT;
+                    return CharacterReferenceNoSemicolon_QUOT;
                 }
             }
         }
@@ -1078,7 +1078,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_Uuml;
+                    return CharacterReferenceNoSemicolon_Uuml;
                 }
             }
         }
@@ -1090,7 +1090,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_auml;
+                    return CharacterReferenceNoSemicolon_auml;
                 }
             }
         }
@@ -1102,7 +1102,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'n':
                 switch(string[3]) {
                 case 't':
-                    return CRNS_cent;
+                    return CharacterReferenceNoSemicolon_cent;
                 }
             }
             break;
@@ -1111,7 +1111,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'p':
                 switch(string[3]) {
                 case 'y':
-                    return CRNS_copy;
+                    return CharacterReferenceNoSemicolon_copy;
                 }
             }
         }
@@ -1123,7 +1123,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_euml;
+                    return CharacterReferenceNoSemicolon_euml;
                 }
             }
         }
@@ -1135,7 +1135,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_iuml;
+                    return CharacterReferenceNoSemicolon_iuml;
                 }
             }
         }
@@ -1147,7 +1147,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'c':
                 switch(string[3]) {
                 case 'r':
-                    return CRNS_macr;
+                    return CharacterReferenceNoSemicolon_macr;
                 }
             }
         }
@@ -1159,7 +1159,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 's':
                 switch(string[3]) {
                 case 'p':
-                    return CRNS_nbsp;
+                    return CharacterReferenceNoSemicolon_nbsp;
                 }
             }
         }
@@ -1171,10 +1171,10 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'd':
                 switch(string[3]) {
                 case 'f':
-                    return CRNS_ordf;
+                    return CharacterReferenceNoSemicolon_ordf;
                     break;
                 case 'm':
-                    return CRNS_ordm;
+                    return CharacterReferenceNoSemicolon_ordm;
                 }
             }
             break;
@@ -1183,7 +1183,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_ouml;
+                    return CharacterReferenceNoSemicolon_ouml;
                 }
             }
         }
@@ -1195,7 +1195,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'r':
                 switch(string[3]) {
                 case 'a':
-                    return CRNS_para;
+                    return CharacterReferenceNoSemicolon_para;
                 }
             }
         }
@@ -1207,7 +1207,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'o':
                 switch(string[3]) {
                 case 't':
-                    return CRNS_quot;
+                    return CharacterReferenceNoSemicolon_quot;
                 }
             }
         }
@@ -1219,7 +1219,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'c':
                 switch(string[3]) {
                 case 't':
-                    return CRNS_sect;
+                    return CharacterReferenceNoSemicolon_sect;
                 }
             }
             break;
@@ -1228,13 +1228,13 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'p':
                 switch(string[3]) {
                 case '1':
-                    return CRNS_sup1;
+                    return CharacterReferenceNoSemicolon_sup1;
                     break;
                 case '2':
-                    return CRNS_sup2;
+                    return CharacterReferenceNoSemicolon_sup2;
                     break;
                 case '3':
-                    return CRNS_sup3;
+                    return CharacterReferenceNoSemicolon_sup3;
                 }
             }
         }
@@ -1246,7 +1246,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_uuml;
+                    return CharacterReferenceNoSemicolon_uuml;
                 }
             }
         }
@@ -1258,12 +1258,12 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
             case 'm':
                 switch(string[3]) {
                 case 'l':
-                    return CRNS_yuml;
+                    return CharacterReferenceNoSemicolon_yuml;
                 }
             }
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon5(const char *string)
 {
@@ -1277,7 +1277,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'i':
                     switch(string[4]) {
                     case 'g':
-                        return CRNS_AElig;
+                        return CharacterReferenceNoSemicolon_AElig;
                     }
                 }
             }
@@ -1289,7 +1289,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_Acirc;
+                        return CharacterReferenceNoSemicolon_Acirc;
                     }
                 }
             }
@@ -1301,7 +1301,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'n':
                     switch(string[4]) {
                     case 'g':
-                        return CRNS_Aring;
+                        return CharacterReferenceNoSemicolon_Aring;
                     }
                 }
             }
@@ -1316,7 +1316,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_Ecirc;
+                        return CharacterReferenceNoSemicolon_Ecirc;
                     }
                 }
             }
@@ -1331,7 +1331,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_Icirc;
+                        return CharacterReferenceNoSemicolon_Icirc;
                     }
                 }
             }
@@ -1346,7 +1346,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_Ocirc;
+                        return CharacterReferenceNoSemicolon_Ocirc;
                     }
                 }
             }
@@ -1361,7 +1361,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'R':
                     switch(string[4]) {
                     case 'N':
-                        return CRNS_THORN;
+                        return CharacterReferenceNoSemicolon_THORN;
                     }
                 }
             }
@@ -1376,7 +1376,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_Ucirc;
+                        return CharacterReferenceNoSemicolon_Ucirc;
                     }
                 }
             }
@@ -1391,7 +1391,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_acirc;
+                        return CharacterReferenceNoSemicolon_acirc;
                     }
                 }
                 break;
@@ -1400,7 +1400,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 't':
                     switch(string[4]) {
                     case 'e':
-                        return CRNS_acute;
+                        return CharacterReferenceNoSemicolon_acute;
                     }
                 }
             }
@@ -1412,7 +1412,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'i':
                     switch(string[4]) {
                     case 'g':
-                        return CRNS_aelig;
+                        return CharacterReferenceNoSemicolon_aelig;
                     }
                 }
             }
@@ -1424,7 +1424,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'n':
                     switch(string[4]) {
                     case 'g':
-                        return CRNS_aring;
+                        return CharacterReferenceNoSemicolon_aring;
                     }
                 }
             }
@@ -1439,7 +1439,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'i':
                     switch(string[4]) {
                     case 'l':
-                        return CRNS_cedil;
+                        return CharacterReferenceNoSemicolon_cedil;
                     }
                 }
             }
@@ -1454,7 +1454,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_ecirc;
+                        return CharacterReferenceNoSemicolon_ecirc;
                     }
                 }
             }
@@ -1469,7 +1469,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_icirc;
+                        return CharacterReferenceNoSemicolon_icirc;
                     }
                 }
             }
@@ -1481,7 +1481,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'c':
                     switch(string[4]) {
                     case 'l':
-                        return CRNS_iexcl;
+                        return CharacterReferenceNoSemicolon_iexcl;
                     }
                 }
             }
@@ -1496,7 +1496,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'u':
                     switch(string[4]) {
                     case 'o':
-                        return CRNS_laquo;
+                        return CharacterReferenceNoSemicolon_laquo;
                     }
                 }
             }
@@ -1511,7 +1511,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'o':
-                        return CRNS_micro;
+                        return CharacterReferenceNoSemicolon_micro;
                     }
                 }
             }
@@ -1526,7 +1526,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_ocirc;
+                        return CharacterReferenceNoSemicolon_ocirc;
                     }
                 }
             }
@@ -1541,7 +1541,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'n':
                     switch(string[4]) {
                     case 'd':
-                        return CRNS_pound;
+                        return CharacterReferenceNoSemicolon_pound;
                     }
                 }
             }
@@ -1556,7 +1556,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'u':
                     switch(string[4]) {
                     case 'o':
-                        return CRNS_raquo;
+                        return CharacterReferenceNoSemicolon_raquo;
                     }
                 }
             }
@@ -1571,7 +1571,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'i':
                     switch(string[4]) {
                     case 'g':
-                        return CRNS_szlig;
+                        return CharacterReferenceNoSemicolon_szlig;
                     }
                 }
             }
@@ -1586,7 +1586,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'n':
-                        return CRNS_thorn;
+                        return CharacterReferenceNoSemicolon_thorn;
                     }
                 }
             }
@@ -1598,7 +1598,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'e':
                     switch(string[4]) {
                     case 's':
-                        return CRNS_times;
+                        return CharacterReferenceNoSemicolon_times;
                     }
                 }
             }
@@ -1613,13 +1613,13 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                 case 'r':
                     switch(string[4]) {
                     case 'c':
-                        return CRNS_ucirc;
+                        return CharacterReferenceNoSemicolon_ucirc;
                     }
                 }
             }
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon6(const char *string)
 {
@@ -1635,7 +1635,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Aacute;
+                            return CharacterReferenceNoSemicolon_Aacute;
                         }
                     }
                 }
@@ -1650,7 +1650,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Agrave;
+                            return CharacterReferenceNoSemicolon_Agrave;
                         }
                     }
                 }
@@ -1665,7 +1665,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'd':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Atilde;
+                            return CharacterReferenceNoSemicolon_Atilde;
                         }
                     }
                 }
@@ -1683,7 +1683,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'i':
                         switch(string[5]) {
                         case 'l':
-                            return CRNS_Ccedil;
+                            return CharacterReferenceNoSemicolon_Ccedil;
                         }
                     }
                 }
@@ -1701,7 +1701,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Eacute;
+                            return CharacterReferenceNoSemicolon_Eacute;
                         }
                     }
                 }
@@ -1716,7 +1716,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Egrave;
+                            return CharacterReferenceNoSemicolon_Egrave;
                         }
                     }
                 }
@@ -1734,7 +1734,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Iacute;
+                            return CharacterReferenceNoSemicolon_Iacute;
                         }
                     }
                 }
@@ -1749,7 +1749,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Igrave;
+                            return CharacterReferenceNoSemicolon_Igrave;
                         }
                     }
                 }
@@ -1767,7 +1767,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'd':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Ntilde;
+                            return CharacterReferenceNoSemicolon_Ntilde;
                         }
                     }
                 }
@@ -1785,7 +1785,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Oacute;
+                            return CharacterReferenceNoSemicolon_Oacute;
                         }
                     }
                 }
@@ -1800,7 +1800,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Ograve;
+                            return CharacterReferenceNoSemicolon_Ograve;
                         }
                     }
                 }
@@ -1815,7 +1815,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 's':
                         switch(string[5]) {
                         case 'h':
-                            return CRNS_Oslash;
+                            return CharacterReferenceNoSemicolon_Oslash;
                         }
                     }
                 }
@@ -1830,7 +1830,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'd':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Otilde;
+                            return CharacterReferenceNoSemicolon_Otilde;
                         }
                     }
                 }
@@ -1848,7 +1848,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Uacute;
+                            return CharacterReferenceNoSemicolon_Uacute;
                         }
                     }
                 }
@@ -1863,7 +1863,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Ugrave;
+                            return CharacterReferenceNoSemicolon_Ugrave;
                         }
                     }
                 }
@@ -1881,7 +1881,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_Yacute;
+                            return CharacterReferenceNoSemicolon_Yacute;
                         }
                     }
                 }
@@ -1899,7 +1899,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_aacute;
+                            return CharacterReferenceNoSemicolon_aacute;
                         }
                     }
                 }
@@ -1914,7 +1914,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_agrave;
+                            return CharacterReferenceNoSemicolon_agrave;
                         }
                     }
                 }
@@ -1929,7 +1929,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'd':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_atilde;
+                            return CharacterReferenceNoSemicolon_atilde;
                         }
                     }
                 }
@@ -1947,7 +1947,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'a':
                         switch(string[5]) {
                         case 'r':
-                            return CRNS_brvbar;
+                            return CharacterReferenceNoSemicolon_brvbar;
                         }
                     }
                 }
@@ -1965,7 +1965,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'i':
                         switch(string[5]) {
                         case 'l':
-                            return CRNS_ccedil;
+                            return CharacterReferenceNoSemicolon_ccedil;
                         }
                     }
                 }
@@ -1980,7 +1980,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'e':
                         switch(string[5]) {
                         case 'n':
-                            return CRNS_curren;
+                            return CharacterReferenceNoSemicolon_curren;
                         }
                     }
                 }
@@ -1998,7 +1998,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'd':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_divide;
+                            return CharacterReferenceNoSemicolon_divide;
                         }
                     }
                 }
@@ -2016,7 +2016,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_eacute;
+                            return CharacterReferenceNoSemicolon_eacute;
                         }
                     }
                 }
@@ -2031,7 +2031,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_egrave;
+                            return CharacterReferenceNoSemicolon_egrave;
                         }
                     }
                 }
@@ -2049,16 +2049,16 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case '1':
                         switch(string[5]) {
                         case '2':
-                            return CRNS_frac12;
+                            return CharacterReferenceNoSemicolon_frac12;
                             break;
                         case '4':
-                            return CRNS_frac14;
+                            return CharacterReferenceNoSemicolon_frac14;
                         }
                         break;
                     case '3':
                         switch(string[5]) {
                         case '4':
-                            return CRNS_frac34;
+                            return CharacterReferenceNoSemicolon_frac34;
                         }
                     }
                 }
@@ -2076,7 +2076,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_iacute;
+                            return CharacterReferenceNoSemicolon_iacute;
                         }
                     }
                 }
@@ -2091,7 +2091,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_igrave;
+                            return CharacterReferenceNoSemicolon_igrave;
                         }
                     }
                 }
@@ -2106,7 +2106,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 's':
                         switch(string[5]) {
                         case 't':
-                            return CRNS_iquest;
+                            return CharacterReferenceNoSemicolon_iquest;
                         }
                     }
                 }
@@ -2124,7 +2124,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'o':
                         switch(string[5]) {
                         case 't':
-                            return CRNS_middot;
+                            return CharacterReferenceNoSemicolon_middot;
                         }
                     }
                 }
@@ -2142,7 +2142,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'd':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_ntilde;
+                            return CharacterReferenceNoSemicolon_ntilde;
                         }
                     }
                 }
@@ -2160,7 +2160,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_oacute;
+                            return CharacterReferenceNoSemicolon_oacute;
                         }
                     }
                 }
@@ -2175,7 +2175,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_ograve;
+                            return CharacterReferenceNoSemicolon_ograve;
                         }
                     }
                 }
@@ -2190,7 +2190,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 's':
                         switch(string[5]) {
                         case 'h':
-                            return CRNS_oslash;
+                            return CharacterReferenceNoSemicolon_oslash;
                         }
                     }
                 }
@@ -2205,7 +2205,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'd':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_otilde;
+                            return CharacterReferenceNoSemicolon_otilde;
                         }
                     }
                 }
@@ -2223,7 +2223,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'm':
                         switch(string[5]) {
                         case 'n':
-                            return CRNS_plusmn;
+                            return CharacterReferenceNoSemicolon_plusmn;
                         }
                     }
                 }
@@ -2241,7 +2241,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_uacute;
+                            return CharacterReferenceNoSemicolon_uacute;
                         }
                     }
                 }
@@ -2256,7 +2256,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 'v':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_ugrave;
+                            return CharacterReferenceNoSemicolon_ugrave;
                         }
                     }
                 }
@@ -2274,14 +2274,14 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
                     case 't':
                         switch(string[5]) {
                         case 'e':
-                            return CRNS_yacute;
+                            return CharacterReferenceNoSemicolon_yacute;
                         }
                     }
                 }
             }
         }
     }
-    return CRNS_Unknown;
+    return CharacterReferenceNoSemicolon_Unknown;
 }
 #endif /* TRIE_HASH_MULTI_BYTE */
 static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolon(const char *string, size_t length)
@@ -2298,7 +2298,7 @@ static enum CharacterReferenceNoSemicolon lookup_character_reference_no_semicolo
     case 6:
         return lookup_character_reference_no_semicolon6(string);
     default:
-        return CRNS_Unknown;
+        return CharacterReferenceNoSemicolon_Unknown;
     }
 }
 #endif                       /* TRIE_HASH_lookup_character_reference_no_semicolon */

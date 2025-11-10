@@ -3,37 +3,37 @@
 #include <stddef.h>
 #include <stdint.h>
 enum MathmlElement {
-    ME_annotation = 1,
-    ME_annotation_xml = 2,
-    ME_mi = 7,
-    ME_mn = 9,
-    ME_mo = 10,
-    ME_ms = 17,
-    ME_mtd = 25,
-    ME_mtr = 27,
-    ME_maction = 3,
-    ME_math = 4,
-    ME_merror = 5,
-    ME_mfrac = 6,
-    ME_mmultiscripts = 8,
-    ME_mover = 11,
-    ME_mpadded = 12,
-    ME_mphantom = 13,
-    ME_mprescripts = 14,
-    ME_mroot = 15,
-    ME_mrow = 16,
-    ME_mspace = 18,
-    ME_msqrt = 19,
-    ME_mstyle = 20,
-    ME_msub = 21,
-    ME_msubsup = 22,
-    ME_msup = 23,
-    ME_mtable = 24,
-    ME_mtext = 26,
-    ME_munder = 28,
-    ME_munderover = 29,
-    ME_semantics = 30,
-    ME_Unknown = 0,
+    MathmlElement_annotation = 1,
+    MathmlElement_annotation_xml = 2,
+    MathmlElement_mi = 7,
+    MathmlElement_mn = 9,
+    MathmlElement_mo = 10,
+    MathmlElement_ms = 17,
+    MathmlElement_mtd = 25,
+    MathmlElement_mtr = 27,
+    MathmlElement_maction = 3,
+    MathmlElement_math = 4,
+    MathmlElement_merror = 5,
+    MathmlElement_mfrac = 6,
+    MathmlElement_mmultiscripts = 8,
+    MathmlElement_mover = 11,
+    MathmlElement_mpadded = 12,
+    MathmlElement_mphantom = 13,
+    MathmlElement_mprescripts = 14,
+    MathmlElement_mroot = 15,
+    MathmlElement_mrow = 16,
+    MathmlElement_mspace = 18,
+    MathmlElement_msqrt = 19,
+    MathmlElement_mstyle = 20,
+    MathmlElement_msub = 21,
+    MathmlElement_msubsup = 22,
+    MathmlElement_msup = 23,
+    MathmlElement_mtable = 24,
+    MathmlElement_mtext = 26,
+    MathmlElement_munder = 28,
+    MathmlElement_munderover = 29,
+    MathmlElement_semantics = 30,
+    MathmlElement_Unknown = 0,
 };
 static enum MathmlElement lookup_mathml_element(const char *string, size_t length);
 #ifdef __GNUC__
@@ -59,19 +59,19 @@ static enum MathmlElement lookup_mathml_element2(const char *string)
     case 0| onechar('m', 0, 8):
         switch(string[1]) {
         case 0| onechar('i', 0, 8):
-            return ME_mi;
+            return MathmlElement_mi;
             break;
         case 0| onechar('n', 0, 8):
-            return ME_mn;
+            return MathmlElement_mn;
             break;
         case 0| onechar('o', 0, 8):
-            return ME_mo;
+            return MathmlElement_mo;
             break;
         case 0| onechar('s', 0, 8):
-            return ME_ms;
+            return MathmlElement_ms;
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element3(const char *string)
 {
@@ -81,31 +81,31 @@ static enum MathmlElement lookup_mathml_element3(const char *string)
         case 0| onechar('t', 0, 8):
             switch(string[2]) {
             case 0| onechar('d', 0, 8):
-                return ME_mtd;
+                return MathmlElement_mtd;
                 break;
             case 0| onechar('r', 0, 8):
-                return ME_mtr;
+                return MathmlElement_mtr;
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element4(const char *string)
 {
     switch(*((triehash_uu32*) &string[0])) {
     case 0| onechar('m', 0, 32)| onechar('a', 8, 32)| onechar('t', 16, 32)| onechar('h', 24, 32):
-        return ME_math;
+        return MathmlElement_math;
         break;
     case 0| onechar('m', 0, 32)| onechar('r', 8, 32)| onechar('o', 16, 32)| onechar('w', 24, 32):
-        return ME_mrow;
+        return MathmlElement_mrow;
         break;
     case 0| onechar('m', 0, 32)| onechar('s', 8, 32)| onechar('u', 16, 32)| onechar('b', 24, 32):
-        return ME_msub;
+        return MathmlElement_msub;
         break;
     case 0| onechar('m', 0, 32)| onechar('s', 8, 32)| onechar('u', 16, 32)| onechar('p', 24, 32):
-        return ME_msup;
+        return MathmlElement_msup;
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element5(const char *string)
 {
@@ -113,34 +113,34 @@ static enum MathmlElement lookup_mathml_element5(const char *string)
     case 0| onechar('m', 0, 32)| onechar('f', 8, 32)| onechar('r', 16, 32)| onechar('a', 24, 32):
         switch(string[4]) {
         case 0| onechar('c', 0, 8):
-            return ME_mfrac;
+            return MathmlElement_mfrac;
         }
         break;
     case 0| onechar('m', 0, 32)| onechar('o', 8, 32)| onechar('v', 16, 32)| onechar('e', 24, 32):
         switch(string[4]) {
         case 0| onechar('r', 0, 8):
-            return ME_mover;
+            return MathmlElement_mover;
         }
         break;
     case 0| onechar('m', 0, 32)| onechar('r', 8, 32)| onechar('o', 16, 32)| onechar('o', 24, 32):
         switch(string[4]) {
         case 0| onechar('t', 0, 8):
-            return ME_mroot;
+            return MathmlElement_mroot;
         }
         break;
     case 0| onechar('m', 0, 32)| onechar('s', 8, 32)| onechar('q', 16, 32)| onechar('r', 24, 32):
         switch(string[4]) {
         case 0| onechar('t', 0, 8):
-            return ME_msqrt;
+            return MathmlElement_msqrt;
         }
         break;
     case 0| onechar('m', 0, 32)| onechar('t', 8, 32)| onechar('e', 16, 32)| onechar('x', 24, 32):
         switch(string[4]) {
         case 0| onechar('t', 0, 8):
-            return ME_mtext;
+            return MathmlElement_mtext;
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element6(const char *string)
 {
@@ -150,7 +150,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[5]) {
             case 0| onechar('r', 0, 8):
-                return ME_merror;
+                return MathmlElement_merror;
             }
         }
         break;
@@ -159,7 +159,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
         case 0| onechar('c', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return ME_mspace;
+                return MathmlElement_mspace;
             }
         }
         break;
@@ -168,7 +168,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
         case 0| onechar('l', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return ME_mstyle;
+                return MathmlElement_mstyle;
             }
         }
         break;
@@ -177,7 +177,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
         case 0| onechar('l', 0, 8):
             switch(string[5]) {
             case 0| onechar('e', 0, 8):
-                return ME_mtable;
+                return MathmlElement_mtable;
             }
         }
         break;
@@ -186,11 +186,11 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[5]) {
             case 0| onechar('r', 0, 8):
-                return ME_munder;
+                return MathmlElement_munder;
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element7(const char *string)
 {
@@ -202,7 +202,7 @@ static enum MathmlElement lookup_mathml_element7(const char *string)
             case 0| onechar('o', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('n', 0, 8):
-                    return ME_maction;
+                    return MathmlElement_maction;
                 }
             }
         }
@@ -214,7 +214,7 @@ static enum MathmlElement lookup_mathml_element7(const char *string)
             case 0| onechar('e', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('d', 0, 8):
-                    return ME_mpadded;
+                    return MathmlElement_mpadded;
                 }
             }
         }
@@ -226,20 +226,20 @@ static enum MathmlElement lookup_mathml_element7(const char *string)
             case 0| onechar('u', 0, 8):
                 switch(string[6]) {
                 case 0| onechar('p', 0, 8):
-                    return ME_msubsup;
+                    return MathmlElement_msubsup;
                 }
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element8(const char *string)
 {
     switch(*((triehash_uu64*) &string[0])) {
     case 0| onechar('m', 0, 64)| onechar('p', 8, 64)| onechar('h', 16, 64)| onechar('a', 24, 64)| onechar('n', 32, 64)| onechar('t', 40, 64)| onechar('o', 48, 64)| onechar('m', 56, 64):
-        return ME_mphantom;
+        return MathmlElement_mphantom;
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element9(const char *string)
 {
@@ -247,10 +247,10 @@ static enum MathmlElement lookup_mathml_element9(const char *string)
     case 0| onechar('s', 0, 64)| onechar('e', 8, 64)| onechar('m', 16, 64)| onechar('a', 24, 64)| onechar('n', 32, 64)| onechar('t', 40, 64)| onechar('i', 48, 64)| onechar('c', 56, 64):
         switch(string[8]) {
         case 0| onechar('s', 0, 8):
-            return ME_semantics;
+            return MathmlElement_semantics;
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element10(const char *string)
 {
@@ -260,7 +260,7 @@ static enum MathmlElement lookup_mathml_element10(const char *string)
         case 0| onechar('o', 0, 8):
             switch(string[9]) {
             case 0| onechar('n', 0, 8):
-                return ME_annotation;
+                return MathmlElement_annotation;
             }
         }
         break;
@@ -269,11 +269,11 @@ static enum MathmlElement lookup_mathml_element10(const char *string)
         case 0| onechar('e', 0, 8):
             switch(string[9]) {
             case 0| onechar('r', 0, 8):
-                return ME_munderover;
+                return MathmlElement_munderover;
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element11(const char *string)
 {
@@ -285,12 +285,12 @@ static enum MathmlElement lookup_mathml_element11(const char *string)
             case 0| onechar('t', 0, 8):
                 switch(string[10]) {
                 case 0| onechar('s', 0, 8):
-                    return ME_mprescripts;
+                    return MathmlElement_mprescripts;
                 }
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element13(const char *string)
 {
@@ -300,11 +300,11 @@ static enum MathmlElement lookup_mathml_element13(const char *string)
         case 0| onechar('r', 0, 32)| onechar('i', 8, 32)| onechar('p', 16, 32)| onechar('t', 24, 32):
             switch(string[12]) {
             case 0| onechar('s', 0, 8):
-                return ME_mmultiscripts;
+                return MathmlElement_mmultiscripts;
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element14(const char *string)
 {
@@ -316,12 +316,12 @@ static enum MathmlElement lookup_mathml_element14(const char *string)
             case 0| onechar('m', 0, 8):
                 switch(string[13]) {
                 case 0| onechar('l', 0, 8):
-                    return ME_annotation_xml;
+                    return MathmlElement_annotation_xml;
                 }
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 #else
 static enum MathmlElement lookup_mathml_element2(const char *string)
@@ -330,19 +330,19 @@ static enum MathmlElement lookup_mathml_element2(const char *string)
     case 'm':
         switch(string[1]) {
         case 'i':
-            return ME_mi;
+            return MathmlElement_mi;
             break;
         case 'n':
-            return ME_mn;
+            return MathmlElement_mn;
             break;
         case 'o':
-            return ME_mo;
+            return MathmlElement_mo;
             break;
         case 's':
-            return ME_ms;
+            return MathmlElement_ms;
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element3(const char *string)
 {
@@ -352,14 +352,14 @@ static enum MathmlElement lookup_mathml_element3(const char *string)
         case 't':
             switch(string[2]) {
             case 'd':
-                return ME_mtd;
+                return MathmlElement_mtd;
                 break;
             case 'r':
-                return ME_mtr;
+                return MathmlElement_mtr;
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element4(const char *string)
 {
@@ -371,7 +371,7 @@ static enum MathmlElement lookup_mathml_element4(const char *string)
             case 't':
                 switch(string[3]) {
                 case 'h':
-                    return ME_math;
+                    return MathmlElement_math;
                 }
             }
             break;
@@ -380,7 +380,7 @@ static enum MathmlElement lookup_mathml_element4(const char *string)
             case 'o':
                 switch(string[3]) {
                 case 'w':
-                    return ME_mrow;
+                    return MathmlElement_mrow;
                 }
             }
             break;
@@ -389,15 +389,15 @@ static enum MathmlElement lookup_mathml_element4(const char *string)
             case 'u':
                 switch(string[3]) {
                 case 'b':
-                    return ME_msub;
+                    return MathmlElement_msub;
                     break;
                 case 'p':
-                    return ME_msup;
+                    return MathmlElement_msup;
                 }
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element5(const char *string)
 {
@@ -411,7 +411,7 @@ static enum MathmlElement lookup_mathml_element5(const char *string)
                 case 'a':
                     switch(string[4]) {
                     case 'c':
-                        return ME_mfrac;
+                        return MathmlElement_mfrac;
                     }
                 }
             }
@@ -423,7 +423,7 @@ static enum MathmlElement lookup_mathml_element5(const char *string)
                 case 'e':
                     switch(string[4]) {
                     case 'r':
-                        return ME_mover;
+                        return MathmlElement_mover;
                     }
                 }
             }
@@ -435,7 +435,7 @@ static enum MathmlElement lookup_mathml_element5(const char *string)
                 case 'o':
                     switch(string[4]) {
                     case 't':
-                        return ME_mroot;
+                        return MathmlElement_mroot;
                     }
                 }
             }
@@ -447,7 +447,7 @@ static enum MathmlElement lookup_mathml_element5(const char *string)
                 case 'r':
                     switch(string[4]) {
                     case 't':
-                        return ME_msqrt;
+                        return MathmlElement_msqrt;
                     }
                 }
             }
@@ -459,13 +459,13 @@ static enum MathmlElement lookup_mathml_element5(const char *string)
                 case 'x':
                     switch(string[4]) {
                     case 't':
-                        return ME_mtext;
+                        return MathmlElement_mtext;
                     }
                 }
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element6(const char *string)
 {
@@ -481,7 +481,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
                     case 'o':
                         switch(string[5]) {
                         case 'r':
-                            return ME_merror;
+                            return MathmlElement_merror;
                         }
                     }
                 }
@@ -496,7 +496,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
                     case 'c':
                         switch(string[5]) {
                         case 'e':
-                            return ME_mspace;
+                            return MathmlElement_mspace;
                         }
                     }
                 }
@@ -508,7 +508,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
                     case 'l':
                         switch(string[5]) {
                         case 'e':
-                            return ME_mstyle;
+                            return MathmlElement_mstyle;
                         }
                     }
                 }
@@ -523,7 +523,7 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
                     case 'l':
                         switch(string[5]) {
                         case 'e':
-                            return ME_mtable;
+                            return MathmlElement_mtable;
                         }
                     }
                 }
@@ -538,14 +538,14 @@ static enum MathmlElement lookup_mathml_element6(const char *string)
                     case 'e':
                         switch(string[5]) {
                         case 'r':
-                            return ME_munder;
+                            return MathmlElement_munder;
                         }
                     }
                 }
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element7(const char *string)
 {
@@ -563,7 +563,7 @@ static enum MathmlElement lookup_mathml_element7(const char *string)
                         case 'o':
                             switch(string[6]) {
                             case 'n':
-                                return ME_maction;
+                                return MathmlElement_maction;
                             }
                         }
                     }
@@ -581,7 +581,7 @@ static enum MathmlElement lookup_mathml_element7(const char *string)
                         case 'e':
                             switch(string[6]) {
                             case 'd':
-                                return ME_mpadded;
+                                return MathmlElement_mpadded;
                             }
                         }
                     }
@@ -599,7 +599,7 @@ static enum MathmlElement lookup_mathml_element7(const char *string)
                         case 'u':
                             switch(string[6]) {
                             case 'p':
-                                return ME_msubsup;
+                                return MathmlElement_msubsup;
                             }
                         }
                     }
@@ -607,7 +607,7 @@ static enum MathmlElement lookup_mathml_element7(const char *string)
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element8(const char *string)
 {
@@ -627,7 +627,7 @@ static enum MathmlElement lookup_mathml_element8(const char *string)
                             case 'o':
                                 switch(string[7]) {
                                 case 'm':
-                                    return ME_mphantom;
+                                    return MathmlElement_mphantom;
                                 }
                             }
                         }
@@ -636,7 +636,7 @@ static enum MathmlElement lookup_mathml_element8(const char *string)
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element9(const char *string)
 {
@@ -658,7 +658,7 @@ static enum MathmlElement lookup_mathml_element9(const char *string)
                                 case 'c':
                                     switch(string[8]) {
                                     case 's':
-                                        return ME_semantics;
+                                        return MathmlElement_semantics;
                                     }
                                 }
                             }
@@ -668,7 +668,7 @@ static enum MathmlElement lookup_mathml_element9(const char *string)
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element10(const char *string)
 {
@@ -692,7 +692,7 @@ static enum MathmlElement lookup_mathml_element10(const char *string)
                                     case 'o':
                                         switch(string[9]) {
                                         case 'n':
-                                            return ME_annotation;
+                                            return MathmlElement_annotation;
                                         }
                                     }
                                 }
@@ -722,7 +722,7 @@ static enum MathmlElement lookup_mathml_element10(const char *string)
                                     case 'e':
                                         switch(string[9]) {
                                         case 'r':
-                                            return ME_munderover;
+                                            return MathmlElement_munderover;
                                         }
                                     }
                                 }
@@ -733,7 +733,7 @@ static enum MathmlElement lookup_mathml_element10(const char *string)
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element11(const char *string)
 {
@@ -759,7 +759,7 @@ static enum MathmlElement lookup_mathml_element11(const char *string)
                                         case 't':
                                             switch(string[10]) {
                                             case 's':
-                                                return ME_mprescripts;
+                                                return MathmlElement_mprescripts;
                                             }
                                         }
                                     }
@@ -771,7 +771,7 @@ static enum MathmlElement lookup_mathml_element11(const char *string)
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element13(const char *string)
 {
@@ -801,7 +801,7 @@ static enum MathmlElement lookup_mathml_element13(const char *string)
                                                 case 't':
                                                     switch(string[12]) {
                                                     case 's':
-                                                        return ME_mmultiscripts;
+                                                        return MathmlElement_mmultiscripts;
                                                     }
                                                 }
                                             }
@@ -815,7 +815,7 @@ static enum MathmlElement lookup_mathml_element13(const char *string)
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 static enum MathmlElement lookup_mathml_element14(const char *string)
 {
@@ -847,7 +847,7 @@ static enum MathmlElement lookup_mathml_element14(const char *string)
                                                     case 'm':
                                                         switch(string[13]) {
                                                         case 'l':
-                                                            return ME_annotation_xml;
+                                                            return MathmlElement_annotation_xml;
                                                         }
                                                     }
                                                 }
@@ -862,7 +862,7 @@ static enum MathmlElement lookup_mathml_element14(const char *string)
             }
         }
     }
-    return ME_Unknown;
+    return MathmlElement_Unknown;
 }
 #endif /* TRIE_HASH_MULTI_BYTE */
 static enum MathmlElement lookup_mathml_element(const char *string, size_t length)
@@ -893,7 +893,7 @@ static enum MathmlElement lookup_mathml_element(const char *string, size_t lengt
     case 14:
         return lookup_mathml_element14(string);
     default:
-        return ME_Unknown;
+        return MathmlElement_Unknown;
     }
 }
 #endif                       /* TRIE_HASH_lookup_mathml_element */
