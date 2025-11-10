@@ -19,6 +19,8 @@
         "src/tables/html_character_references_no_semicolon.h",
         "src/xxHash/xxhash.h"
       ],
+      "highlights": "queries/highlights.scm",
+      "injections": "queries/injections.scm",
       "injection-regex": "^html$",
       "class-name": "TreeSitterHtml"
     }
@@ -29,7 +31,8 @@
     "description": "HTML grammar for Tree-sitter",
     "authors": [
       {
-        "name": "Jeffrey Crochet"
+        "name": "Jeffrey Crochet",
+        "email": "jlcrochet91@pm.me"
       }
     ],
     "links": {
