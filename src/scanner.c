@@ -2,6 +2,14 @@
 #include <ctype.h>
 #include <string.h>
 #include <wctype.h>
+
+#define XXH_INLINE_ALL
+#define XXH_NO_STDLIB
+#define XXH_NO_XXH3
+#define XXH_NO_LONG_LONG
+#define XXH_NO_STREAM
+#include <xxhash.h>
+
 #include "helpers.h"
 #include "tables/html_elements.h"
 #include "tables/mathml_elements.h"
@@ -11,10 +19,6 @@
 #include "tree_sitter/parser.h"
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
-
-#define XXH_INLINE_ALL
-#define XXH_STATIC_LINKING_ONLY
-#include "xxhash.h"
 
 // #define DEBUG
 
