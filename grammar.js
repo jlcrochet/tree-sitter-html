@@ -33,18 +33,21 @@ const G = {
     document: $ => optional(seq(
       optional('\uFEFF'),
       optional(seq(optional($._whitespace), $.doctype)),
-      repeat1(choice(
-        $._whitespace,
-        $.element,
-        $.script_element,
-        $.style_element,
-        $.text,
-        $.character_reference,
-        $.ambiguous_ampersand,
-        $.comment,
-        $.erroneous_end_tag
-      ))
+      repeat1($._content)
     )),
+
+    _content: $ => choice(
+      $._whitespace,
+      $.element,
+      $.script_element,
+      $.style_element,
+      $.text,
+      $.character_reference,
+      $.ambiguous_ampersand,
+      $.cdata,
+      $.comment,
+      $.erroneous_end_tag
+    ),
 
     _whitespace: _ => WHITESPACE,
 
@@ -68,18 +71,7 @@ const G = {
       alias($._self_closing_tag, $.start_tag),
       seq(
         $.start_tag,
-        repeat(choice(
-          $._whitespace,
-          $.text,
-          $.character_reference,
-          $.ambiguous_ampersand,
-          $.cdata,
-          $.element,
-          $.script_element,
-          $.style_element,
-          $.comment,
-          $.erroneous_end_tag
-        )),
+        repeat($._content),
         $.end_tag
       )
     ),

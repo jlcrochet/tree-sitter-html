@@ -86,6 +86,10 @@
           "named": true
         },
         {
+          "type": "cdata",
+          "named": true
+        },
+        {
           "type": "character_reference",
           "named": true
         },
