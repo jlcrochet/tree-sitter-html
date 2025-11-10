@@ -4,6 +4,7 @@
 #include <wctype.h>
 
 #define XXH_INLINE_ALL
+// We're only calling XXH32(), so these modifiers are okay:
 #define XXH_NO_STDLIB
 #define XXH_NO_XXH3
 #define XXH_NO_LONG_LONG
