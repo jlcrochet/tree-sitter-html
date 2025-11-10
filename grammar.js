@@ -18,7 +18,7 @@ const G = {
     $._script_start_tag_name,
     $._style_start_tag_name,
     $._end_tag_name,
-    $.erroneous_end_tag_name,
+    $._erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
     $.text,
     $.character_reference,
@@ -141,7 +141,7 @@ const G = {
 
     erroneous_end_tag: $ => seq(
       '</',
-      $.erroneous_end_tag_name,
+      $._erroneous_end_tag_name,
       optional($._whitespace),
       '>'
     ),

@@ -131,15 +131,6 @@ static bool scan_char(TSLexer *lexer, int c) {
     }
 }
 
-static bool scan_whitespace(TSLexer *lexer) {
-    if (is_html_whitespace(lexer->lookahead)) {
-        do { advance(lexer); } while (is_html_whitespace(lexer->lookahead));
-        return true;
-    } else {
-        return false;
-    }
-}
-
 // Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any
 // Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
 static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
@@ -222,9 +213,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
     #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
         (SCAN(CHAR) || SCAN(CHAR | 0x0020))
-
-    #define SCAN_WHITESPACE() \
-        scan_whitespace(lexer)
 
     #ifdef DEBUG
     fputs("---------------------------------------------\n", stderr);
@@ -371,11 +359,11 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[TT_SelfClosingTagDelimiter]) {
-        // #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
-        // ASSERT(get_current_namespace(scanner) != EN_HTML);
-        // #endif
+        #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
+        ASSERT(get_current_namespace(scanner) != EN_HTML);
+        #endif
 
-        // This is necessary for some reason; probably due to a bug in the grammar
+        // This is necessary for some reason, probably due to a bug in the grammar
         while (is_html_whitespace(lexer->lookahead))
             skip(lexer);
 
@@ -388,14 +376,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[TT_Text]) {
-        // Leading whitespace should not be included as part of the text
-        while (is_html_whitespace(lexer->lookahead))
-            skip(lexer);
-
-        bool text_matched = false;
-
-        lexer->mark_end(lexer);
-
         enum {
             Normal,
             RawText,
@@ -413,6 +393,14 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                     text_type = EscapableRawText;
             }
         }
+
+        // Leading whitespace should not be included as part of the text
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
+
+        bool text_matched = false;
+
+        lexer->mark_end(lexer);
 
         switch (text_type) {
             case Normal:

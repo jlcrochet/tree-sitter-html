@@ -590,7 +590,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "erroneous_end_tag_name"
+          "name": "_erroneous_end_tag_name"
         },
         {
           "type": "CHOICE",
@@ -951,7 +951,7 @@
     },
     {
       "type": "SYMBOL",
-      "name": "erroneous_end_tag_name"
+      "name": "_erroneous_end_tag_name"
     },
     {
       "type": "SYMBOL",
