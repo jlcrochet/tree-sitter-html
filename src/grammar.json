@@ -589,8 +589,13 @@
           "value": "</"
         },
         {
-          "type": "SYMBOL",
-          "name": "_erroneous_end_tag_name"
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_erroneous_end_tag_name"
+          },
+          "named": true,
+          "value": "tag_name"
         },
         {
           "type": "CHOICE",

@@ -141,7 +141,7 @@ const G = {
 
     erroneous_end_tag: $ => seq(
       '</',
-      $._erroneous_end_tag_name,
+      alias($._erroneous_end_tag_name, $.tag_name),
       optional($._whitespace),
       '>'
     ),

@@ -115,7 +115,7 @@ static const char * const ts_symbol_names[] = {
   [sym__script_start_tag_name] = "tag_name",
   [sym__style_start_tag_name] = "tag_name",
   [sym__end_tag_name] = "tag_name",
-  [sym__erroneous_end_tag_name] = "_erroneous_end_tag_name",
+  [sym__erroneous_end_tag_name] = "tag_name",
   [sym__self_closing_tag_delimiter] = "/>",
   [sym_text] = "text",
   [sym_character_reference] = "character_reference",
@@ -181,7 +181,7 @@ static const TSSymbol ts_symbol_map[] = {
   [sym__script_start_tag_name] = sym__start_tag_name,
   [sym__style_start_tag_name] = sym__start_tag_name,
   [sym__end_tag_name] = sym__start_tag_name,
-  [sym__erroneous_end_tag_name] = sym__erroneous_end_tag_name,
+  [sym__erroneous_end_tag_name] = sym__start_tag_name,
   [sym__self_closing_tag_delimiter] = anon_sym_SLASH_GT,
   [sym_text] = sym_text,
   [sym_character_reference] = sym_character_reference,
@@ -338,7 +338,7 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .named = true,
   },
   [sym__erroneous_end_tag_name] = {
-    .visible = false,
+    .visible = true,
     .named = true,
   },
   [sym__self_closing_tag_delimiter] = {
