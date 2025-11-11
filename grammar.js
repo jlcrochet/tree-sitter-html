@@ -21,6 +21,7 @@ module.exports = grammar({
     $._end_tag_name,
     $._erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
+    // $._implied_end_tag,
     $._raw_text,
     $._escapable_raw_text,
     $.character_reference,
@@ -73,21 +74,23 @@ module.exports = grammar({
 
     _normal_element: $ => choice(
       alias($._self_closing_tag, $.start_tag),
-      seq(
+      prec.right(seq(
         $.start_tag,
         repeat($._content),
-        $.end_tag
-      )
+        optional($.end_tag)
+        // choice($.end_tag, $._implied_end_tag)
+      ))
     ),
 
-    script_element: $ => seq(
+    script_element: $ => prec.right(seq(
       alias($._script_start_tag, $.start_tag),
       repeat(choice(
         $._whitespace,
         alias($._raw_text, $.text)
       )),
-      $.end_tag
-    ),
+      optional($.end_tag)
+      // choice($.end_tag, $._implied_end_tag)
+    )),
     _script_start_tag: $ => seq(
       '<',
       alias($._script_start_tag_name, $.tag_name),
@@ -96,14 +99,15 @@ module.exports = grammar({
       '>'
     ),
 
-    style_element: $ => seq(
+    style_element: $ => prec.right(seq(
       alias($._style_start_tag, $.start_tag),
       repeat(choice(
         $._whitespace,
         alias($._raw_text, $.text)
       )),
-      $.end_tag
-    ),
+      optional($.end_tag)
+      // choice($.end_tag, $._implied_end_tag)
+    )),
     _style_start_tag: $ => seq(
       '<',
       alias($._style_start_tag_name, $.tag_name),
@@ -112,14 +116,15 @@ module.exports = grammar({
       '>'
     ),
 
-    _escapable_raw_text_element: $ => seq(
+    _escapable_raw_text_element: $ => prec.right(seq(
       alias($._escapable_raw_text_start_tag, $.start_tag),
       repeat(choice(
         $._whitespace,
         alias($._escapable_raw_text, $.text)
       )),
-      $.end_tag
-    ),
+      optional($.end_tag)
+      // choice($.end_tag, $._implied_end_tag)
+    )),
     _escapable_raw_text_start_tag: $ => seq(
       '<',
       alias($._escapable_raw_text_start_tag_name, $.tag_name),

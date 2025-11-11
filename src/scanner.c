@@ -32,6 +32,7 @@ enum HtmlTokenType {
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
     HtmlTokenType_SelfClosingTagDelimiter,
+    // HtmlTokenType_ImpliedEndTag,
     HtmlTokenType_RawText,
     HtmlTokenType_EscapableRawText,
     HtmlTokenType_CharacterReference,
@@ -370,6 +371,10 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
         return true;
     }
+
+    // if (valid_symbols[HtmlTokenType_ImpliedEndTag]) {
+        
+    // }
 
     if (valid_symbols[HtmlTokenType_SelfClosingTagDelimiter]) {
         #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
