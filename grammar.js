@@ -9,10 +9,6 @@
 
 const WHITESPACE = /[\t\n\f\r ]+/
 
-const PREC = {
-  TEXT: 0
-}
-
 module.exports = grammar({
   name: 'html',
 
@@ -28,8 +24,9 @@ module.exports = grammar({
     $.text,
     $._raw_text,
     $._escapable_raw_text,
-    $.character_reference,
-    $.ambiguous_ampersand,
+    $._named_character_reference,
+    $._named_character_reference_no_semicolon,
+    $._unknown_named_character_reference,
     $._cdata_text,
     $._comment_text,
   ],
@@ -51,7 +48,7 @@ module.exports = grammar({
       $.style_element,
       $.text,
       $.character_reference,
-      $.ambiguous_ampersand,
+      $.invalid_character_reference,
       $.cdata,
       $.comment,
       $.erroneous_end_tag
@@ -121,7 +118,7 @@ module.exports = grammar({
       repeat(choice(
         alias($._escapable_raw_text, $.text),
         $.character_reference,
-        $.ambiguous_ampersand
+        $.invalid_character_reference
       )),
       optional($._whitespace),
       $.end_tag
@@ -195,6 +192,26 @@ module.exports = grammar({
       )
     )),
 
+    character_reference: $ => seq(
+      '&',
+      choice(
+        $._named_character_reference,
+        $._named_character_reference_no_semicolon,
+        $._numeric_character_reference,
+      )
+    ),
+
+    _numeric_character_reference: _ => token(seq(
+      '#',
+      choice(
+        /[Xx][0-9A-Fa-f]+/,
+        /\d+/
+      ),
+      ';'
+    )),
+
+    invalid_character_reference: $ => seq('&', $._unknown_named_character_reference),
+
     attribute: $ => seq(
       $.attribute_name,
       optional(seq(
@@ -212,8 +229,8 @@ module.exports = grammar({
       repeat1(choice(
         /[^\t\n\f\r "'=<>`&]+/,
         $.character_reference,
-        $.ambiguous_ampersand,
-        '&',
+        $.invalid_character_reference,
+        /&[^\t\n\f\r "'=<>`&]*/,
       )),
       // Single-quoted
       seq(
@@ -221,8 +238,8 @@ module.exports = grammar({
         repeat(choice(
           /[^'&]+/,
           $.character_reference,
-          $.ambiguous_ampersand,
-          '&',
+          $.invalid_character_reference,
+          /&[^&']*/,
         )),
         "'"
       ),
@@ -232,8 +249,8 @@ module.exports = grammar({
         repeat(choice(
           /[^"&]+/,
           $.character_reference,
-          $.ambiguous_ampersand,
-          '&',
+          $.invalid_character_reference,
+          /&[^&"]*/,
         )),
         '"'
       ),
@@ -242,4 +259,3 @@ module.exports = grammar({
 })
 
 module.exports.WHITESPACE = WHITESPACE
-module.exports.PREC = PREC
