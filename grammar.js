@@ -9,7 +9,7 @@
 
 const WHITESPACE = /[\t\n\f\r ]+/
 
-const G = {
+module.exports = grammar({
   name: 'html',
 
   externals: $ => [
@@ -211,6 +211,4 @@ const G = {
       ),
     ),
   }
-}
-
-module.exports = grammar(G)
+})
