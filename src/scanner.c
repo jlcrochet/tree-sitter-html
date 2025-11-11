@@ -32,7 +32,7 @@ enum HtmlTokenType {
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
     HtmlTokenType_SelfClosingTagDelimiter,
-    // HtmlTokenType_ImpliedEndTag,
+    HtmlTokenType_Text,
     HtmlTokenType_RawText,
     HtmlTokenType_EscapableRawText,
     HtmlTokenType_CharacterReference,
@@ -71,7 +71,7 @@ static uint8_t get_current_tag(struct Scanner *scanner) {
         return HtmlElement_html;
 }
 
-void *tree_sitter_html_external_scanner_create() {
+void *tree_sitter_html_external_scanner_create(void) {
     return ts_calloc(1, sizeof(struct Scanner));
 }
 
@@ -210,6 +210,7 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
         }
     }
 
+    // If we don't care about the hash, we can pass NULL for `name_hash` to skip this step
     if (name_hash != NULL) {
         if (*element == 0)
             *name_hash = XXH32(tag_name.contents, tag_name.size, 0);
@@ -337,8 +338,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[HtmlTokenType_EndTagName]) {
-        ASSERT(scanner->tags.size > 0);
-        
         enum ElementNamespace ns = get_current_namespace(scanner);
         uint8_t element;
         XXH32_hash_t name_hash;
@@ -380,10 +379,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    // if (valid_symbols[HtmlTokenType_ImpliedEndTag]) {
-        
-    // }
-
     if (valid_symbols[HtmlTokenType_SelfClosingTagDelimiter]) {
         #ifndef ALLOW_SELF_CLOSING_HTML_TAGS
         ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);
@@ -399,6 +394,35 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             array_pop(&scanner->custom_name_hashes);
         lexer->result_symbol = HtmlTokenType_SelfClosingTagDelimiter;
         return true;
+    }
+
+    if (valid_symbols[HtmlTokenType_Text]) {
+        // Leading whitespace should not be included as part of the text
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
+
+        ASSERT(lexer->lookahead != '<' && lexer->lookahead != '&');
+
+        bool text_matched = false;
+
+        lexer->mark_end(lexer);
+
+        while (!lexer->eof(lexer)) {
+            int c = lexer->lookahead;
+            advance(lexer);
+
+            if (c == '<' || c == '&') {
+                break;
+            } else if (!is_html_whitespace(c)) {
+                lexer->mark_end(lexer);
+                text_matched = true;
+            }
+        }
+
+        if (text_matched) {
+            lexer->result_symbol = HtmlTokenType_Text;
+            return true;
+        }
     }
 
     if (valid_symbols[HtmlTokenType_RawText]) {

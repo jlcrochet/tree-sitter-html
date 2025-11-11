@@ -9,6 +9,10 @@
 
 const WHITESPACE = /[\t\n\f\r ]+/
 
+const PREC = {
+  TEXT: 0
+}
+
 module.exports = grammar({
   name: 'html',
 
@@ -21,6 +25,7 @@ module.exports = grammar({
     $._end_tag_name,
     $._erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
+    $.text,
     $._raw_text,
     $._escapable_raw_text,
     $.character_reference,
@@ -44,7 +49,7 @@ module.exports = grammar({
       $.element,
       $.script_element,
       $.style_element,
-      alias(/[^<&\s]([^<&]*[^<&\s])?/, $.text),
+      $.text,
       $.character_reference,
       $.ambiguous_ampersand,
       $.cdata,
@@ -53,6 +58,9 @@ module.exports = grammar({
     ),
 
     _whitespace: _ => WHITESPACE,
+
+    // // This is regular text content, i.e. text content that does not appear in either raw text elements, escapable raw text elements, CDATA sections, comments, etc.
+    // text: _ => token(prec(PREC.TEXT, /(\{[^{]|[^<&\s])([^<&]*[^<&\s])?/)),
 
     // This covers all elements except `script` and `style`, which need to have their own symbols in the grammar in order to facilitate syntax injection
     element: $ => choice(
@@ -82,10 +90,9 @@ module.exports = grammar({
 
     script_element: $ => seq(
       alias($._script_start_tag, $.start_tag),
-      repeat(choice(
-        $._whitespace,
-        alias($._raw_text, $.text)
-      )),
+      optional($._whitespace),
+      alias($._raw_text, $.text),
+      optional($._whitespace),
       $.end_tag
     ),
     _script_start_tag: $ => seq(
@@ -98,10 +105,9 @@ module.exports = grammar({
 
     style_element: $ => seq(
       alias($._style_start_tag, $.start_tag),
-      repeat(choice(
-        $._whitespace,
-        alias($._raw_text, $.text)
-      )),
+      optional($._whitespace),
+      alias($._raw_text, $.text),
+      optional($._whitespace),
       $.end_tag
     ),
     _style_start_tag: $ => seq(
@@ -114,10 +120,9 @@ module.exports = grammar({
 
     _escapable_raw_text_element: $ => seq(
       alias($._escapable_raw_text_start_tag, $.start_tag),
-      repeat(choice(
-        $._whitespace,
-        alias($._escapable_raw_text, $.text)
-      )),
+      optional($._whitespace),
+      alias($._escapable_raw_text, $.text),
+      optional($._whitespace),
       $.end_tag
     ),
     _escapable_raw_text_start_tag: $ => seq(
@@ -131,7 +136,7 @@ module.exports = grammar({
     start_tag: $ => seq(
       '<',
       alias($._start_tag_name, $.tag_name),
-      repeat(seq(token(prec(1, WHITESPACE)), $.attribute)),
+      repeat(seq($._whitespace, $.attribute)),
       optional($._whitespace),
       '>'
     ),
@@ -146,7 +151,7 @@ module.exports = grammar({
     _self_closing_tag: $ => seq(
       '<',
       alias($._start_tag_name, $.tag_name),
-      repeat(seq(token(prec(1, WHITESPACE)), $.attribute)),
+      repeat(seq($._whitespace, $.attribute)),
       optional($._whitespace),
       alias($._self_closing_tag_delimiter, '/>')
     ),
@@ -179,7 +184,7 @@ module.exports = grammar({
       optional($._whitespace),
       '>'
     ),
-    _doctype_legacy_string: $ => token(seq(
+    _doctype_legacy_string: _ => token(seq(
       WHITESPACE,
       /SYSTEM/i,
       WHITESPACE,
@@ -192,9 +197,11 @@ module.exports = grammar({
     attribute: $ => seq(
       $.attribute_name,
       optional(seq(
-        optional(token(prec(2, WHITESPACE))),
-        '=',
-        optional($._whitespace),
+        // This rule seems to do a better job at prioritizing whitespace before the `=` than simply making a regular sequence:
+        alias(
+          token(seq(optional(WHITESPACE), '=', optional(WHITESPACE))),
+          '='
+        ),
         $.attribute_value,
       ))
     ),
@@ -232,3 +239,6 @@ module.exports = grammar({
     ),
   }
 })
+
+module.exports.WHITESPACE = WHITESPACE
+module.exports.PREC = PREC
