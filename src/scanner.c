@@ -63,6 +63,14 @@ static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
         return ElementNamespace_HTML;
 }
 
+static uint8_t get_current_tag(struct Scanner *scanner) {
+    if (scanner->tags.size > 0)
+        return *array_back(&scanner->tags);
+    else
+        // If no elements have been pushed onto the stack yet, the default root element is `html`
+        return HtmlElement_html;
+}
+
 void *tree_sitter_html_external_scanner_create() {
     return ts_calloc(1, sizeof(struct Scanner));
 }
@@ -337,12 +345,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
         ASSERT(scan_tag_name(lexer, ns, &element, &name_hash))
 
-        uint8_t top_element = *array_back(&scanner->tags);
+        uint8_t top_tag = get_current_tag(scanner);
         XXH32_hash_t top_name_hash = 0;
-        if (top_element == 0)
+        if (top_tag == 0)
             top_name_hash = *array_back(&scanner->custom_name_hashes);
 
-        if (element == top_element && name_hash == top_name_hash) {
+        if (element == top_tag && name_hash == top_name_hash) {
             array_pop(&scanner->tags);
 
             if (top_name_hash)
@@ -400,8 +408,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
         bool text_matched = false;
 
-        ASSERT(scanner->tags.size > 0);
-        enum HtmlElement top_element = *array_back(&scanner->tags);
+        enum HtmlElement top_tag = get_current_tag(scanner);
 
         lexer->mark_end(lexer);
 
@@ -413,12 +420,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 // Check for the end tag
                 if (lexer->lookahead == '/') {
                     advance(lexer);
-                    if (top_element == HtmlElement_script) {
+                    if (top_tag == HtmlElement_script) {
                         if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
                             if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                 break;
                         }
-                    } else if (top_element == HtmlElement_style) {
+                    } else if (top_tag == HtmlElement_style) {
                         if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
                             if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                 break;
@@ -446,8 +453,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
         bool text_matched = false;
 
-        ASSERT(scanner->tags.size > 0);
-        enum HtmlElement top_element = *array_back(&scanner->tags);
+        enum HtmlElement top_tag = get_current_tag(scanner);
     
         lexer->mark_end(lexer);
     
@@ -459,12 +465,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 // Check for the end tag
                 if (lexer->lookahead == '/') {
                     advance(lexer);
-                    if (top_element == HtmlElement_textarea) {
+                    if (top_tag == HtmlElement_textarea) {
                         if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
                             if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                 break;
                         }
-                    } else if (top_element == HtmlElement_title) {
+                    } else if (top_tag == HtmlElement_title) {
                         if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
                             if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
                                 break;
