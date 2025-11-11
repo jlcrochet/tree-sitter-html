@@ -222,17 +222,6 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
 }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-    struct Scanner *scanner = payload;
-
-    #define ASSERT(CONDITION) \
-        if (!(CONDITION)) return false;
-
-    #define SCAN(CHAR) \
-        scan_char(lexer, CHAR)
-
-    #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
-        (SCAN(CHAR) || SCAN(CHAR | 0x0020))
-
     #ifdef DEBUG
     fputs("---------------------------------------------\n", stderr);
     fprintf(stderr, "%d %c\n", lexer->get_column(lexer), lexer->lookahead);
@@ -249,6 +238,19 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     fprintf(stderr, "%d HtmlTokenType_CdataText\n", valid_symbols[HtmlTokenType_CdataText]);
     fprintf(stderr, "%d HtmlTokenType_CommentText\n", valid_symbols[HtmlTokenType_CommentText]);
     #endif
+
+    struct Scanner *scanner = payload;
+
+    #define ASSERT(CONDITION) \
+        if (!(CONDITION)) return false;
+
+    #define SCAN(CHAR) \
+        scan_char(lexer, CHAR)
+
+    #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
+        (SCAN(CHAR) || SCAN(CHAR | 0x0020))
+
+    // ASSERT(!is_html_whitespace(lexer->lookahead));
 
     if (valid_symbols[HtmlTokenType_StartTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);

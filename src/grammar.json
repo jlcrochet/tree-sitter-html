@@ -458,13 +458,29 @@
           ]
         },
         {
-          "type": "ALIAS",
+          "type": "REPEAT",
           "content": {
-            "type": "SYMBOL",
-            "name": "_escapable_raw_text"
-          },
-          "named": true,
-          "value": "text"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_escapable_raw_text"
+                },
+                "named": true,
+                "value": "text"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "character_reference"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "ambiguous_ampersand"
+              }
+            ]
+          }
         },
         {
           "type": "CHOICE",
