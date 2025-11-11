@@ -83,8 +83,13 @@
           "name": "style_element"
         },
         {
-          "type": "SYMBOL",
-          "name": "text"
+          "type": "ALIAS",
+          "content": {
+            "type": "PATTERN",
+            "value": "[^<&\\s]([^<&]*[^<&\\s])?"
+          },
+          "named": true,
+          "value": "text"
         },
         {
           "type": "SYMBOL",
@@ -118,6 +123,10 @@
         {
           "type": "SYMBOL",
           "name": "_void_element"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_escapable_raw_text_element"
         },
         {
           "type": "SYMBOL",
@@ -249,8 +258,13 @@
                 "name": "_whitespace"
               },
               {
-                "type": "SYMBOL",
-                "name": "text"
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_raw_text"
+                },
+                "named": true,
+                "value": "text"
               }
             ]
           }
@@ -333,8 +347,13 @@
                 "name": "_whitespace"
               },
               {
-                "type": "SYMBOL",
-                "name": "text"
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_raw_text"
+                },
+                "named": true,
+                "value": "text"
               }
             ]
           }
@@ -357,6 +376,95 @@
           "content": {
             "type": "SYMBOL",
             "name": "_style_start_tag_name"
+          },
+          "named": true,
+          "value": "tag_name"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_whitespace"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "attribute"
+              }
+            ]
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_whitespace"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ">"
+        }
+      ]
+    },
+    "_escapable_raw_text_element": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_escapable_raw_text_start_tag"
+          },
+          "named": true,
+          "value": "start_tag"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_whitespace"
+              },
+              {
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_escapable_raw_text"
+                },
+                "named": true,
+                "value": "text"
+              }
+            ]
+          }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "end_tag"
+        }
+      ]
+    },
+    "_escapable_raw_text_start_tag": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "<"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_escapable_raw_text_start_tag_name"
           },
           "named": true,
           "value": "tag_name"
@@ -919,6 +1027,10 @@
     },
     {
       "type": "SYMBOL",
+      "name": "_escapable_raw_text_start_tag_name"
+    },
+    {
+      "type": "SYMBOL",
       "name": "_end_tag_name"
     },
     {
@@ -931,7 +1043,11 @@
     },
     {
       "type": "SYMBOL",
-      "name": "text"
+      "name": "_raw_text"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_escapable_raw_text"
     },
     {
       "type": "SYMBOL",

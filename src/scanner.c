@@ -28,10 +28,12 @@ enum HtmlTokenType {
     HtmlTokenType_VoidStartTagName,
     HtmlTokenType_ScriptStartTagName,
     HtmlTokenType_StyleStartTagName,
+    HtmlTokenType_EscapableRawTextStartTagName,
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
     HtmlTokenType_SelfClosingTagDelimiter,
-    HtmlTokenType_Text,
+    HtmlTokenType_RawText,
+    HtmlTokenType_EscapableRawText,
     HtmlTokenType_CharacterReference,
     HtmlTokenType_AmbiguousAmpersand,
     HtmlTokenType_CdataText,
@@ -238,9 +240,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     fprintf(stderr, "%d HtmlTokenType_CommentText\n", valid_symbols[HtmlTokenType_CommentText]);
     #endif
 
-    // if (lexer->eof(lexer))
-    //     return false;
-
     if (valid_symbols[HtmlTokenType_StartTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);
         uint8_t e;
@@ -279,6 +278,13 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                     case HtmlElement_style:
                         array_push(&scanner->tags, e);
                         lexer->result_symbol = HtmlTokenType_StyleStartTagName;
+                        break;
+
+                    // Escapable raw text elements
+                    case HtmlElement_textarea:
+                    case HtmlElement_title:
+                        array_push(&scanner->tags, e);
+                        lexer->result_symbol = HtmlTokenType_EscapableRawTextStartTagName;
                         break;
 
                     // Top-level elements
@@ -382,108 +388,94 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    if (valid_symbols[HtmlTokenType_Text]) {
-        enum {
-            Normal,
-            RawText,
-            EscapableRawText
-        } text_type = Normal;
-
-        enum HtmlElement top_element;
-
-        if (get_current_namespace(scanner) == ElementNamespace_HTML) {
-            if (scanner->tags.size > 0) {
-                top_element = *array_back(&scanner->tags);
-                if (top_element == HtmlElement_script || top_element == HtmlElement_style)
-                    text_type = RawText;
-                else if (top_element == HtmlElement_textarea || top_element == HtmlElement_title)
-                    text_type = EscapableRawText;
-            }
-        }
-
+    if (valid_symbols[HtmlTokenType_RawText]) {
         // Leading whitespace should not be included as part of the text
         while (is_html_whitespace(lexer->lookahead))
             skip(lexer);
 
         bool text_matched = false;
 
+        ASSERT(scanner->tags.size > 0);
+        enum HtmlElement top_element = *array_back(&scanner->tags);
+
         lexer->mark_end(lexer);
 
-        switch (text_type) {
-            case Normal:
-                while (!lexer->eof(lexer) && lexer->lookahead != '<' && lexer->lookahead != '&') {
-                    int c = lexer->lookahead;
+        while (!lexer->eof(lexer)) {
+            int c = lexer->lookahead;
+            advance(lexer);
+    
+            if (c == '<') {
+                // Check for the end tag
+                if (lexer->lookahead == '/') {
                     advance(lexer);
-                    if (!is_html_whitespace(c)) {
-                        lexer->mark_end(lexer);
-                        text_matched = true;
-                    }
-                }
-                break;
-
-            case RawText:
-                while (!lexer->eof(lexer)) {
-                    int c = lexer->lookahead;
-                    advance(lexer);
-            
-                    if (c == '<') {
-                        // Check for the end tag
-                        if (lexer->lookahead == '/') {
-                            advance(lexer);
-                            if (top_element == HtmlElement_script) {
-                                if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
-                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                        goto finish;
-                                }
-                            } else if (top_element == HtmlElement_style) {
-                                if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
-                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                        goto finish;
-                                }
-                            }
+                    if (top_element == HtmlElement_script) {
+                        if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
                         }
-                        lexer->mark_end(lexer);
-                        text_matched = true;
-                    } else if (!is_html_whitespace(c)) {
-                        lexer->mark_end(lexer);
-                        text_matched = true;
-                    }
-                }
-                break;
-
-            case EscapableRawText:
-                while (!lexer->eof(lexer) && lexer->lookahead != '&') {
-                    int c = lexer->lookahead;
-                    advance(lexer);
-            
-                    if (c == '<') {
-                        // Check for the end tag
-                        if (lexer->lookahead == '/') {
-                            advance(lexer);
-                            if (top_element == HtmlElement_textarea) {
-                                if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
-                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                        goto finish;
-                                }
-                            } else if (top_element == HtmlElement_title) {
-                                if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
-                                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                        goto finish;
-                                }
-                            }
+                    } else if (top_element == HtmlElement_style) {
+                        if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
                         }
-                        lexer->mark_end(lexer);
-                        text_matched = true;
-                    } else if (!is_html_whitespace(c)) {
-                        lexer->mark_end(lexer);
-                        text_matched = true;
                     }
                 }
-                break;
+                lexer->mark_end(lexer);
+                text_matched = true;
+            } else if (!is_html_whitespace(c)) {
+                lexer->mark_end(lexer);
+                text_matched = true;
+            }
         }
         
-        finish: if (text_matched) {
-            lexer->result_symbol = HtmlTokenType_Text;
+        if (text_matched) {
+            lexer->result_symbol = HtmlTokenType_RawText;
+            return true;
+        }
+    }
+
+    if (valid_symbols[HtmlTokenType_EscapableRawText]) {
+        // Leading whitespace should not be included as part of the text
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
+
+        bool text_matched = false;
+
+        ASSERT(scanner->tags.size > 0);
+        enum HtmlElement top_element = *array_back(&scanner->tags);
+    
+        lexer->mark_end(lexer);
+    
+        while (!lexer->eof(lexer) && lexer->lookahead != '&') {
+            int c = lexer->lookahead;
+            advance(lexer);
+
+            if (c == '<') {
+                // Check for the end tag
+                if (lexer->lookahead == '/') {
+                    advance(lexer);
+                    if (top_element == HtmlElement_textarea) {
+                        if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
+                        }
+                    } else if (top_element == HtmlElement_title) {
+                        if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
+                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                                break;
+                        }
+                    }
+                }
+                lexer->mark_end(lexer);
+                text_matched = true;
+            } else if (!is_html_whitespace(c)) {
+                lexer->mark_end(lexer);
+                text_matched = true;
+            }
+        }
+        
+        if (text_matched) {
+            lexer->result_symbol = HtmlTokenType_EscapableRawText;
             return true;
         }
     }

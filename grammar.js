@@ -17,10 +17,12 @@ module.exports = grammar({
     $._void_start_tag_name,
     $._script_start_tag_name,
     $._style_start_tag_name,
+    $._escapable_raw_text_start_tag_name,
     $._end_tag_name,
     $._erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
-    $.text,
+    $._raw_text,
+    $._escapable_raw_text,
     $.character_reference,
     $.ambiguous_ampersand,
     $._cdata_text,
@@ -36,12 +38,13 @@ module.exports = grammar({
       repeat1($._content)
     )),
 
+    // This covers all normal element content outside of raw text and escapable raw text elements, which are covered separately below
     _content: $ => choice(
       $._whitespace,
       $.element,
       $.script_element,
       $.style_element,
-      $.text,
+      alias(/[^<&\s]([^<&]*[^<&\s])?/, $.text),
       $.character_reference,
       $.ambiguous_ampersand,
       $.cdata,
@@ -54,8 +57,9 @@ module.exports = grammar({
     // This covers all elements except `script` and `style`, which need to have their own symbols in the grammar in order to facilitate syntax injection
     element: $ => choice(
       $._void_element,
-      // NOTE: In this context, a "normal" element is just any non-void element. What kind of content a "normal" element is allowed to have is determined by the external scanner.
-      $._normal_element
+      $._escapable_raw_text_element,
+      // NOTE: In this context, a "normal" element is just any other non-void element. What kind of content a "normal" element is allowed to have is determined by the external scanner.
+      $._normal_element,
     ),
 
     _void_element: $ => alias($._void_start_tag, $.start_tag),
@@ -80,7 +84,7 @@ module.exports = grammar({
       alias($._script_start_tag, $.start_tag),
       repeat(choice(
         $._whitespace,
-        $.text
+        alias($._raw_text, $.text)
       )),
       $.end_tag
     ),
@@ -96,13 +100,29 @@ module.exports = grammar({
       alias($._style_start_tag, $.start_tag),
       repeat(choice(
         $._whitespace,
-        $.text
+        alias($._raw_text, $.text)
       )),
       $.end_tag
     ),
     _style_start_tag: $ => seq(
       '<',
       alias($._style_start_tag_name, $.tag_name),
+      repeat(seq($._whitespace, $.attribute)),
+      optional($._whitespace),
+      '>'
+    ),
+
+    _escapable_raw_text_element: $ => seq(
+      alias($._escapable_raw_text_start_tag, $.start_tag),
+      repeat(choice(
+        $._whitespace,
+        alias($._escapable_raw_text, $.text)
+      )),
+      $.end_tag
+    ),
+    _escapable_raw_text_start_tag: $ => seq(
+      '<',
+      alias($._escapable_raw_text_start_tag_name, $.tag_name),
       repeat(seq($._whitespace, $.attribute)),
       optional($._whitespace),
       '>'
