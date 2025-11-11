@@ -15,8 +15,8 @@
 #include "tables/html_elements.h"
 #include "tables/mathml_elements.h"
 #include "tables/svg_elements.h"
-#include "tables/html_character_references.h"
-#include "tables/html_character_references_no_semicolon.h"
+#include "tables/html_full_character_references.h"
+#include "tables/html_short_character_references.h"
 #include "tree_sitter/parser.h"
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
@@ -33,11 +33,9 @@ enum HtmlTokenType {
     HtmlTokenType_Text,
     HtmlTokenType_RawText,
     HtmlTokenType_EscapableRawText,
-    // HtmlTokenType_CharacterReference,
-    // HtmlTokenType_AmbiguousAmpersand,
-    HtmlTokenType_NamedCharacterReference,
-    HtmlTokenType_NamedCharacterReferenceNoSemicolon,
-    HtmlTokenType_UnknownNamedCharacterReference,
+    HtmlTokenType_FullCharacterReference,
+    HtmlTokenType_ShortCharacterReference,
+    HtmlTokenType_InvalidCharacterReference,
     HtmlTokenType_CdataText,
     HtmlTokenType_CommentText,
     // This is *not* a token type; it is used by scanners for other languages that need to embed this scanner and add more token types.
@@ -499,40 +497,100 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
     }
 
-    if (valid_symbols[HtmlTokenType_NamedCharacterReference] || valid_symbols[HtmlTokenType_NamedCharacterReferenceNoSemicolon] || valid_symbols[HtmlTokenType_UnknownNamedCharacterReference]) {
-        static Array(char) name = array_new();
-        array_clear(&name);
+    if (valid_symbols[HtmlTokenType_FullCharacterReference] || valid_symbols[HtmlTokenType_ShortCharacterReference] || valid_symbols[HtmlTokenType_InvalidCharacterReference]) {
+        ASSERT(SCAN('&'));
 
-        lexer->mark_end(lexer);
-        
-        while (isalnum(lexer->lookahead)) {
-            array_push(&name, lexer->lookahead);
-            advance(lexer);
-
-            if (lookup_character_reference_no_semicolon(name.contents, name.size)) {
-                lexer->result_symbol = HtmlTokenType_NamedCharacterReferenceNoSemicolon;
-                lexer->mark_end(lexer);
-            }
-        }
-
-        ASSERT(name.size > 0);
-
-        if (SCAN(';')) {
-            if (lookup_character_reference(name.contents, name.size)) {
-                lexer->mark_end(lexer);
-                lexer->result_symbol = HtmlTokenType_NamedCharacterReference;
-                return true;
-            } else if (lexer->result_symbol == HtmlTokenType_NamedCharacterReferenceNoSemicolon) {
+        if (SCAN('#')) {
+            ASSERT(valid_symbols[HtmlTokenType_FullCharacterReference]);
+            // Numeric character reference
+            if (SCAN_ICASE('X')) {
+                // Hexadecimal
+                ASSERT(isxdigit(lexer->lookahead));
+                do { advance(lexer); } while (isxdigit(lexer->lookahead));
+                ASSERT(SCAN(';'));
+                lexer->result_symbol = HtmlTokenType_FullCharacterReference;
                 return true;
             } else {
-                lexer->mark_end(lexer);
-                lexer->result_symbol = HtmlTokenType_UnknownNamedCharacterReference;
+                // Decimal
+                ASSERT(isdigit(lexer->lookahead));
+                do { advance(lexer); } while (isdigit(lexer->lookahead));
+                ASSERT(SCAN(';'));
+                lexer->result_symbol = HtmlTokenType_FullCharacterReference;
                 return true;
             }
-        }
+        } else {
+            // Named character reference
+            static Array(char) name = array_new();
+            array_clear(&name);
 
-        return false;
+            lexer->mark_end(lexer);
+
+            while (isalnum(lexer->lookahead)) {
+                array_push(&name, lexer->lookahead);
+                advance(lexer);
+            
+                if (valid_symbols[HtmlTokenType_ShortCharacterReference] && lookup_short_character_reference(name.contents, name.size)) {
+                    lexer->result_symbol = HtmlTokenType_ShortCharacterReference;
+                    lexer->mark_end(lexer);
+                }
+            }
+
+            ASSERT(name.size > 0);
+
+            if (SCAN(';')) {
+                if (lookup_full_character_reference(name.contents, name.size)) {
+                    lexer->mark_end(lexer);
+                    lexer->result_symbol = HtmlTokenType_FullCharacterReference;
+                    return true;
+                } else if (lexer->result_symbol == HtmlTokenType_ShortCharacterReference) {
+                    return true;
+                } else {
+                    lexer->mark_end(lexer);
+                    lexer->result_symbol = HtmlTokenType_InvalidCharacterReference;
+                    return true;
+                }
+            } else if (lexer->result_symbol == HtmlTokenType_ShortCharacterReference) {
+                return true;
+            }
+
+            return false;
+        }
     }
+
+    // if (valid_symbols[HtmlTokenType_NamedCharacterReference] || valid_symbols[HtmlTokenType_NamedCharacterReferenceNoSemicolon] || valid_symbols[HtmlTokenType_UnknownNamedCharacterReference]) {
+    //     static Array(char) name = array_new();
+    //     array_clear(&name);
+
+    //     lexer->mark_end(lexer);
+        
+    //     while (isalnum(lexer->lookahead)) {
+    //         array_push(&name, lexer->lookahead);
+    //         advance(lexer);
+
+    //         if (lookup_character_reference_no_semicolon(name.contents, name.size)) {
+    //             lexer->result_symbol = HtmlTokenType_NamedCharacterReferenceNoSemicolon;
+    //             lexer->mark_end(lexer);
+    //         }
+    //     }
+
+    //     ASSERT(name.size > 0);
+
+    //     if (SCAN(';')) {
+    //         if (lookup_character_reference(name.contents, name.size)) {
+    //             lexer->mark_end(lexer);
+    //             lexer->result_symbol = HtmlTokenType_NamedCharacterReference;
+    //             return true;
+    //         } else if (lexer->result_symbol == HtmlTokenType_NamedCharacterReferenceNoSemicolon) {
+    //             return true;
+    //         } else {
+    //             lexer->mark_end(lexer);
+    //             lexer->result_symbol = HtmlTokenType_UnknownNamedCharacterReference;
+    //             return true;
+    //         }
+    //     }
+
+    //     return false;
+    // }
 
     if (valid_symbols[HtmlTokenType_CdataText]) {
         ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);

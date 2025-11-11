@@ -215,11 +215,6 @@
     }
   },
   {
-    "type": "invalid_character_reference",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "script_element",
     "named": true,
     "fields": {},
@@ -289,10 +284,6 @@
     "named": false
   },
   {
-    "type": "&",
-    "named": false
-  },
-  {
     "type": "'",
     "named": false
   },
@@ -338,6 +329,10 @@
   },
   {
     "type": "attribute_name",
+    "named": true
+  },
+  {
+    "type": "invalid_character_reference",
     "named": true
   },
   {

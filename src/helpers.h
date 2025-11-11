@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <wctype.h>
-#include "tables/html_character_references.h"
 
 static inline bool is_ascii(int c) {
     return (c & ~0x7f) == 0;

@@ -24,9 +24,9 @@ module.exports = grammar({
     $.text,
     $._raw_text,
     $._escapable_raw_text,
-    $._named_character_reference,
-    $._named_character_reference_no_semicolon,
-    $._unknown_named_character_reference,
+    $._full_character_reference,
+    $._short_character_reference,
+    $.invalid_character_reference,
     $._cdata_text,
     $._comment_text,
   ],
@@ -55,6 +55,11 @@ module.exports = grammar({
     ),
 
     _whitespace: _ => WHITESPACE,
+
+    character_reference: $ => choice(
+      $._full_character_reference,
+      $._short_character_reference,
+    ),
 
     // This covers all elements except `script` and `style`, which need to have their own symbols in the grammar in order to facilitate syntax injection
     element: $ => choice(
@@ -192,25 +197,25 @@ module.exports = grammar({
       )
     )),
 
-    character_reference: $ => seq(
-      '&',
-      choice(
-        $._named_character_reference,
-        $._named_character_reference_no_semicolon,
-        $._numeric_character_reference,
-      )
-    ),
+    // character_reference: $ => seq(
+    //   '&',
+    //   choice(
+    //     $._named_character_reference,
+    //     $._named_character_reference_no_semicolon,
+    //     $._numeric_character_reference,
+    //   )
+    // ),
 
-    _numeric_character_reference: _ => token(seq(
-      '#',
-      choice(
-        /[Xx][0-9A-Fa-f]+/,
-        /\d+/
-      ),
-      ';'
-    )),
+    // _numeric_character_reference: _ => token(seq(
+    //   '#',
+    //   choice(
+    //     /[Xx][0-9A-Fa-f]+/,
+    //     /\d+/
+    //   ),
+    //   ';'
+    // )),
 
-    invalid_character_reference: $ => seq('&', $._unknown_named_character_reference),
+    // invalid_character_reference: $ => seq('&', $._unknown_named_character_reference),
 
     attribute: $ => seq(
       $.attribute_name,
