@@ -59,14 +59,6 @@ module.exports = grammar({
 
     _whitespace: _ => WHITESPACE,
 
-    // // This is regular text content, i.e. text content that does not appear in either raw text elements, escapable raw text elements, CDATA sections, comments, etc.
-    // text: _ => token(prec(PREC.TEXT, /(\{[^{]|[^<&\s])([^<&]*[^<&\s])?/)),
-    // text: $ => repeat1(choice(
-    //   $._text_fragment,
-    //   $.character_reference,
-    //   $.ambiguous_ampersand
-    // )),
-
     // This covers all elements except `script` and `style`, which need to have their own symbols in the grammar in order to facilitate syntax injection
     element: $ => choice(
       $._void_element,
@@ -126,7 +118,6 @@ module.exports = grammar({
     _escapable_raw_text_element: $ => seq(
       alias($._escapable_raw_text_start_tag, $.start_tag),
       optional($._whitespace),
-      // alias($._escapable_raw_text, $.text),
       repeat(choice(
         alias($._escapable_raw_text, $.text),
         $.character_reference,

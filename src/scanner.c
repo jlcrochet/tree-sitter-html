@@ -21,8 +21,6 @@
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
 
-// #define DEBUG
-
 enum HtmlTokenType {
     HtmlTokenType_StartTagName,
     HtmlTokenType_VoidStartTagName,
@@ -222,23 +220,6 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
 }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-    #ifdef DEBUG
-    fputs("---------------------------------------------\n", stderr);
-    fprintf(stderr, "%d %c\n", lexer->get_column(lexer), lexer->lookahead);
-    fprintf(stderr, "%d HtmlTokenType_StartTagName\n", valid_symbols[HtmlTokenType_StartTagName]);
-    fprintf(stderr, "%d HtmlTokenType_VoidStartTagName\n", valid_symbols[HtmlTokenType_VoidStartTagName]);
-    fprintf(stderr, "%d HtmlTokenType_ScriptStartTagName\n", valid_symbols[HtmlTokenType_ScriptStartTagName]);
-    fprintf(stderr, "%d HtmlTokenType_StyleStartTagName\n", valid_symbols[HtmlTokenType_StyleStartTagName]);
-    fprintf(stderr, "%d HtmlTokenType_EndTagName\n", valid_symbols[HtmlTokenType_EndTagName]);
-    fprintf(stderr, "%d HtmlTokenType_ErroneousEndTagName\n", valid_symbols[HtmlTokenType_ErroneousEndTagName]);
-    fprintf(stderr, "%d HtmlTokenType_SelfClosingTagDelimiter\n", valid_symbols[HtmlTokenType_SelfClosingTagDelimiter]);
-    fprintf(stderr, "%d HtmlTokenType_Text\n", valid_symbols[HtmlTokenType_Text]);
-    fprintf(stderr, "%d HtmlTokenType_CharacterReference\n", valid_symbols[HtmlTokenType_CharacterReference]);
-    fprintf(stderr, "%d HtmlTokenType_AmbiguousAmpersand\n", valid_symbols[HtmlTokenType_AmbiguousAmpersand]);
-    fprintf(stderr, "%d HtmlTokenType_CdataText\n", valid_symbols[HtmlTokenType_CdataText]);
-    fprintf(stderr, "%d HtmlTokenType_CommentText\n", valid_symbols[HtmlTokenType_CommentText]);
-    #endif
-
     struct Scanner *scanner = payload;
 
     #define ASSERT(CONDITION) \
@@ -249,8 +230,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
     #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
         (SCAN(CHAR) || SCAN(CHAR | 0x0020))
-
-    // ASSERT(!is_html_whitespace(lexer->lookahead));
 
     if (valid_symbols[HtmlTokenType_StartTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);
