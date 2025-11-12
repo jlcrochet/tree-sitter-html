@@ -378,9 +378,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    if (valid_symbols[HtmlTokenType_Text]) {
-        ASSERT(lexer->lookahead != '<' && lexer->lookahead != '&');
-
+    if (valid_symbols[HtmlTokenType_Text] && lexer->lookahead != '<' && lexer->lookahead != '&') {
         // Leading whitespace should not be included as part of the text
         while (is_html_whitespace(lexer->lookahead))
             skip(lexer);
@@ -450,9 +448,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
     }
 
-    if (valid_symbols[HtmlTokenType_EscapableRawText]) {
-        ASSERT(lexer->lookahead != '&');
-        
+    if (valid_symbols[HtmlTokenType_EscapableRawText] && lexer->lookahead != '&') {
         // Leading whitespace should not be included as part of the text
         while (is_html_whitespace(lexer->lookahead))
             skip(lexer);
@@ -497,8 +493,8 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
     }
 
-    if (valid_symbols[HtmlTokenType_FullCharacterReference] || valid_symbols[HtmlTokenType_ShortCharacterReference] || valid_symbols[HtmlTokenType_InvalidCharacterReference]) {
-        ASSERT(SCAN('&'));
+    if ((valid_symbols[HtmlTokenType_FullCharacterReference] || valid_symbols[HtmlTokenType_ShortCharacterReference] || valid_symbols[HtmlTokenType_InvalidCharacterReference]) && lexer->lookahead == '&') {
+        advance(lexer);
 
         if (SCAN('#')) {
             ASSERT(valid_symbols[HtmlTokenType_FullCharacterReference]);
@@ -556,41 +552,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             return false;
         }
     }
-
-    // if (valid_symbols[HtmlTokenType_NamedCharacterReference] || valid_symbols[HtmlTokenType_NamedCharacterReferenceNoSemicolon] || valid_symbols[HtmlTokenType_UnknownNamedCharacterReference]) {
-    //     static Array(char) name = array_new();
-    //     array_clear(&name);
-
-    //     lexer->mark_end(lexer);
-        
-    //     while (isalnum(lexer->lookahead)) {
-    //         array_push(&name, lexer->lookahead);
-    //         advance(lexer);
-
-    //         if (lookup_character_reference_no_semicolon(name.contents, name.size)) {
-    //             lexer->result_symbol = HtmlTokenType_NamedCharacterReferenceNoSemicolon;
-    //             lexer->mark_end(lexer);
-    //         }
-    //     }
-
-    //     ASSERT(name.size > 0);
-
-    //     if (SCAN(';')) {
-    //         if (lookup_character_reference(name.contents, name.size)) {
-    //             lexer->mark_end(lexer);
-    //             lexer->result_symbol = HtmlTokenType_NamedCharacterReference;
-    //             return true;
-    //         } else if (lexer->result_symbol == HtmlTokenType_NamedCharacterReferenceNoSemicolon) {
-    //             return true;
-    //         } else {
-    //             lexer->mark_end(lexer);
-    //             lexer->result_symbol = HtmlTokenType_UnknownNamedCharacterReference;
-    //             return true;
-    //         }
-    //     }
-
-    //     return false;
-    // }
 
     if (valid_symbols[HtmlTokenType_CdataText]) {
         ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);

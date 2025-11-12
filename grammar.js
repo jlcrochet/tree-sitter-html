@@ -197,26 +197,6 @@ module.exports = grammar({
       )
     )),
 
-    // character_reference: $ => seq(
-    //   '&',
-    //   choice(
-    //     $._named_character_reference,
-    //     $._named_character_reference_no_semicolon,
-    //     $._numeric_character_reference,
-    //   )
-    // ),
-
-    // _numeric_character_reference: _ => token(seq(
-    //   '#',
-    //   choice(
-    //     /[Xx][0-9A-Fa-f]+/,
-    //     /\d+/
-    //   ),
-    //   ';'
-    // )),
-
-    // invalid_character_reference: $ => seq('&', $._unknown_named_character_reference),
-
     attribute: $ => seq(
       $.attribute_name,
       optional(seq(
@@ -233,7 +213,7 @@ module.exports = grammar({
       // Unquoted
       repeat1(choice(
         /[^\t\n\f\r "'=<>`&]+/,
-        $.character_reference,
+        alias($._full_character_reference, $.character_reference),
         $.invalid_character_reference,
         /&[^\t\n\f\r "'=<>`&]*/,
       )),
@@ -242,7 +222,7 @@ module.exports = grammar({
         "'",
         repeat(choice(
           /[^'&]+/,
-          $.character_reference,
+          alias($._full_character_reference, $.character_reference),
           $.invalid_character_reference,
           /&[^&']*/,
         )),
@@ -253,7 +233,7 @@ module.exports = grammar({
         '"',
         repeat(choice(
           /[^"&]+/,
-          $.character_reference,
+          alias($._full_character_reference, $.character_reference),
           $.invalid_character_reference,
           /&[^&"]*/,
         )),
@@ -262,5 +242,3 @@ module.exports = grammar({
     ),
   }
 })
-
-module.exports.WHITESPACE = WHITESPACE

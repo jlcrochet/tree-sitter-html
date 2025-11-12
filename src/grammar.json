@@ -966,8 +966,13 @@
                 "value": "[^\\t\\n\\f\\r \"'=<>`&]+"
               },
               {
-                "type": "SYMBOL",
-                "name": "character_reference"
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_full_character_reference"
+                },
+                "named": true,
+                "value": "character_reference"
               },
               {
                 "type": "SYMBOL",
@@ -997,8 +1002,13 @@
                     "value": "[^'&]+"
                   },
                   {
-                    "type": "SYMBOL",
-                    "name": "character_reference"
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_full_character_reference"
+                    },
+                    "named": true,
+                    "value": "character_reference"
                   },
                   {
                     "type": "SYMBOL",
@@ -1034,8 +1044,13 @@
                     "value": "[^\"&]+"
                   },
                   {
-                    "type": "SYMBOL",
-                    "name": "character_reference"
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_full_character_reference"
+                    },
+                    "named": true,
+                    "value": "character_reference"
                   },
                   {
                     "type": "SYMBOL",
