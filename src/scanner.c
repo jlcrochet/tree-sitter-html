@@ -416,168 +416,168 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     #ifndef NO_IMPLICIT_END_TAGS
-    if (valid_symbols[HtmlTokenType_ImplicitEndTag] && lexer->lookahead == '<') {
-        ASSERT(get_current_namespace(scanner) == ElementNamespace_HTML);
+    // if (valid_symbols[HtmlTokenType_ImplicitEndTag] && lexer->lookahead == '<') {
+    //     ASSERT(get_current_namespace(scanner) == ElementNamespace_HTML);
 
-        ASSERT(scanner->tags.size > 0);
-        uint8_t *top = array_back(&scanner->tags);
-        uint8_t e = *top;
+    //     ASSERT(scanner->tags.size > 0);
+    //     uint8_t *top = array_back(&scanner->tags);
+    //     uint8_t e = *top;
 
-        // The following elements can have implicit end tags:
-        ASSERT(e == HtmlElement_li ||
-               e == HtmlElement_dt ||
-               e == HtmlElement_dd ||
-               e == HtmlElement_p ||
-               e == HtmlElement_rt ||
-               e == HtmlElement_rp ||
-               e == HtmlElement_optgroup ||
-               e == HtmlElement_option ||
-               e == HtmlElement_colgroup ||
-               e == HtmlElement_caption ||
-               e == HtmlElement_thead ||
-               e == HtmlElement_tbody ||
-               e == HtmlElement_tfoot ||
-               e == HtmlElement_tr ||
-               e == HtmlElement_td ||
-               e == HtmlElement_th);
+    //     // The following elements can have implicit end tags:
+    //     ASSERT(e == HtmlElement_li ||
+    //            e == HtmlElement_dt ||
+    //            e == HtmlElement_dd ||
+    //            e == HtmlElement_p ||
+    //            e == HtmlElement_rt ||
+    //            e == HtmlElement_rp ||
+    //            e == HtmlElement_optgroup ||
+    //            e == HtmlElement_option ||
+    //            e == HtmlElement_colgroup ||
+    //            e == HtmlElement_caption ||
+    //            e == HtmlElement_thead ||
+    //            e == HtmlElement_tbody ||
+    //            e == HtmlElement_tfoot ||
+    //            e == HtmlElement_tr ||
+    //            e == HtmlElement_td ||
+    //            e == HtmlElement_th);
 
-        // This is a zero-width symbol
-        lexer->mark_end(lexer);
-        advance(lexer);
+    //     // This is a zero-width symbol
+    //     lexer->mark_end(lexer);
+    //     advance(lexer);
 
-        uint8_t next;
-        XXH32_hash_t next_hash;
+    //     uint8_t next;
+    //     XXH32_hash_t next_hash;
 
-        if (SCAN('/')) {
-            // The following can have implicit end tags if there is no more content in the parent:
-            ASSERT(e == HtmlElement_li ||
-                   e == HtmlElement_dd ||
-                   e == HtmlElement_p ||
-                   e == HtmlElement_rt ||
-                   e == HtmlElement_rp ||
-                   e == HtmlElement_optgroup ||
-                   e == HtmlElement_option ||
-                   e == HtmlElement_tbody ||
-                   e == HtmlElement_tfoot ||
-                   e == HtmlElement_tr ||
-                   e == HtmlElement_td ||
-                   e == HtmlElement_th);
+    //     if (SCAN('/')) {
+    //         // The following can have implicit end tags if there is no more content in the parent:
+    //         ASSERT(e == HtmlElement_li ||
+    //                e == HtmlElement_dd ||
+    //                e == HtmlElement_p ||
+    //                e == HtmlElement_rt ||
+    //                e == HtmlElement_rp ||
+    //                e == HtmlElement_optgroup ||
+    //                e == HtmlElement_option ||
+    //                e == HtmlElement_tbody ||
+    //                e == HtmlElement_tfoot ||
+    //                e == HtmlElement_tr ||
+    //                e == HtmlElement_td ||
+    //                e == HtmlElement_th);
 
-            ASSERT(scanner->tags.size >= 2);
-            uint8_t parent = *(top - 1);
+    //         ASSERT(scanner->tags.size >= 2);
+    //         uint8_t parent = *(top - 1);
 
-            if (e == HtmlElement_p) {
-                // The `p` element can only have an implicit end tag under this condition if the parent is *not* one of these:
-                ASSERT(parent != HtmlElement_a &&
-                       parent != HtmlElement_audio &&
-                       parent != HtmlElement_del &&
-                       parent != HtmlElement_ins &&
-                       parent != HtmlElement_map &&
-                       parent != HtmlElement_noscript &&
-                       parent != HtmlElement_video &&
-                       parent != HtmlElement_Unknown);
-            }
+    //         if (e == HtmlElement_p) {
+    //             // The `p` element can only have an implicit end tag under this condition if the parent is *not* one of these:
+    //             ASSERT(parent != HtmlElement_a &&
+    //                    parent != HtmlElement_audio &&
+    //                    parent != HtmlElement_del &&
+    //                    parent != HtmlElement_ins &&
+    //                    parent != HtmlElement_map &&
+    //                    parent != HtmlElement_noscript &&
+    //                    parent != HtmlElement_video &&
+    //                    parent != HtmlElement_Unknown);
+    //         }
 
-            ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, &next_hash));
+    //         ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, &next_hash));
 
-            if (parent == HtmlElement_Unknown) {
-                ASSERT(next == parent && next_hash == *array_back(&scanner->custom_name_hashes));
-            } else {
-                ASSERT(next == parent);
-            }
-        } else {
-            // The only element from the above list that cannot have an implicit end tag under this condition is `tfoot`
-            ASSERT(e != HtmlElement_tfoot);
+    //         if (parent == HtmlElement_Unknown) {
+    //             ASSERT(next == parent && next_hash == *array_back(&scanner->custom_name_hashes));
+    //         } else {
+    //             ASSERT(next == parent);
+    //         }
+    //     } else {
+    //         // The only element from the above list that cannot have an implicit end tag under this condition is `tfoot`
+    //         ASSERT(e != HtmlElement_tfoot);
 
-            ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, NULL));
-            ASSERT(next != HtmlElement_Unknown);
+    //         ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, NULL));
+    //         ASSERT(next != HtmlElement_Unknown);
 
-            switch (e) {
-                case HtmlElement_li:
-                    ASSERT(next == HtmlElement_li);
-                    break;
-                case HtmlElement_dt:
-                    ASSERT(next == HtmlElement_dt || next == HtmlElement_dd);
-                    break;
-                case HtmlElement_dd:
-                    ASSERT(next == HtmlElement_dd || next == HtmlElement_dt);
-                    break;
-                case HtmlElement_p:
-                    ASSERT(next == HtmlElement_address ||
-                           next == HtmlElement_article ||
-                           next == HtmlElement_aside ||
-                           next == HtmlElement_blockquote ||
-                           next == HtmlElement_details ||
-                           next == HtmlElement_dialog ||
-                           next == HtmlElement_div ||
-                           next == HtmlElement_dl ||
-                           next == HtmlElement_fieldset ||
-                           next == HtmlElement_figcaption ||
-                           next == HtmlElement_figure ||
-                           next == HtmlElement_footer ||
-                           next == HtmlElement_form ||
-                           next == HtmlElement_h1 ||
-                           next == HtmlElement_h2 ||
-                           next == HtmlElement_h3 ||
-                           next == HtmlElement_h4 ||
-                           next == HtmlElement_h5 ||
-                           next == HtmlElement_h6 ||
-                           next == HtmlElement_header ||
-                           next == HtmlElement_hgroup ||
-                           next == HtmlElement_hr ||
-                           next == HtmlElement_main ||
-                           next == HtmlElement_menu ||
-                           next == HtmlElement_nav ||
-                           next == HtmlElement_ol ||
-                           next == HtmlElement_p ||
-                           next == HtmlElement_pre ||
-                           next == HtmlElement_search ||
-                           next == HtmlElement_section ||
-                           next == HtmlElement_table ||
-                           next == HtmlElement_ul);
-                    break;
-                case HtmlElement_rt:
-                    ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
-                    break;
-                case HtmlElement_rp:
-                    ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
-                    break;
-                case HtmlElement_optgroup:
-                    ASSERT(next == HtmlElement_optgroup || next == HtmlElement_hr);
-                    break;
-                case HtmlElement_option:
-                    ASSERT(next == HtmlElement_option || next == HtmlElement_optgroup);
-                    break;
-                // case HtmlElement_colgroup:  // TODO
-                //     break;
-                // case HtmlElement_caption:  // TODO
-                //     break;
-                case HtmlElement_thead:
-                    ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
-                    break;
-                case HtmlElement_tbody:
-                    ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
-                    break;
-                case HtmlElement_tr:
-                    ASSERT(next == HtmlElement_tr);
-                    break;
-                case HtmlElement_td:
-                    ASSERT(next == HtmlElement_td || next == HtmlElement_th);
-                    break;
-                case HtmlElement_th:
-                    ASSERT(next == HtmlElement_td || next == HtmlElement_th);
-                    break;
-                default:
-                    return false;
-            }
-        }
+    //         switch (e) {
+    //             case HtmlElement_li:
+    //                 ASSERT(next == HtmlElement_li);
+    //                 break;
+    //             case HtmlElement_dt:
+    //                 ASSERT(next == HtmlElement_dt || next == HtmlElement_dd);
+    //                 break;
+    //             case HtmlElement_dd:
+    //                 ASSERT(next == HtmlElement_dd || next == HtmlElement_dt);
+    //                 break;
+    //             case HtmlElement_p:
+    //                 ASSERT(next == HtmlElement_address ||
+    //                        next == HtmlElement_article ||
+    //                        next == HtmlElement_aside ||
+    //                        next == HtmlElement_blockquote ||
+    //                        next == HtmlElement_details ||
+    //                        next == HtmlElement_dialog ||
+    //                        next == HtmlElement_div ||
+    //                        next == HtmlElement_dl ||
+    //                        next == HtmlElement_fieldset ||
+    //                        next == HtmlElement_figcaption ||
+    //                        next == HtmlElement_figure ||
+    //                        next == HtmlElement_footer ||
+    //                        next == HtmlElement_form ||
+    //                        next == HtmlElement_h1 ||
+    //                        next == HtmlElement_h2 ||
+    //                        next == HtmlElement_h3 ||
+    //                        next == HtmlElement_h4 ||
+    //                        next == HtmlElement_h5 ||
+    //                        next == HtmlElement_h6 ||
+    //                        next == HtmlElement_header ||
+    //                        next == HtmlElement_hgroup ||
+    //                        next == HtmlElement_hr ||
+    //                        next == HtmlElement_main ||
+    //                        next == HtmlElement_menu ||
+    //                        next == HtmlElement_nav ||
+    //                        next == HtmlElement_ol ||
+    //                        next == HtmlElement_p ||
+    //                        next == HtmlElement_pre ||
+    //                        next == HtmlElement_search ||
+    //                        next == HtmlElement_section ||
+    //                        next == HtmlElement_table ||
+    //                        next == HtmlElement_ul);
+    //                 break;
+    //             case HtmlElement_rt:
+    //                 ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
+    //                 break;
+    //             case HtmlElement_rp:
+    //                 ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
+    //                 break;
+    //             case HtmlElement_optgroup:
+    //                 ASSERT(next == HtmlElement_optgroup || next == HtmlElement_hr);
+    //                 break;
+    //             case HtmlElement_option:
+    //                 ASSERT(next == HtmlElement_option || next == HtmlElement_optgroup);
+    //                 break;
+    //             // case HtmlElement_colgroup:  // TODO
+    //             //     break;
+    //             // case HtmlElement_caption:  // TODO
+    //             //     break;
+    //             case HtmlElement_thead:
+    //                 ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
+    //                 break;
+    //             case HtmlElement_tbody:
+    //                 ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
+    //                 break;
+    //             case HtmlElement_tr:
+    //                 ASSERT(next == HtmlElement_tr);
+    //                 break;
+    //             case HtmlElement_td:
+    //                 ASSERT(next == HtmlElement_td || next == HtmlElement_th);
+    //                 break;
+    //             case HtmlElement_th:
+    //                 ASSERT(next == HtmlElement_td || next == HtmlElement_th);
+    //                 break;
+    //             default:
+    //                 return false;
+    //         }
+    //     }
 
-        scanner->next_tag = true;
-        scanner->next_tag_name = next;
-        scanner->next_tag_name_hash = next_hash;
-        lexer->result_symbol = HtmlTokenType_ImplicitEndTag;
-        return true;
-    }
+    //     scanner->next_tag = true;
+    //     scanner->next_tag_name = next;
+    //     scanner->next_tag_name_hash = next_hash;
+    //     lexer->result_symbol = HtmlTokenType_ImplicitEndTag;
+    //     return true;
+    // }
     #endif
 
     if (valid_symbols[HtmlTokenType_Text] && lexer->lookahead != '<' && lexer->lookahead != '&') {
