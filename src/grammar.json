@@ -245,7 +245,7 @@
                 },
                 {
                   "type": "SYMBOL",
-                  "name": "_implicit_end_tag"
+                  "name": "implicit_end_tag"
                 }
               ]
             }
@@ -1119,7 +1119,7 @@
     },
     {
       "type": "SYMBOL",
-      "name": "_implicit_end_tag"
+      "name": "implicit_end_tag"
     },
     {
       "type": "SYMBOL",
