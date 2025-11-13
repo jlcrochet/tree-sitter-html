@@ -74,14 +74,17 @@ enum ElementNamespace {
 // };
 
 struct Scanner {
+    // enum InsertionMode insertion_mode;
+    // enum InsertionMode original_insertion_mode;
+
     // bool next_tag;
     // uint8_t next_tag_name;
     // XXH32_hash_t next_tag_name_hash;
-    // enum InsertionMode insertion_mode;
-    // enum InsertionMode original_insertion_mode;
+
     // #ifndef NO_IMPLIED_END_TAGS
     // uint8_t implied_end_tags;
     // #endif
+
     Array(uint8_t /* enum ElementNamespace */) namespaces;
     Array(uint8_t) tags;
     Array(XXH32_hash_t) custom_name_hashes;
@@ -121,6 +124,9 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 
     char *offset = buffer;
 
+    // *offset++ = (char)scanner->insertion_mode;
+    // *offset++ = (char)scanner->original_insertion_mode;
+
     // *offset++ = (char)scanner->next_tag;
     // *offset++ = (char)scanner->next_tag_name;
 
@@ -152,6 +158,9 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
     struct Scanner *scanner = payload;
 
+    // scanner->insertion_mode = InsertionMode_Initial;
+    // scanner->original_insertion_mode = InsertionMode_Initial;
+
     // scanner->next_tag = false;
     // scanner->next_tag_name = 0;
     // scanner->next_tag_name_hash = 0;
@@ -167,6 +176,9 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     if (length == 0) return;
 
     const char *offset = buffer;
+
+    // scanner->insertion_mode = (enum InsertionMode)*offset++;
+    // scanner->original_insertion_mode = (enum InsertionMode)*offset++;
 
     // scanner->next_tag = (bool)*offset++;
     // scanner->next_tag_name = (uint8_t)*offset++;
