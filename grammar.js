@@ -19,7 +19,7 @@ module.exports = grammar({
     $._style_start_tag_name,
     $._escapable_raw_text_start_tag_name,
     $._end_tag_name,
-    $._erroneous_start_tag_name,
+    // $._erroneous_start_tag_name,
     $._erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
     // $.implied_end_tag,
@@ -53,7 +53,7 @@ module.exports = grammar({
       $.invalid_character_reference,
       $.cdata,
       $.comment,
-      $.erroneous_start_tag,
+      // $.erroneous_start_tag,
       $.erroneous_end_tag
     ),
 
@@ -163,12 +163,12 @@ module.exports = grammar({
       alias($._self_closing_tag_delimiter, '/>')
     ),
 
-    erroneous_start_tag: $ => seq(
-      '<',
-      alias($._erroneous_start_tag_name, $.tag_name),
-      optional($._whitespace),
-      '>'
-    ),
+    // erroneous_start_tag: $ => seq(
+    //   '<',
+    //   alias($._erroneous_start_tag_name, $.tag_name),
+    //   optional($._whitespace),
+    //   '>'
+    // ),
 
     erroneous_end_tag: $ => seq(
       '</',
