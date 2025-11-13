@@ -21,7 +21,7 @@ module.exports = grammar({
     $._end_tag_name,
     $._erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
-    $.implicit_end_tag,
+    // $.implied_end_tag,
     $.text,
     $._raw_text,
     $._escapable_raw_text,
@@ -84,8 +84,8 @@ module.exports = grammar({
       seq(
         $.start_tag,
         repeat($._content),
-        // $.end_tag
-        choice($.end_tag, $.implicit_end_tag)
+        $.end_tag
+        // choice($.end_tag, $.implied_end_tag)
       )
     ),
 

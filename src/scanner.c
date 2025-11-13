@@ -30,7 +30,7 @@ enum HtmlTokenType {
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
     HtmlTokenType_SelfClosingTagDelimiter,
-    HtmlTokenType_ImplicitEndTag,
+    // HtmlTokenType_ImpliedEndTag,
     HtmlTokenType_Text,
     HtmlTokenType_RawText,
     HtmlTokenType_EscapableRawText,
@@ -49,13 +49,43 @@ enum ElementNamespace {
     ElementNamespace_SVG
 };
 
+// enum InsertionMode {
+//     InsertionMode_Initial,
+//     InsertionMode_BeforeHtml,
+//     InsertionMode_BeforeHead,
+//     InsertionMode_InHead,
+//     InsertionMode_InHeadNoscript,
+//     InsertionMode_AfterHead,
+//     InsertionMode_InBody,
+//     InsertionMode_Text,
+//     InsertionMode_InTable,
+//     InsertionMode_InTableText,
+//     InsertionMode_InCaption,
+//     InsertionMode_InColumnGroup,
+//     InsertionMode_InTableBody,
+//     InsertionMode_InRow,
+//     InsertionMode_InCell,
+//     InsertionMode_InTemplate,
+//     InsertionMode_AfterBody,
+//     InsertionMode_InFrameset,
+//     InsertionMode_AfterFrameset,
+//     InsertionMode_AfterAfterBody,
+//     InsertionMode_AfterAfterFrameset,
+// };
+
 struct Scanner {
-    bool next_tag;
-    uint8_t next_tag_name;
-    XXH32_hash_t next_tag_name_hash;
+    // bool next_tag;
+    // uint8_t next_tag_name;
+    // XXH32_hash_t next_tag_name_hash;
+    // enum InsertionMode insertion_mode;
+    // enum InsertionMode original_insertion_mode;
+    // #ifndef NO_IMPLIED_END_TAGS
+    // uint8_t implied_end_tags;
+    // #endif
     Array(uint8_t /* enum ElementNamespace */) namespaces;
     Array(uint8_t) tags;
     Array(XXH32_hash_t) custom_name_hashes;
+    // Array(uint8_t /* enum InsertionMode */) template_insertion_modes;
 };
 
 static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
@@ -91,11 +121,15 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 
     char *offset = buffer;
 
-    *offset++ = (char)scanner->next_tag;
-    *offset++ = (char)scanner->next_tag_name;
+    // *offset++ = (char)scanner->next_tag;
+    // *offset++ = (char)scanner->next_tag_name;
 
-    memcpy(offset, &scanner->next_tag_name_hash, sizeof(XXH32_hash_t));
-    offset += sizeof(XXH32_hash_t);
+    // memcpy(offset, &scanner->next_tag_name_hash, sizeof(XXH32_hash_t));
+    // offset += sizeof(XXH32_hash_t);
+
+    // #ifndef NO_IMPLIED_END_TAGS
+    // *offset++ = (char)scanner->implied_end_tags;
+    // #endif
 
     #define SERIALIZE_ARRAY(ARRAY) \
         { \
@@ -118,9 +152,14 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
     struct Scanner *scanner = payload;
 
-    scanner->next_tag = false;
-    scanner->next_tag_name = 0;
-    scanner->next_tag_name_hash = 0;
+    // scanner->next_tag = false;
+    // scanner->next_tag_name = 0;
+    // scanner->next_tag_name_hash = 0;
+
+    // #ifndef NO_IMPLIED_END_TAGS
+    // scanner->implied_end_tags = 0;
+    // #endif
+
     array_clear(&scanner->namespaces);
     array_clear(&scanner->tags);
     array_clear(&scanner->custom_name_hashes);
@@ -129,11 +168,15 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
 
     const char *offset = buffer;
 
-    scanner->next_tag = (bool)*offset++;
-    scanner->next_tag_name = (uint8_t)*offset++;
+    // scanner->next_tag = (bool)*offset++;
+    // scanner->next_tag_name = (uint8_t)*offset++;
 
-    memcpy(&scanner->next_tag_name_hash, offset, sizeof(XXH32_hash_t));
-    offset += sizeof(XXH32_hash_t);
+    // memcpy(&scanner->next_tag_name_hash, offset, sizeof(XXH32_hash_t));
+    // offset += sizeof(XXH32_hash_t);
+
+    // #ifndef NO_IMPLIED_END_TAGS
+    // scanner->implied_end_tags = (uint8_t)*offset++;
+    // #endif
 
     #define DESERIALIZE_ARRAY(ARRAY) \
         { \
@@ -256,16 +299,16 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         uint8_t e;
         XXH32_hash_t name_hash;
 
-        // Check for a queued tag:
-        if (ns == ElementNamespace_HTML && scanner->next_tag) {
-            e = scanner->next_tag_name;
-            name_hash = scanner->next_tag_name_hash;
-            while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
-                advance(lexer);
-            scanner->next_tag = false;
-        } else {
+        // // Check for a queued tag:
+        // if (ns == ElementNamespace_HTML && scanner->next_tag) {
+        //     e = scanner->next_tag_name;
+        //     name_hash = scanner->next_tag_name_hash;
+        //     while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
+        //         advance(lexer);
+        //     scanner->next_tag = false;
+        // } else {
             ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
-        }
+        // }
 
         // Start with the default token for start tag names and disambiguate below
         lexer->result_symbol = HtmlTokenType_StartTagName;
@@ -352,16 +395,16 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         uint8_t e;
         XXH32_hash_t name_hash;
 
-        // Check for a queued tag:
-        if (ns == ElementNamespace_HTML && scanner->next_tag) {
-            e = scanner->next_tag_name;
-            name_hash = scanner->next_tag_name_hash;
-            while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
-                advance(lexer);
-            scanner->next_tag = false;
-        } else {
+        // // Check for a queued tag:
+        // if (ns == ElementNamespace_HTML && scanner->next_tag) {
+        //     e = scanner->next_tag_name;
+        //     name_hash = scanner->next_tag_name_hash;
+        //     while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
+        //         advance(lexer);
+        //     scanner->next_tag = false;
+        // } else {
             ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
-        }
+        // }
 
         uint8_t top_tag = get_current_tag(scanner);
         XXH32_hash_t top_name_hash = 0;
@@ -415,15 +458,26 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    #ifndef NO_IMPLICIT_END_TAGS
-    // if (valid_symbols[HtmlTokenType_ImplicitEndTag] && lexer->lookahead == '<') {
+    // #ifndef NO_IMPLIED_END_TAGS
+    // if (valid_symbols[HtmlTokenType_ImpliedEndTag]) {
+    //     if (lexer->eof(lexer)) {
+    //         lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
+    //         return true;
+    //     }
+
+    //     if (scanner->implied_end_tags > 0) {
+    //         scanner->implied_end_tags -= 1;
+    //         lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
+    //         return true;
+    //     }
+
     //     ASSERT(get_current_namespace(scanner) == ElementNamespace_HTML);
 
     //     ASSERT(scanner->tags.size > 0);
     //     uint8_t *top = array_back(&scanner->tags);
     //     uint8_t e = *top;
 
-    //     // The following elements can have implicit end tags:
+    //     // The following elements can have implied end tags:
     //     ASSERT(e == HtmlElement_li ||
     //            e == HtmlElement_dt ||
     //            e == HtmlElement_dd ||
@@ -449,7 +503,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     //     XXH32_hash_t next_hash;
 
     //     if (SCAN('/')) {
-    //         // The following can have implicit end tags if there is no more content in the parent:
+    //         // The following can have implied end tags if there is no more content in the parent:
     //         ASSERT(e == HtmlElement_li ||
     //                e == HtmlElement_dd ||
     //                e == HtmlElement_p ||
@@ -467,7 +521,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     //         uint8_t parent = *(top - 1);
 
     //         if (e == HtmlElement_p) {
-    //             // The `p` element can only have an implicit end tag under this condition if the parent is *not* one of these:
+    //             // The `p` element can only have an implied end tag under this condition if the parent is *not* one of these:
     //             ASSERT(parent != HtmlElement_a &&
     //                    parent != HtmlElement_audio &&
     //                    parent != HtmlElement_del &&
@@ -486,7 +540,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     //             ASSERT(next == parent);
     //         }
     //     } else {
-    //         // The only element from the above list that cannot have an implicit end tag under this condition is `tfoot`
+    //         // The only element from the above list that cannot have an implied end tag under this condition is `tfoot`
     //         ASSERT(e != HtmlElement_tfoot);
 
     //         ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, NULL));
@@ -575,10 +629,10 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     //     scanner->next_tag = true;
     //     scanner->next_tag_name = next;
     //     scanner->next_tag_name_hash = next_hash;
-    //     lexer->result_symbol = HtmlTokenType_ImplicitEndTag;
+    //     lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
     //     return true;
     // }
-    #endif
+    // #endif
 
     if (valid_symbols[HtmlTokenType_Text] && lexer->lookahead != '<' && lexer->lookahead != '&') {
         // Leading whitespace should not be included as part of the text
