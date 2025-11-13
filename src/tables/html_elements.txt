@@ -86,6 +86,7 @@ ruby
 s
 samp
 script
+search
 section
 select
 small

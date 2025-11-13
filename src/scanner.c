@@ -30,6 +30,7 @@ enum HtmlTokenType {
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
     HtmlTokenType_SelfClosingTagDelimiter,
+    HtmlTokenType_ImplicitEndTag,
     HtmlTokenType_Text,
     HtmlTokenType_RawText,
     HtmlTokenType_EscapableRawText,
@@ -49,6 +50,9 @@ enum ElementNamespace {
 };
 
 struct Scanner {
+    bool next_tag;
+    uint8_t next_tag_name;
+    XXH32_hash_t next_tag_name_hash;
     Array(uint8_t /* enum ElementNamespace */) namespaces;
     Array(uint8_t) tags;
     Array(XXH32_hash_t) custom_name_hashes;
@@ -56,7 +60,7 @@ struct Scanner {
 
 static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
     if (scanner->namespaces.size > 0)
-        return *array_back(&scanner->namespaces);
+        return scanner->namespaces.contents[scanner->namespaces.size - 1];
     else
         // If no top-level elements have been pushed onto the stack yet, the default namespace is HTML
         return ElementNamespace_HTML;
@@ -64,7 +68,7 @@ static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
 
 static uint8_t get_current_tag(struct Scanner *scanner) {
     if (scanner->tags.size > 0)
-        return *array_back(&scanner->tags);
+        return scanner->tags.contents[scanner->tags.size - 1];
     else
         // If no elements have been pushed onto the stack yet, the default root element is `html`
         return HtmlElement_html;
@@ -87,6 +91,12 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 
     char *offset = buffer;
 
+    *offset++ = (char)scanner->next_tag;
+    *offset++ = (char)scanner->next_tag_name;
+
+    memcpy(offset, &scanner->next_tag_name_hash, sizeof(XXH32_hash_t));
+    offset += sizeof(XXH32_hash_t);
+
     #define SERIALIZE_ARRAY(ARRAY) \
         { \
             offset += to_vlq(ARRAY.size, offset); \
@@ -108,6 +118,9 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
     struct Scanner *scanner = payload;
 
+    scanner->next_tag = false;
+    scanner->next_tag_name = 0;
+    scanner->next_tag_name_hash = 0;
     array_clear(&scanner->namespaces);
     array_clear(&scanner->tags);
     array_clear(&scanner->custom_name_hashes);
@@ -115,6 +128,12 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     if (length == 0) return;
 
     const char *offset = buffer;
+
+    scanner->next_tag = (bool)*offset++;
+    scanner->next_tag_name = (uint8_t)*offset++;
+
+    memcpy(&scanner->next_tag_name_hash, offset, sizeof(XXH32_hash_t));
+    offset += sizeof(XXH32_hash_t);
 
     #define DESERIALIZE_ARRAY(ARRAY) \
         { \
@@ -237,7 +256,16 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         uint8_t e;
         XXH32_hash_t name_hash;
 
-        ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+        // Check for a queued tag:
+        if (ns == ElementNamespace_HTML && scanner->next_tag) {
+            e = scanner->next_tag_name;
+            name_hash = scanner->next_tag_name_hash;
+            while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
+                advance(lexer);
+            scanner->next_tag = false;
+        } else {
+            ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+        }
 
         // Start with the default token for start tag names and disambiguate below
         lexer->result_symbol = HtmlTokenType_StartTagName;
@@ -321,26 +349,35 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
     if (valid_symbols[HtmlTokenType_EndTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);
-        uint8_t element;
+        uint8_t e;
         XXH32_hash_t name_hash;
 
-        ASSERT(scan_tag_name(lexer, ns, &element, &name_hash))
+        // Check for a queued tag:
+        if (ns == ElementNamespace_HTML && scanner->next_tag) {
+            e = scanner->next_tag_name;
+            name_hash = scanner->next_tag_name_hash;
+            while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
+                advance(lexer);
+            scanner->next_tag = false;
+        } else {
+            ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+        }
 
         uint8_t top_tag = get_current_tag(scanner);
         XXH32_hash_t top_name_hash = 0;
         if (top_tag == 0)
             top_name_hash = *array_back(&scanner->custom_name_hashes);
 
-        if (element == top_tag && name_hash == top_name_hash) {
+        if (e == top_tag && name_hash == top_name_hash) {
             array_pop(&scanner->tags);
 
             if (top_name_hash)
                 array_pop(&scanner->custom_name_hashes);
 
             if (
-                (ns == ElementNamespace_HTML && element == HtmlElement_html) ||
-                (ns == ElementNamespace_MathML && element == MathmlElement_math) ||
-                (ns == ElementNamespace_SVG && element == SvgElement_svg)
+                (ns == ElementNamespace_HTML && e == HtmlElement_html) ||
+                (ns == ElementNamespace_MathML && e == MathmlElement_math) ||
+                (ns == ElementNamespace_SVG && e == SvgElement_svg)
             )
                 array_pop(&scanner->namespaces);
 
@@ -377,6 +414,171 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         lexer->result_symbol = HtmlTokenType_SelfClosingTagDelimiter;
         return true;
     }
+
+    #ifndef NO_IMPLICIT_END_TAGS
+    if (valid_symbols[HtmlTokenType_ImplicitEndTag] && lexer->lookahead == '<') {
+        ASSERT(get_current_namespace(scanner) == ElementNamespace_HTML);
+
+        ASSERT(scanner->tags.size > 0);
+        uint8_t *top = array_back(&scanner->tags);
+        uint8_t e = *top;
+
+        // The following elements can have implicit end tags:
+        ASSERT(e == HtmlElement_li ||
+               e == HtmlElement_dt ||
+               e == HtmlElement_dd ||
+               e == HtmlElement_p ||
+               e == HtmlElement_rt ||
+               e == HtmlElement_rp ||
+               e == HtmlElement_optgroup ||
+               e == HtmlElement_option ||
+               e == HtmlElement_colgroup ||
+               e == HtmlElement_caption ||
+               e == HtmlElement_thead ||
+               e == HtmlElement_tbody ||
+               e == HtmlElement_tfoot ||
+               e == HtmlElement_tr ||
+               e == HtmlElement_td ||
+               e == HtmlElement_th);
+
+        // This is a zero-width symbol
+        lexer->mark_end(lexer);
+        advance(lexer);
+
+        uint8_t next;
+        XXH32_hash_t next_hash;
+
+        if (SCAN('/')) {
+            // The following can have implicit end tags if there is no more content in the parent:
+            ASSERT(e == HtmlElement_li ||
+                   e == HtmlElement_dd ||
+                   e == HtmlElement_p ||
+                   e == HtmlElement_rt ||
+                   e == HtmlElement_rp ||
+                   e == HtmlElement_optgroup ||
+                   e == HtmlElement_option ||
+                   e == HtmlElement_tbody ||
+                   e == HtmlElement_tfoot ||
+                   e == HtmlElement_tr ||
+                   e == HtmlElement_td ||
+                   e == HtmlElement_th);
+
+            ASSERT(scanner->tags.size >= 2);
+            uint8_t parent = *(top - 1);
+
+            if (e == HtmlElement_p) {
+                // The `p` element can only have an implicit end tag under this condition if the parent is *not* one of these:
+                ASSERT(parent != HtmlElement_a &&
+                       parent != HtmlElement_audio &&
+                       parent != HtmlElement_del &&
+                       parent != HtmlElement_ins &&
+                       parent != HtmlElement_map &&
+                       parent != HtmlElement_noscript &&
+                       parent != HtmlElement_video &&
+                       parent != HtmlElement_Unknown);
+            }
+
+            ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, &next_hash));
+
+            if (parent == HtmlElement_Unknown) {
+                ASSERT(next == parent && next_hash == *array_back(&scanner->custom_name_hashes));
+            } else {
+                ASSERT(next == parent);
+            }
+        } else {
+            // The only element from the above list that cannot have an implicit end tag under this condition is `tfoot`
+            ASSERT(e != HtmlElement_tfoot);
+
+            ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, NULL));
+            ASSERT(next != HtmlElement_Unknown);
+
+            switch (e) {
+                case HtmlElement_li:
+                    ASSERT(next == HtmlElement_li);
+                    break;
+                case HtmlElement_dt:
+                    ASSERT(next == HtmlElement_dt || next == HtmlElement_dd);
+                    break;
+                case HtmlElement_dd:
+                    ASSERT(next == HtmlElement_dd || next == HtmlElement_dt);
+                    break;
+                case HtmlElement_p:
+                    ASSERT(next == HtmlElement_address ||
+                           next == HtmlElement_article ||
+                           next == HtmlElement_aside ||
+                           next == HtmlElement_blockquote ||
+                           next == HtmlElement_details ||
+                           next == HtmlElement_dialog ||
+                           next == HtmlElement_div ||
+                           next == HtmlElement_dl ||
+                           next == HtmlElement_fieldset ||
+                           next == HtmlElement_figcaption ||
+                           next == HtmlElement_figure ||
+                           next == HtmlElement_footer ||
+                           next == HtmlElement_form ||
+                           next == HtmlElement_h1 ||
+                           next == HtmlElement_h2 ||
+                           next == HtmlElement_h3 ||
+                           next == HtmlElement_h4 ||
+                           next == HtmlElement_h5 ||
+                           next == HtmlElement_h6 ||
+                           next == HtmlElement_header ||
+                           next == HtmlElement_hgroup ||
+                           next == HtmlElement_hr ||
+                           next == HtmlElement_main ||
+                           next == HtmlElement_menu ||
+                           next == HtmlElement_nav ||
+                           next == HtmlElement_ol ||
+                           next == HtmlElement_p ||
+                           next == HtmlElement_pre ||
+                           next == HtmlElement_search ||
+                           next == HtmlElement_section ||
+                           next == HtmlElement_table ||
+                           next == HtmlElement_ul);
+                    break;
+                case HtmlElement_rt:
+                    ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
+                    break;
+                case HtmlElement_rp:
+                    ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
+                    break;
+                case HtmlElement_optgroup:
+                    ASSERT(next == HtmlElement_optgroup || next == HtmlElement_hr);
+                    break;
+                case HtmlElement_option:
+                    ASSERT(next == HtmlElement_option || next == HtmlElement_optgroup);
+                    break;
+                // case HtmlElement_colgroup:  // TODO
+                //     break;
+                // case HtmlElement_caption:  // TODO
+                //     break;
+                case HtmlElement_thead:
+                    ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
+                    break;
+                case HtmlElement_tbody:
+                    ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
+                    break;
+                case HtmlElement_tr:
+                    ASSERT(next == HtmlElement_tr);
+                    break;
+                case HtmlElement_td:
+                    ASSERT(next == HtmlElement_td || next == HtmlElement_th);
+                    break;
+                case HtmlElement_th:
+                    ASSERT(next == HtmlElement_td || next == HtmlElement_th);
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        scanner->next_tag = true;
+        scanner->next_tag_name = next;
+        scanner->next_tag_name_hash = next_hash;
+        lexer->result_symbol = HtmlTokenType_ImplicitEndTag;
+        return true;
+    }
+    #endif
 
     if (valid_symbols[HtmlTokenType_Text] && lexer->lookahead != '<' && lexer->lookahead != '&') {
         // Leading whitespace should not be included as part of the text

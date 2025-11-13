@@ -88,36 +88,37 @@ enum HtmlElement {
     HtmlElement_rt = 83,
     HtmlElement_ruby = 84,
     HtmlElement_s = 85,
-    HtmlElement_sub = 95,
-    HtmlElement_sup = 97,
-    HtmlElement_svg = 98,
+    HtmlElement_sub = 96,
+    HtmlElement_sup = 98,
+    HtmlElement_svg = 99,
     HtmlElement_samp = 86,
     HtmlElement_script = 87,
-    HtmlElement_section = 88,
-    HtmlElement_select = 89,
-    HtmlElement_small = 90,
-    HtmlElement_source = 91,
-    HtmlElement_span = 92,
-    HtmlElement_strong = 93,
-    HtmlElement_style = 94,
-    HtmlElement_summary = 96,
-    HtmlElement_td = 101,
-    HtmlElement_th = 105,
-    HtmlElement_tr = 109,
-    HtmlElement_table = 99,
-    HtmlElement_tbody = 100,
-    HtmlElement_template = 102,
-    HtmlElement_textarea = 103,
-    HtmlElement_tfoot = 104,
-    HtmlElement_thead = 106,
-    HtmlElement_time = 107,
-    HtmlElement_title = 108,
-    HtmlElement_track = 110,
-    HtmlElement_u = 111,
-    HtmlElement_ul = 112,
-    HtmlElement_var = 113,
-    HtmlElement_video = 114,
-    HtmlElement_wbr = 115,
+    HtmlElement_search = 88,
+    HtmlElement_section = 89,
+    HtmlElement_select = 90,
+    HtmlElement_small = 91,
+    HtmlElement_source = 92,
+    HtmlElement_span = 93,
+    HtmlElement_strong = 94,
+    HtmlElement_style = 95,
+    HtmlElement_summary = 97,
+    HtmlElement_td = 102,
+    HtmlElement_th = 106,
+    HtmlElement_tr = 110,
+    HtmlElement_table = 100,
+    HtmlElement_tbody = 101,
+    HtmlElement_template = 103,
+    HtmlElement_textarea = 104,
+    HtmlElement_tfoot = 105,
+    HtmlElement_thead = 107,
+    HtmlElement_time = 108,
+    HtmlElement_title = 109,
+    HtmlElement_track = 111,
+    HtmlElement_u = 112,
+    HtmlElement_ul = 113,
+    HtmlElement_var = 114,
+    HtmlElement_video = 115,
+    HtmlElement_wbr = 116,
     HtmlElement_Unknown = 0,
 };
 static enum HtmlElement lookup_html_element(const char *string, size_t length);
@@ -682,6 +683,15 @@ static enum HtmlElement lookup_html_element6(const char *string)
             switch(string[5]) {
             case 0| onechar('t', 0, 8):
                 return HtmlElement_script;
+            }
+        }
+        break;
+    case 0| onechar('s', 0, 32)| onechar('e', 8, 32)| onechar('a', 16, 32)| onechar('r', 24, 32):
+        switch(string[4]) {
+        case 0| onechar('c', 0, 8):
+            switch(string[5]) {
+            case 0| onechar('h', 0, 8):
+                return HtmlElement_search;
             }
         }
         break;
@@ -1788,6 +1798,18 @@ static enum HtmlElement lookup_html_element6(const char *string)
             break;
         case 'e':
             switch(string[2]) {
+            case 'a':
+                switch(string[3]) {
+                case 'r':
+                    switch(string[4]) {
+                    case 'c':
+                        switch(string[5]) {
+                        case 'h':
+                            return HtmlElement_search;
+                        }
+                    }
+                }
+                break;
             case 'l':
                 switch(string[3]) {
                 case 'e':
