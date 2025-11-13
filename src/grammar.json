@@ -237,17 +237,8 @@
               }
             },
             {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "SYMBOL",
-                  "name": "end_tag"
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "implicit_end_tag"
-                }
-              ]
+              "type": "SYMBOL",
+              "name": "end_tag"
             }
           ]
         }
@@ -1116,10 +1107,6 @@
     {
       "type": "SYMBOL",
       "name": "_self_closing_tag_delimiter"
-    },
-    {
-      "type": "SYMBOL",
-      "name": "implicit_end_tag"
     },
     {
       "type": "SYMBOL",

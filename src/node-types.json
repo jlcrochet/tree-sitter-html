@@ -162,10 +162,6 @@
           "named": true
         },
         {
-          "type": "implicit_end_tag",
-          "named": true
-        },
-        {
           "type": "invalid_character_reference",
           "named": true
         },
@@ -333,10 +329,6 @@
   },
   {
     "type": "attribute_name",
-    "named": true
-  },
-  {
-    "type": "implicit_end_tag",
     "named": true
   },
   {
