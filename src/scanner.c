@@ -24,8 +24,7 @@
 enum HtmlTokenType {
     HtmlTokenType_StartTagName,
     HtmlTokenType_VoidStartTagName,
-    HtmlTokenType_ScriptStartTagName,
-    HtmlTokenType_StyleStartTagName,
+    HtmlTokenType_RawTextStartTagName,
     HtmlTokenType_EscapableRawTextStartTagName,
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
@@ -49,34 +48,7 @@ enum ElementNamespace {
     ElementNamespace_SVG
 };
 
-// enum InsertionMode {
-//     InsertionMode_Initial,
-//     InsertionMode_BeforeHtml,
-//     InsertionMode_BeforeHead,
-//     InsertionMode_InHead,
-//     InsertionMode_InHeadNoscript,
-//     InsertionMode_AfterHead,
-//     InsertionMode_InBody,
-//     InsertionMode_Text,
-//     InsertionMode_InTable,
-//     InsertionMode_InTableText,
-//     InsertionMode_InCaption,
-//     InsertionMode_InColumnGroup,
-//     InsertionMode_InTableBody,
-//     InsertionMode_InRow,
-//     InsertionMode_InCell,
-//     InsertionMode_InTemplate,
-//     InsertionMode_AfterBody,
-//     InsertionMode_InFrameset,
-//     InsertionMode_AfterFrameset,
-//     InsertionMode_AfterAfterBody,
-//     InsertionMode_AfterAfterFrameset,
-// };
-
 struct Scanner {
-    // enum InsertionMode insertion_mode;
-    // enum InsertionMode original_insertion_mode;
-
     // bool next_tag;
     // uint8_t next_tag_name;
     // XXH32_hash_t next_tag_name_hash;
@@ -88,7 +60,6 @@ struct Scanner {
     Array(uint8_t /* enum ElementNamespace */) namespaces;
     Array(uint8_t) tags;
     Array(XXH32_hash_t) custom_name_hashes;
-    // Array(uint8_t /* enum InsertionMode */) template_insertion_modes;
 };
 
 static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
@@ -124,9 +95,6 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 
     char *offset = buffer;
 
-    // *offset++ = (char)scanner->insertion_mode;
-    // *offset++ = (char)scanner->original_insertion_mode;
-
     // *offset++ = (char)scanner->next_tag;
     // *offset++ = (char)scanner->next_tag_name;
 
@@ -158,9 +126,6 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
     struct Scanner *scanner = payload;
 
-    // scanner->insertion_mode = InsertionMode_Initial;
-    // scanner->original_insertion_mode = InsertionMode_Initial;
-
     // scanner->next_tag = false;
     // scanner->next_tag_name = 0;
     // scanner->next_tag_name_hash = 0;
@@ -176,9 +141,6 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     if (length == 0) return;
 
     const char *offset = buffer;
-
-    // scanner->insertion_mode = (enum InsertionMode)*offset++;
-    // scanner->original_insertion_mode = (enum InsertionMode)*offset++;
 
     // scanner->next_tag = (bool)*offset++;
     // scanner->next_tag_name = (uint8_t)*offset++;
@@ -306,7 +268,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
         (SCAN(CHAR) || SCAN(CHAR | 0x0020))
 
-    if (valid_symbols[HtmlTokenType_StartTagName]) {
+    if (valid_symbols[HtmlTokenType_StartTagName] || valid_symbols[HtmlTokenType_EndTagName]) {
         enum ElementNamespace ns = get_current_namespace(scanner);
         uint8_t e;
         XXH32_hash_t name_hash;
@@ -319,129 +281,117 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         //         advance(lexer);
         //     scanner->next_tag = false;
         // } else {
-            ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+        //    ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
         // }
+        ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
 
-        // Start with the default token for start tag names and disambiguate below
-        lexer->result_symbol = HtmlTokenType_StartTagName;
+        if (valid_symbols[HtmlTokenType_StartTagName]) {
+            // Start with the default token for start tag names and disambiguate below
+            lexer->result_symbol = HtmlTokenType_StartTagName;
+            array_push(&scanner->tags, e);
 
-        switch (ns) {
-            case ElementNamespace_HTML:
-                switch (e) {
-                    // Void elements
-                    case HtmlElement_area:
-                    case HtmlElement_base:
-                    case HtmlElement_br:
-                    case HtmlElement_col:
-                    case HtmlElement_embed:
-                    case HtmlElement_hr:
-                    case HtmlElement_img:
-                    case HtmlElement_input:
-                    case HtmlElement_link:
-                    case HtmlElement_meta:
-                    case HtmlElement_source:
-                    case HtmlElement_track:
-                    case HtmlElement_wbr:
-                        lexer->result_symbol = HtmlTokenType_VoidStartTagName;
-                        break;
+            switch (ns) {
+                case ElementNamespace_HTML:
+                    switch (e) {
+                        // Void elements
+                        case HtmlElement_area:
+                        case HtmlElement_base:
+                        case HtmlElement_br:
+                        case HtmlElement_col:
+                        case HtmlElement_embed:
+                        case HtmlElement_hr:
+                        case HtmlElement_img:
+                        case HtmlElement_input:
+                        case HtmlElement_link:
+                        case HtmlElement_meta:
+                        case HtmlElement_source:
+                        case HtmlElement_track:
+                        case HtmlElement_wbr:
+                            lexer->result_symbol = HtmlTokenType_VoidStartTagName;
+                            array_pop(&scanner->tags);
+                            break;
 
-                    // Raw text elements
-                    case HtmlElement_script:
-                        array_push(&scanner->tags, e);
-                        lexer->result_symbol = HtmlTokenType_ScriptStartTagName;
-                        break;
-                    case HtmlElement_style:
-                        array_push(&scanner->tags, e);
-                        lexer->result_symbol = HtmlTokenType_StyleStartTagName;
-                        break;
+                        // Raw text elements
+                        case HtmlElement_script:
+                        case HtmlElement_style:
+                            lexer->result_symbol = HtmlTokenType_RawTextStartTagName;
+                            break;
 
-                    // Escapable raw text elements
-                    case HtmlElement_textarea:
-                    case HtmlElement_title:
-                        array_push(&scanner->tags, e);
-                        lexer->result_symbol = HtmlTokenType_EscapableRawTextStartTagName;
-                        break;
+                        // Escapable raw text elements
+                        case HtmlElement_textarea:
+                        case HtmlElement_title:
+                            lexer->result_symbol = HtmlTokenType_EscapableRawTextStartTagName;
+                            break;
 
-                    // Top-level elements
-                    case HtmlElement_html:
-                        array_push(&scanner->tags, HtmlElement_html);
-                        array_push(&scanner->namespaces, ElementNamespace_HTML);
-                        break;
-                    // For top-level elements of foreign namespaces, we need to make sure that we are pushing the value from that namespace's enum onto the stack so that it can be matched with the end tag later. For example, `HtmlElement_math` and `HtmlElement_svg` are used for matching start tag names in HTML, but `MathmlElement_math` and `SvgElement_svg` are what should be pushed onto the stack.
-                    case HtmlElement_math:
-                        array_push(&scanner->tags, MathmlElement_math);
+                        // Top-level elements
+                        case HtmlElement_html:
+                            array_push(&scanner->namespaces, ElementNamespace_HTML);
+                            break;
+                        // For top-level elements of foreign namespaces, we need to make sure that we are pushing the value from that namespace's enum onto the stack so that it can be matched with the end tag later. For example, `HtmlElement_math` and `HtmlElement_svg` are used for matching start tag names in HTML, but `MathmlElement_math` and `SvgElement_svg` are what should be pushed onto the stack.
+                        case HtmlElement_math:
+                            *array_back(&scanner->tags) = MathmlElement_math;
+                            array_push(&scanner->namespaces, ElementNamespace_MathML);
+                            break;
+                        case HtmlElement_svg:
+                            *array_back(&scanner->tags) = SvgElement_svg;
+                            array_push(&scanner->namespaces, ElementNamespace_SVG);
+                            break;
+                    }
+                    break;
+                case ElementNamespace_MathML:
+                    // The top-level `math` element can be nested, so we need to push the MathML namespace again so that we know how many end tags to look for
+                    if (e == MathmlElement_math)
                         array_push(&scanner->namespaces, ElementNamespace_MathML);
-                        break;
-                    case HtmlElement_svg:
-                        array_push(&scanner->tags, SvgElement_svg);
+                    break;
+                case ElementNamespace_SVG:
+                    // The top-level `svg` element can be nested, so we need to push the SVG namespace again so that we know how many end tags to look for
+                    if (e == SvgElement_svg)
                         array_push(&scanner->namespaces, ElementNamespace_SVG);
+                    break;
+            }
+
+            if (e == 0)
+                // Again, 0 represents an unknown element in any namespace; push it's name hash onto the stack
+                array_push(&scanner->custom_name_hashes, name_hash);
+        } else {
+            if (scanner->tags.size == 0) {
+                lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
+                return true;
+            }
+
+            uint8_t top_tag = *array_back(&scanner->tags);
+            XXH32_hash_t top_name_hash = 0;
+            if (top_tag == 0)
+                top_name_hash = *array_back(&scanner->custom_name_hashes);
+
+            if (e == top_tag && name_hash == top_name_hash) {
+                array_pop(&scanner->tags);
+
+                switch (ns) {
+                    case ElementNamespace_HTML:
+                        if (e == HtmlElement_html)
+                            array_pop(&scanner->namespaces);
                         break;
-
-                    default:
-                        array_push(&scanner->tags, e);
+                    case ElementNamespace_MathML:
+                        if (e == MathmlElement_math)
+                            array_pop(&scanner->namespaces);
+                        break;
+                    case ElementNamespace_SVG:
+                        if (e == SvgElement_svg)
+                            array_pop(&scanner->namespaces);
+                        break;
                 }
-                break;
-            case ElementNamespace_MathML:
-                array_push(&scanner->tags, e);
-                // The top-level `math` element can be nested, so we need to push the MathML namespace again so that we know how many end tags to look for
-                if (e == MathmlElement_math)
-                    array_push(&scanner->namespaces, ElementNamespace_MathML);
-                break;
-            case ElementNamespace_SVG:
-                array_push(&scanner->tags, e);
-                // The top-level `svg` element can be nested, so we need to push the SVG namespace again so that we know how many end tags to look for
-                if (e == SvgElement_svg)
-                    array_push(&scanner->namespaces, ElementNamespace_SVG);
-                break;
-        }
 
-        if (e == 0)
-            // Again, 0 represents an unknown element in any namespace; push it's name hash onto the stack
-            array_push(&scanner->custom_name_hashes, name_hash);
+                if (top_name_hash)
+                    array_pop(&scanner->custom_name_hashes);
+
+                lexer->result_symbol = HtmlTokenType_EndTagName;
+            } else {
+                lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
+            }
+        }
 
         return true;
-    }
-
-    if (valid_symbols[HtmlTokenType_EndTagName]) {
-        enum ElementNamespace ns = get_current_namespace(scanner);
-        uint8_t e;
-        XXH32_hash_t name_hash;
-
-        // // Check for a queued tag:
-        // if (ns == ElementNamespace_HTML && scanner->next_tag) {
-        //     e = scanner->next_tag_name;
-        //     name_hash = scanner->next_tag_name_hash;
-        //     while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
-        //         advance(lexer);
-        //     scanner->next_tag = false;
-        // } else {
-            ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
-        // }
-
-        uint8_t top_tag = get_current_tag(scanner);
-        XXH32_hash_t top_name_hash = 0;
-        if (top_tag == 0)
-            top_name_hash = *array_back(&scanner->custom_name_hashes);
-
-        if (e == top_tag && name_hash == top_name_hash) {
-            array_pop(&scanner->tags);
-
-            if (top_name_hash)
-                array_pop(&scanner->custom_name_hashes);
-
-            if (
-                (ns == ElementNamespace_HTML && e == HtmlElement_html) ||
-                (ns == ElementNamespace_MathML && e == MathmlElement_math) ||
-                (ns == ElementNamespace_SVG && e == SvgElement_svg)
-            )
-                array_pop(&scanner->namespaces);
-
-            lexer->result_symbol = HtmlTokenType_EndTagName;
-            return true;
-        } else {
-            lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
-            return true;
-        }
     }
 
     if (valid_symbols[HtmlTokenType_ErroneousEndTagName]) {

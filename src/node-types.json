@@ -115,14 +115,6 @@
           "named": true
         },
         {
-          "type": "script_element",
-          "named": true
-        },
-        {
-          "type": "style_element",
-          "named": true
-        },
-        {
           "type": "text",
           "named": true
         }
@@ -166,15 +158,7 @@
           "named": true
         },
         {
-          "type": "script_element",
-          "named": true
-        },
-        {
           "type": "start_tag",
-          "named": true
-        },
-        {
-          "type": "style_element",
           "named": true
         },
         {
@@ -215,29 +199,6 @@
     }
   },
   {
-    "type": "script_element",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "end_tag",
-          "named": true
-        },
-        {
-          "type": "start_tag",
-          "named": true
-        },
-        {
-          "type": "text",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "start_tag",
     "named": true,
     "fields": {},
@@ -251,29 +212,6 @@
         },
         {
           "type": "tag_name",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "style_element",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "end_tag",
-          "named": true
-        },
-        {
-          "type": "start_tag",
-          "named": true
-        },
-        {
-          "type": "text",
           "named": true
         }
       ]

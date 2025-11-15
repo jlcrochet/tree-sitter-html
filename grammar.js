@@ -15,8 +15,7 @@ module.exports = grammar({
   externals: $ => [
     $._start_tag_name,
     $._void_start_tag_name,
-    $._script_start_tag_name,
-    $._style_start_tag_name,
+    $._raw_text_start_tag_name,
     $._escapable_raw_text_start_tag_name,
     $._end_tag_name,
     // $._erroneous_start_tag_name,
@@ -46,8 +45,6 @@ module.exports = grammar({
     _content: $ => choice(
       $._whitespace,
       $.element,
-      $.script_element,
-      $.style_element,
       $.text,
       $.character_reference,
       $.invalid_character_reference,
@@ -64,9 +61,9 @@ module.exports = grammar({
       $._short_character_reference,
     ),
 
-    // This covers all elements except `script` and `style`, which need to have their own symbols in the grammar in order to facilitate syntax injection
     element: $ => choice(
       $._void_element,
+      $._raw_text_element,
       $._escapable_raw_text_element,
       // NOTE: In this context, a "normal" element is just any other non-void element. What kind of content a "normal" element is allowed to have is determined by the external scanner.
       $._normal_element,
@@ -91,31 +88,16 @@ module.exports = grammar({
       )
     ),
 
-    script_element: $ => seq(
-      alias($._script_start_tag, $.start_tag),
+    _raw_text_element: $ => seq(
+      alias($._raw_text_start_tag, $.start_tag),
       optional($._whitespace),
-      alias($._raw_text, $.text),
-      optional($._whitespace),
-      $.end_tag
-    ),
-    _script_start_tag: $ => seq(
-      '<',
-      alias($._script_start_tag_name, $.tag_name),
-      repeat(seq($._whitespace, $.attribute)),
-      optional($._whitespace),
-      '>'
-    ),
-
-    style_element: $ => seq(
-      alias($._style_start_tag, $.start_tag),
-      optional($._whitespace),
-      alias($._raw_text, $.text),
+      optional(alias($._raw_text, $.text)),
       optional($._whitespace),
       $.end_tag
     ),
-    _style_start_tag: $ => seq(
+    _raw_text_start_tag: $ => seq(
       '<',
-      alias($._style_start_tag_name, $.tag_name),
+      alias($._raw_text_start_tag_name, $.tag_name),
       repeat(seq($._whitespace, $.attribute)),
       optional($._whitespace),
       '>'
