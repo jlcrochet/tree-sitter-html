@@ -83,7 +83,7 @@ void *tree_sitter_html_external_scanner_create(void) {
 }
 
 void tree_sitter_html_external_scanner_destroy(void *payload) {
-    struct Scanner *scanner = payload;
+    struct Scanner *scanner = (struct Scanner *)payload;
     array_delete(&scanner->namespaces);
     array_delete(&scanner->open_elements);
     array_delete(&scanner->custom_name_hashes);
@@ -91,7 +91,7 @@ void tree_sitter_html_external_scanner_destroy(void *payload) {
 }
 
 unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer) {
-    struct Scanner *scanner = payload;
+    struct Scanner *scanner = (struct Scanner *)payload;
 
     char *offset = buffer;
 
@@ -124,7 +124,7 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 }
 
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
-    struct Scanner *scanner = payload;
+    struct Scanner *scanner = (struct Scanner *)payload;
 
     // scanner->next_tag = false;
     // scanner->next_tag_name = 0;
@@ -302,7 +302,7 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
 // }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-    struct Scanner *scanner = payload;
+    struct Scanner *scanner = (struct Scanner *)payload;
 
     #define ASSERT(CONDITION) \
         if (!(CONDITION)) return false;
