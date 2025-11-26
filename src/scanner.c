@@ -21,7 +21,13 @@
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
 
-enum HtmlTokenType {
+typedef enum HtmlElement HtmlElement;
+typedef enum MathmlElement MathmlElement;
+typedef enum SvgElement SvgElement;
+typedef enum FullCharacterReference FullCharacterReference;
+typedef enum ShortCharacterReference ShortCharacterReference;
+
+typedef enum {
     HtmlTokenType_StartTagName,
     HtmlTokenType_VoidStartTagName,
     HtmlTokenType_RawTextStartTagName,
@@ -40,15 +46,15 @@ enum HtmlTokenType {
     HtmlTokenType_CommentText,
     // This is *not* a token type; it is used by scanners for other languages that need to embed this scanner and add more token types.
     _HtmlTokenType_End
-};
+} HtmlTokenType;
 
-enum ElementNamespace {
+typedef enum {
     ElementNamespace_HTML,
     ElementNamespace_MathML,
     ElementNamespace_SVG
-};
+} ElementNamespace;
 
-struct Scanner {
+typedef struct {
     // bool next_tag;
     // uint8_t next_tag_name;
     // XXH32_hash_t next_tag_name_hash;
@@ -57,12 +63,12 @@ struct Scanner {
     // uint8_t implied_end_tags;
     // #endif
 
-    Array(uint8_t /* enum ElementNamespace */) namespaces;
+    Array(uint8_t /* ElementNamespace */) namespaces;
     Array(uint8_t) open_elements;
     Array(XXH32_hash_t) custom_name_hashes;
-};
+} Scanner;
 
-static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
+static ElementNamespace get_current_namespace(Scanner *scanner) {
     if (scanner->namespaces.size > 0)
         return scanner->namespaces.contents[scanner->namespaces.size - 1];
     else
@@ -70,7 +76,7 @@ static enum ElementNamespace get_current_namespace(struct Scanner *scanner) {
         return ElementNamespace_HTML;
 }
 
-static uint8_t get_current_tag(struct Scanner *scanner) {
+static uint8_t get_current_tag(Scanner *scanner) {
     if (scanner->open_elements.size > 0)
         return scanner->open_elements.contents[scanner->open_elements.size - 1];
     else
@@ -79,11 +85,11 @@ static uint8_t get_current_tag(struct Scanner *scanner) {
 }
 
 void *tree_sitter_html_external_scanner_create(void) {
-    return ts_calloc(1, sizeof(struct Scanner));
+    return ts_calloc(1, sizeof(Scanner));
 }
 
 void tree_sitter_html_external_scanner_destroy(void *payload) {
-    struct Scanner *scanner = (struct Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
     array_delete(&scanner->namespaces);
     array_delete(&scanner->open_elements);
     array_delete(&scanner->custom_name_hashes);
@@ -91,7 +97,7 @@ void tree_sitter_html_external_scanner_destroy(void *payload) {
 }
 
 unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer) {
-    struct Scanner *scanner = (struct Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
 
     char *offset = buffer;
 
@@ -124,7 +130,7 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 }
 
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
-    struct Scanner *scanner = (struct Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
 
     // scanner->next_tag = false;
     // scanner->next_tag_name = 0;
@@ -186,7 +192,7 @@ static bool scan_char(TSLexer *lexer, int c) {
 
 // Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any
 // Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
-static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
+static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
     static Array(char) tag_name = array_new();
     array_clear(&tag_name);
 
@@ -256,7 +262,7 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
     return true;
 }
 
-// static void generate_implied_end_tags(struct Scanner *scanner) {
+// static void generate_implied_end_tags(Scanner *scanner) {
 //     for (size_t i = scanner->open_elements.size - 1; i > 0; i -= 1) {
 //         uint8_t e = scanner->open_elements.contents[i];
 //         if (e == HtmlElement_dd || e == HtmlElement_dt || e == HtmlElement_li || e == HtmlElement_optgroup || e == HtmlElement_option || e == HtmlElement_p || e == HtmlElement_rp || e == HtmlElement_rt) {
@@ -267,7 +273,7 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
 //     }
 // }
 
-// static void generate_implied_end_tags_except(struct Scanner *scanner, uint8_t exception) {
+// static void generate_implied_end_tags_except(Scanner *scanner, uint8_t exception) {
 //     for (size_t i = scanner->open_elements.size - 1; i > 0; i -= 1) {
 //         uint8_t e = scanner->open_elements.contents[i];
 //         if (e == exception) {
@@ -280,7 +286,7 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
 //     }
 // }
 
-// static void generate_implied_end_tags_thoroughly(struct Scanner *scanner) {
+// static void generate_implied_end_tags_thoroughly(Scanner *scanner) {
 //     for (size_t i = scanner->open_elements.size - 1; i > 0; i -= 1) {
 //         uint8_t e = scanner->open_elements.contents[i];
 //         if (e == HtmlElement_caption || e == HtmlElement_colgroup || e == HtmlElement_dd || e == HtmlElement_dt || e == HtmlElement_li || e == HtmlElement_optgroup || e == HtmlElement_option || e == HtmlElement_p || e == HtmlElement_rp || e == HtmlElement_rt || e == HtmlElement_tbody || e == HtmlElement_tfoot || e == HtmlElement_th || e == HtmlElement_thead || HtmlElement_tr) {
@@ -291,7 +297,7 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
 //     }
 // }
 
-// static bool close_p_element(struct Scanner *scanner) {
+// static bool close_p_element(Scanner *scanner) {
 //     generate_implied_end_tags_except(scanner, HtmlElement_p);
 //     if (scanner->open_elements.size > 0 && *array_back(&scanner->open_elements) == HtmlElement_p) {
 //         scanner->implied_end_tags += 1;
@@ -302,7 +308,7 @@ static bool scan_tag_name(TSLexer *lexer, enum ElementNamespace ns, uint8_t *ele
 // }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-    struct Scanner *scanner = (struct Scanner *)payload;
+    Scanner *scanner = (Scanner *)payload;
 
     #define ASSERT(CONDITION) \
         if (!(CONDITION)) return false;
@@ -314,7 +320,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         (SCAN(CHAR) || SCAN(CHAR | 0x0020))
 
     if (valid_symbols[HtmlTokenType_StartTagName] || valid_symbols[HtmlTokenType_EndTagName]) {
-        enum ElementNamespace ns = get_current_namespace(scanner);
+        ElementNamespace ns = get_current_namespace(scanner);
         uint8_t e;
         XXH32_hash_t name_hash;
 
@@ -680,7 +686,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
         bool text_matched = false;
 
-        enum HtmlElement top_tag = get_current_tag(scanner);
+        HtmlElement top_tag = get_current_tag(scanner);
 
         lexer->mark_end(lexer);
 
@@ -725,7 +731,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
         bool text_matched = false;
 
-        enum HtmlElement top_tag = get_current_tag(scanner);
+        HtmlElement top_tag = get_current_tag(scanner);
     
         lexer->mark_end(lexer);
     
