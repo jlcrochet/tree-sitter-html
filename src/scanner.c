@@ -21,6 +21,10 @@
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
 
+#if HtmlElement_Count > 256 || MathmlElement_Count > 256 || SvgElement_Count > 256
+#error "One or more of the element enums has exceeded 256 values; need to upgrade to uint16_t"
+#endif
+
 typedef enum HtmlElement HtmlElement;
 typedef enum MathmlElement MathmlElement;
 typedef enum SvgElement SvgElement;
