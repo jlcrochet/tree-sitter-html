@@ -2,6 +2,7 @@
 #define TRIE_HASH_lookup_html_element
 #include <stddef.h>
 #include <stdint.h>
+enum { HtmlElement_Count = 117 };
 enum HtmlElement {
     HtmlElement_a = 1,
     HtmlElement_abbr = 2,

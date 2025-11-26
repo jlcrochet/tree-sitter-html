@@ -2,6 +2,7 @@
 #define TRIE_HASH_lookup_svg_element
 #include <stddef.h>
 #include <stdint.h>
+enum { SvgElement_Count = 64 };
 enum SvgElement {
     SvgElement_a = 1,
     SvgElement_animate = 2,

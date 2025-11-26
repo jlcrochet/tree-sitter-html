@@ -2,6 +2,7 @@
 #define TRIE_HASH_lookup_mathml_element
 #include <stddef.h>
 #include <stdint.h>
+enum { MathmlElement_Count = 31 };
 enum MathmlElement {
     MathmlElement_annotation = 1,
     MathmlElement_annotation_xml = 2,
