@@ -1,0 +1,268 @@
+================================================================================
+li elements - implied end tag from sibling li
+================================================================================
+<ul>
+  <li>Item 1
+  <li>Item 2
+</ul>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+li elements - implied end tag from parent end tag
+================================================================================
+<ul>
+  <li>Item
+</ul>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+li elements - explicit end tags still work
+================================================================================
+<ul>
+  <li>Item</li>
+</ul>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+dt/dd elements - implied end tags
+================================================================================
+<dl>
+  <dt>Term 1
+  <dd>Definition 1
+  <dt>Term 2
+  <dd>Definition 2
+</dl>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+p element - implied end tag from block element
+================================================================================
+<div>
+  <p>Paragraph
+  <div>Block</div>
+</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+p element - implied end tag from another p
+================================================================================
+<div>
+  <p>First
+  <p>Second
+</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+p element - implied end tag from parent end tag
+================================================================================
+<div>
+  <p>Paragraph
+</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+table cells - td implied end tag from sibling td
+================================================================================
+<table>
+  <tr>
+    <td>Cell 1
+    <td>Cell 2
+  </tr>
+</table>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+table cells - td implied end tag from th
+================================================================================
+<table>
+  <tr>
+    <td>Data
+    <th>Header
+  </tr>
+</table>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+table rows - tr implied end tag from sibling tr
+================================================================================
+<table>
+  <tr>
+    <td>Row 1
+  <tr>
+    <td>Row 2
+</table>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+thead/tbody - implied end tags
+================================================================================
+<table>
+  <thead>
+    <tr><th>Header
+  <tbody>
+    <tr><td>Data
+</table>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (implied_end_tag))
+        (implied_end_tag))
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (implied_end_tag))
+        (implied_end_tag))
+      (implied_end_tag))
+    (end_tag (tag_name))))

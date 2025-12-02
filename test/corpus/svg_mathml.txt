@@ -1,0 +1,372 @@
+================================================================================
+svg - simple element
+================================================================================
+<svg></svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - with viewBox
+================================================================================
+<svg viewBox="0 0 100 100"></svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (attribute_value)))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - with width and height
+================================================================================
+<svg width="100" height="100"></svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (attribute_value))
+      (attribute (attribute_name) (attribute_value)))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - self-closing
+================================================================================
+<svg/>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))))
+
+================================================================================
+svg - with child elements
+================================================================================
+<svg>
+  <rect x="10" y="10" width="80" height="80"/>
+</svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - circle element
+================================================================================
+<svg>
+  <circle cx="50" cy="50" r="40"/>
+</svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - path element
+================================================================================
+<svg>
+  <path d="M 10 10 L 90 90"/>
+</svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - nested groups
+================================================================================
+<svg>
+  <g transform="translate(10,10)">
+    <rect width="50" height="50"/>
+  </g>
+</svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value)))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value))
+          (attribute (attribute_name) (attribute_value))))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - text element
+================================================================================
+<svg>
+  <text x="10" y="50">Hello SVG</text>
+</svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value)))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - CDATA section
+================================================================================
+<svg>
+  <style><![CDATA[
+    .foo { fill: red; }
+  ]]></style>
+</svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (cdata (text))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - embedded in HTML
+================================================================================
+<div>
+  <svg width="100" height="100">
+    <circle cx="50" cy="50" r="40"/>
+  </svg>
+</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value)))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value))
+          (attribute (attribute_name) (attribute_value))
+          (attribute (attribute_name) (attribute_value))))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+svg - nested svg
+================================================================================
+<svg>
+  <svg x="10" y="10">
+    <rect width="50" height="50"/>
+  </svg>
+</svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value)))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value))
+          (attribute (attribute_name) (attribute_value))))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+math - simple element
+================================================================================
+<math></math>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (end_tag (tag_name))))
+
+================================================================================
+math - self-closing
+================================================================================
+<math/>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))))
+
+================================================================================
+math - with content
+================================================================================
+<math>
+  <mi>x</mi>
+  <mo>=</mo>
+  <mn>5</mn>
+</math>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+math - fraction
+================================================================================
+<math>
+  <mfrac>
+    <mi>a</mi>
+    <mi>b</mi>
+  </mfrac>
+</math>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+math - superscript
+================================================================================
+<math>
+  <msup>
+    <mi>x</mi>
+    <mn>2</mn>
+  </msup>
+</math>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+math - embedded in HTML
+================================================================================
+<p>The formula is <math><mi>x</mi><mo>=</mo><mn>5</mn></math> where x is a variable.</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+math - sqrt element
+================================================================================
+<math>
+  <msqrt>
+    <mn>2</mn>
+  </msqrt>
+</math>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))

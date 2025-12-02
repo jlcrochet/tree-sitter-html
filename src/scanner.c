@@ -39,7 +39,7 @@ typedef enum {
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
     HtmlTokenType_SelfClosingTagDelimiter,
-    // HtmlTokenType_ImpliedEndTag,
+    HtmlTokenType_ImpliedEndTag,
     HtmlTokenType_Text,
     HtmlTokenType_RawText,
     HtmlTokenType_EscapableRawText,
@@ -290,26 +290,150 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
 //     }
 // }
 
-// static void generate_implied_end_tags_thoroughly(Scanner *scanner) {
-//     for (size_t i = scanner->open_elements.size - 1; i > 0; i -= 1) {
-//         uint8_t e = scanner->open_elements.contents[i];
-//         if (e == HtmlElement_caption || e == HtmlElement_colgroup || e == HtmlElement_dd || e == HtmlElement_dt || e == HtmlElement_li || e == HtmlElement_optgroup || e == HtmlElement_option || e == HtmlElement_p || e == HtmlElement_rp || e == HtmlElement_rt || e == HtmlElement_tbody || e == HtmlElement_tfoot || e == HtmlElement_th || e == HtmlElement_thead || HtmlElement_tr) {
-//             scanner->implied_end_tags += 1;
-//         } else {
-//             break;
-//         }
-//     }
-// }
+// Returns true if the given start tag would implicitly close the current element
+static bool start_tag_closes_element(HtmlElement current, HtmlElement next) {
+    switch (current) {
+        case HtmlElement_li:
+            return next == HtmlElement_li;
+        case HtmlElement_dt:
+            return next == HtmlElement_dt || next == HtmlElement_dd;
+        case HtmlElement_dd:
+            return next == HtmlElement_dd || next == HtmlElement_dt;
+        case HtmlElement_p:
+            return next == HtmlElement_address ||
+                   next == HtmlElement_article ||
+                   next == HtmlElement_aside ||
+                   next == HtmlElement_blockquote ||
+                   next == HtmlElement_details ||
+                   next == HtmlElement_div ||
+                   next == HtmlElement_dl ||
+                   next == HtmlElement_fieldset ||
+                   next == HtmlElement_figcaption ||
+                   next == HtmlElement_figure ||
+                   next == HtmlElement_footer ||
+                   next == HtmlElement_form ||
+                   next == HtmlElement_h1 ||
+                   next == HtmlElement_h2 ||
+                   next == HtmlElement_h3 ||
+                   next == HtmlElement_h4 ||
+                   next == HtmlElement_h5 ||
+                   next == HtmlElement_h6 ||
+                   next == HtmlElement_header ||
+                   next == HtmlElement_hgroup ||
+                   next == HtmlElement_hr ||
+                   next == HtmlElement_main ||
+                   next == HtmlElement_menu ||
+                   next == HtmlElement_nav ||
+                   next == HtmlElement_ol ||
+                   next == HtmlElement_p ||
+                   next == HtmlElement_pre ||
+                   next == HtmlElement_search ||
+                   next == HtmlElement_section ||
+                   next == HtmlElement_table ||
+                   next == HtmlElement_ul;
+        case HtmlElement_rt:
+            return next == HtmlElement_rt || next == HtmlElement_rp;
+        case HtmlElement_rp:
+            return next == HtmlElement_rt || next == HtmlElement_rp;
+        case HtmlElement_optgroup:
+            return next == HtmlElement_optgroup;
+        case HtmlElement_option:
+            return next == HtmlElement_option || next == HtmlElement_optgroup;
+        case HtmlElement_thead:
+            return next == HtmlElement_tbody || next == HtmlElement_tfoot;
+        case HtmlElement_tbody:
+            return next == HtmlElement_tbody || next == HtmlElement_tfoot;
+        case HtmlElement_tr:
+            return next == HtmlElement_tr;
+        case HtmlElement_td:
+            return next == HtmlElement_td || next == HtmlElement_th;
+        case HtmlElement_th:
+            return next == HtmlElement_td || next == HtmlElement_th;
+        default:
+            return false;
+    }
+}
 
-// static bool close_p_element(Scanner *scanner) {
-//     generate_implied_end_tags_except(scanner, HtmlElement_p);
-//     if (scanner->open_elements.size > 0 && *array_back(&scanner->open_elements) == HtmlElement_p) {
-//         scanner->implied_end_tags += 1;
-//         return true;
-//     } else {
-//         return false;
-//     }
-// }
+// Returns true if an end tag for the given element would implicitly close the current element
+static bool end_tag_closes_element(HtmlElement current, HtmlElement closing) {
+    switch (current) {
+        case HtmlElement_li:
+            return closing == HtmlElement_ul || closing == HtmlElement_ol || closing == HtmlElement_menu;
+        case HtmlElement_dt:
+        case HtmlElement_dd:
+            return closing == HtmlElement_dl;
+        case HtmlElement_p:
+            // p can be closed by the end tag of most parent elements
+            // We'll be permissive here and let it close for any ancestor end tag
+            // except for elements that specifically can contain p without closing it
+            return closing != HtmlElement_a &&
+                   closing != HtmlElement_audio &&
+                   closing != HtmlElement_del &&
+                   closing != HtmlElement_ins &&
+                   closing != HtmlElement_map &&
+                   closing != HtmlElement_noscript &&
+                   closing != HtmlElement_video;
+        case HtmlElement_rt:
+        case HtmlElement_rp:
+            return closing == HtmlElement_ruby;
+        case HtmlElement_optgroup:
+        case HtmlElement_option:
+            return closing == HtmlElement_select || closing == HtmlElement_datalist || closing == HtmlElement_optgroup;
+        case HtmlElement_thead:
+        case HtmlElement_tbody:
+        case HtmlElement_tfoot:
+            return closing == HtmlElement_table;
+        case HtmlElement_tr:
+            return closing == HtmlElement_thead || closing == HtmlElement_tbody || closing == HtmlElement_tfoot || closing == HtmlElement_table;
+        case HtmlElement_td:
+        case HtmlElement_th:
+            return closing == HtmlElement_tr || closing == HtmlElement_thead || closing == HtmlElement_tbody || closing == HtmlElement_tfoot || closing == HtmlElement_table;
+        default:
+            return false;
+    }
+}
+
+// Returns true if the given element can have an implied end tag
+static bool can_have_implied_end_tag(HtmlElement e) {
+    return e == HtmlElement_li ||
+           e == HtmlElement_dt ||
+           e == HtmlElement_dd ||
+           e == HtmlElement_p ||
+           e == HtmlElement_rt ||
+           e == HtmlElement_rp ||
+           e == HtmlElement_optgroup ||
+           e == HtmlElement_option ||
+           e == HtmlElement_thead ||
+           e == HtmlElement_tbody ||
+           e == HtmlElement_tfoot ||
+           e == HtmlElement_tr ||
+           e == HtmlElement_td ||
+           e == HtmlElement_th;
+}
+
+// Check if the end tag for `closing` is somewhere in the open elements stack (i.e., it's an ancestor)
+static bool is_ancestor(Scanner *scanner, HtmlElement closing, XXH32_hash_t closing_hash) {
+    for (size_t i = 0; i < scanner->open_elements.size; i++) {
+        uint8_t e = scanner->open_elements.contents[i];
+        if (e == closing) {
+            if (closing == 0) {
+                // Unknown element, need to check hash
+                // Count how many unknown elements we've seen
+                size_t unknown_count = 0;
+                for (size_t j = 0; j <= i; j++) {
+                    if (scanner->open_elements.contents[j] == 0) unknown_count++;
+                }
+                if (unknown_count <= scanner->custom_name_hashes.size &&
+                    scanner->custom_name_hashes.contents[unknown_count - 1] == closing_hash) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
     Scanner *scanner = (Scanner *)payload;
@@ -475,188 +599,91 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    // #ifndef NO_IMPLIED_END_TAGS
-    // if (valid_symbols[HtmlTokenType_ImpliedEndTag]) {
-    //     if (lexer->eof(lexer)) {
-    //         lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
-    //         return true;
-    //     }
+    if (valid_symbols[HtmlTokenType_ImpliedEndTag]) {
+        // Only HTML namespace elements can have implied end tags
+        if (get_current_namespace(scanner) != ElementNamespace_HTML)
+            goto skip_implied_end_tag;
+        if (scanner->open_elements.size == 0)
+            goto skip_implied_end_tag;
 
-    //     if (scanner->implied_end_tags > 0) {
-    //         scanner->implied_end_tags -= 1;
-    //         lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
-    //         return true;
-    //     }
+        uint8_t current = *array_back(&scanner->open_elements);
 
-    //     ASSERT(get_current_namespace(scanner) == ElementNamespace_HTML);
+        // Only certain elements can have implied end tags
+        if (!can_have_implied_end_tag(current))
+            goto skip_implied_end_tag;
 
-    //     ASSERT(scanner->open_elements.size > 0);
-    //     uint8_t *top = array_back(&scanner->open_elements);
-    //     uint8_t e = *top;
+        // We need to peek ahead to see what's coming - must be a tag
+        if (lexer->lookahead != '<')
+            goto skip_implied_end_tag;
 
-    //     // The following elements can have implied end tags:
-    //     ASSERT(e == HtmlElement_li ||
-    //            e == HtmlElement_dt ||
-    //            e == HtmlElement_dd ||
-    //            e == HtmlElement_p ||
-    //            e == HtmlElement_rt ||
-    //            e == HtmlElement_rp ||
-    //            e == HtmlElement_optgroup ||
-    //            e == HtmlElement_option ||
-    //            e == HtmlElement_colgroup ||
-    //            e == HtmlElement_caption ||
-    //            e == HtmlElement_thead ||
-    //            e == HtmlElement_tbody ||
-    //            e == HtmlElement_tfoot ||
-    //            e == HtmlElement_tr ||
-    //            e == HtmlElement_td ||
-    //            e == HtmlElement_th);
+        // Mark position for zero-width token (before the '<')
+        lexer->mark_end(lexer);
+        advance(lexer);
 
-    //     // If the current tag can have an implied end tag, we need to look ahead and scan the next tag -- if any -- and generate the appropriate number of implied end tags
-    //     ASSERT(lexer->lookahead == '<');
-    //     lexer->mark_end(lexer);
-    //     advance(lexer);
+        bool is_end_tag = false;
+        if (lexer->lookahead == '/') {
+            is_end_tag = true;
+            advance(lexer);
+        }
 
-    //     uint8_t next;
-    //     XXH32_hash_t next_hash;
+        // Scan the tag name to see what's coming
+        uint8_t next;
+        XXH32_hash_t next_hash;
+        if (!scan_tag_name(lexer, ElementNamespace_HTML, &next, &next_hash)) {
+            // If we can't scan a tag name, return false immediately to reset lexer
+            return false;
+        }
 
-    //     if (SCAN('/')) {
-            
-    //     } else {
-            
-    //     }
+        bool should_close = false;
 
-    //     // if (SCAN('/')) {
-    //     //     // The following can have implied end tags if there is no more content in the parent:
-    //     //     ASSERT(e == HtmlElement_li ||
-    //     //            e == HtmlElement_dd ||
-    //     //            e == HtmlElement_p ||
-    //     //            e == HtmlElement_rt ||
-    //     //            e == HtmlElement_rp ||
-    //     //            e == HtmlElement_optgroup ||
-    //     //            e == HtmlElement_option ||
-    //     //            e == HtmlElement_tbody ||
-    //     //            e == HtmlElement_tfoot ||
-    //     //            e == HtmlElement_tr ||
-    //     //            e == HtmlElement_td ||
-    //     //            e == HtmlElement_th);
+        if (is_end_tag) {
+            // End tag case: check if this end tag is for an ancestor element
+            // that would implicitly close the current element
+            if (next != current && is_ancestor(scanner, next, next_hash) && end_tag_closes_element(current, next)) {
+                should_close = true;
+            }
+        } else {
+            // Start tag case: check if this start tag would implicitly close the current element
+            // This can happen in two ways:
+            // 1. The start tag directly closes the current element (e.g., <li> closes <li>)
+            // 2. The start tag closes an ancestor, and the current element must be closed first
+            //    (e.g., <tr> closes ancestor <tr>, so child <td> must be closed first)
+            if (start_tag_closes_element(current, next)) {
+                should_close = true;
+            } else {
+                // Check if the start tag closes any ancestor that would cascade to close current
+                for (size_t i = scanner->open_elements.size; i > 0; i--) {
+                    uint8_t ancestor = scanner->open_elements.contents[i - 1];
+                    if (ancestor == current) continue;  // Skip current element
+                    if (start_tag_closes_element(ancestor, next) && can_have_implied_end_tag(ancestor)) {
+                        // The start tag closes this ancestor, so current element needs to be closed first
+                        should_close = true;
+                        break;
+                    }
+                    // If we hit an element that can't have an implied end tag, stop searching
+                    if (!can_have_implied_end_tag(ancestor)) {
+                        break;
+                    }
+                }
+            }
+        }
 
-    //     //     ASSERT(scanner->tags.size >= 2);
-    //     //     uint8_t parent = *(top - 1);
+        if (should_close) {
+            // Pop the current element from the stack
+            array_pop(&scanner->open_elements);
+            if (current == 0)
+                array_pop(&scanner->custom_name_hashes);
 
-    //     //     if (e == HtmlElement_p) {
-    //     //         // The `p` element can only have an implied end tag under this condition if the parent is *not* one of these:
-    //     //         ASSERT(parent != HtmlElement_a &&
-    //     //                parent != HtmlElement_audio &&
-    //     //                parent != HtmlElement_del &&
-    //     //                parent != HtmlElement_ins &&
-    //     //                parent != HtmlElement_map &&
-    //     //                parent != HtmlElement_noscript &&
-    //     //                parent != HtmlElement_video &&
-    //     //                parent != HtmlElement_Unknown);
-    //     //     }
+            // Emit zero-width implied end tag token
+            lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
+            return true;
+        }
 
-    //     //     ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, &next_hash));
-
-    //     //     if (parent == HtmlElement_Unknown) {
-    //     //         ASSERT(next == parent && next_hash == *array_back(&scanner->custom_name_hashes));
-    //     //     } else {
-    //     //         ASSERT(next == parent);
-    //     //     }
-    //     // } else {
-    //     //     // The only element from the above list that cannot have an implied end tag under this condition is `tfoot`
-    //     //     ASSERT(e != HtmlElement_tfoot);
-
-    //     //     ASSERT(scan_tag_name(lexer, ElementNamespace_HTML, &next, NULL));
-    //     //     ASSERT(next != HtmlElement_Unknown);
-
-    //     //     switch (e) {
-    //     //         case HtmlElement_li:
-    //     //             ASSERT(next == HtmlElement_li);
-    //     //             break;
-    //     //         case HtmlElement_dt:
-    //     //             ASSERT(next == HtmlElement_dt || next == HtmlElement_dd);
-    //     //             break;
-    //     //         case HtmlElement_dd:
-    //     //             ASSERT(next == HtmlElement_dd || next == HtmlElement_dt);
-    //     //             break;
-    //     //         case HtmlElement_p:
-    //     //             ASSERT(next == HtmlElement_address ||
-    //     //                    next == HtmlElement_article ||
-    //     //                    next == HtmlElement_aside ||
-    //     //                    next == HtmlElement_blockquote ||
-    //     //                    next == HtmlElement_details ||
-    //     //                    next == HtmlElement_dialog ||
-    //     //                    next == HtmlElement_div ||
-    //     //                    next == HtmlElement_dl ||
-    //     //                    next == HtmlElement_fieldset ||
-    //     //                    next == HtmlElement_figcaption ||
-    //     //                    next == HtmlElement_figure ||
-    //     //                    next == HtmlElement_footer ||
-    //     //                    next == HtmlElement_form ||
-    //     //                    next == HtmlElement_h1 ||
-    //     //                    next == HtmlElement_h2 ||
-    //     //                    next == HtmlElement_h3 ||
-    //     //                    next == HtmlElement_h4 ||
-    //     //                    next == HtmlElement_h5 ||
-    //     //                    next == HtmlElement_h6 ||
-    //     //                    next == HtmlElement_header ||
-    //     //                    next == HtmlElement_hgroup ||
-    //     //                    next == HtmlElement_hr ||
-    //     //                    next == HtmlElement_main ||
-    //     //                    next == HtmlElement_menu ||
-    //     //                    next == HtmlElement_nav ||
-    //     //                    next == HtmlElement_ol ||
-    //     //                    next == HtmlElement_p ||
-    //     //                    next == HtmlElement_pre ||
-    //     //                    next == HtmlElement_search ||
-    //     //                    next == HtmlElement_section ||
-    //     //                    next == HtmlElement_table ||
-    //     //                    next == HtmlElement_ul);
-    //     //             break;
-    //     //         case HtmlElement_rt:
-    //     //             ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
-    //     //             break;
-    //     //         case HtmlElement_rp:
-    //     //             ASSERT(next == HtmlElement_rt || next == HtmlElement_rp);
-    //     //             break;
-    //     //         case HtmlElement_optgroup:
-    //     //             ASSERT(next == HtmlElement_optgroup || next == HtmlElement_hr);
-    //     //             break;
-    //     //         case HtmlElement_option:
-    //     //             ASSERT(next == HtmlElement_option || next == HtmlElement_optgroup);
-    //     //             break;
-    //     //         // case HtmlElement_colgroup:  // TODO
-    //     //         //     break;
-    //     //         // case HtmlElement_caption:  // TODO
-    //     //         //     break;
-    //     //         case HtmlElement_thead:
-    //     //             ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
-    //     //             break;
-    //     //         case HtmlElement_tbody:
-    //     //             ASSERT(next == HtmlElement_tbody || next == HtmlElement_tfoot);
-    //     //             break;
-    //     //         case HtmlElement_tr:
-    //     //             ASSERT(next == HtmlElement_tr);
-    //     //             break;
-    //     //         case HtmlElement_td:
-    //     //             ASSERT(next == HtmlElement_td || next == HtmlElement_th);
-    //     //             break;
-    //     //         case HtmlElement_th:
-    //     //             ASSERT(next == HtmlElement_td || next == HtmlElement_th);
-    //     //             break;
-    //     //         default:
-    //     //             return false;
-    //     //     }
-    //     // }
-
-    //     // scanner->next_tag = true;
-    //     // scanner->next_tag_name = next;
-    //     // scanner->next_tag_name_hash = next_hash;
-    //     // lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
-    //     // return true;
-    // }
-    // #endif
+        // If we got here, we looked ahead but decided not to emit implied_end_tag.
+        // We need to return false so tree-sitter resets the lexer position.
+        return false;
+    }
+    skip_implied_end_tag:
 
     if (valid_symbols[HtmlTokenType_Text] && lexer->lookahead != '<' && lexer->lookahead != '&') {
         // Leading whitespace should not be included as part of the text
@@ -907,6 +934,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         } state = CommentStart;
 
         lexer->mark_end(lexer);
+        bool text_matched = false;
 
         while (!lexer->eof(lexer)) {
             int c = lexer->lookahead;
@@ -917,7 +945,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                     state = STATE; \
                     goto STATE; \
                 }
-            
+
             switch (state) {
                 case CommentStart: CommentStart:
                     switch (c) {
@@ -939,6 +967,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                             return false;
                         default:
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             RECONSUME(Comment);
                     }
                     break;
@@ -946,6 +975,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                     switch (c) {
                         case '<':
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             state = CommentLessThanSign;
                             break;
                         case '-':
@@ -955,16 +985,19 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                             return false;
                         default:
                             lexer->mark_end(lexer);
+                            text_matched = true;
                     }
                     break;
                 case CommentLessThanSign: CommentLessThanSign:
                     switch (c) {
                         case '!':
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             state = CommentLessThanSignBang;
                             break;
                         case '<':
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             break;
                         default:
                             RECONSUME(Comment);
@@ -1003,22 +1036,28 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                             break;
                         default:
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             RECONSUME(Comment);
                     }
                     break;
                 case CommentEnd: CommentEnd:
                     switch (c) {
                         case '>':
-                            lexer->result_symbol = HtmlTokenType_CommentText;
-                            return true;
+                            if (text_matched) {
+                                lexer->result_symbol = HtmlTokenType_CommentText;
+                                return true;
+                            }
+                            return false;
                         case '!':
                             state = CommentEndBang;
                             break;
                         case '-':
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             break;
                         default:
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             RECONSUME(Comment);
                     }
                     break;
@@ -1026,12 +1065,14 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                     switch (c) {
                         case '-':
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             state = CommentEndDash;
                             break;
                         case '>':
                             return false;
                         default:
                             lexer->mark_end(lexer);
+                            text_matched = true;
                             RECONSUME(Comment);
                     }
                     break;

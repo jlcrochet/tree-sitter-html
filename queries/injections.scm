@@ -1,7 +1,13 @@
-(script_element
+(element
+  (start_tag (tag_name) @name)
   (text) @injection.content
-  (#set! injection.language "javascript"))
+  (#match? @name "[Ss][Cc][Rr][Ii][Pp][Tt]")
+  (#set! injection.language "javascript")
+)
 
-(style_element
+(element
+  (start_tag (tag_name) @name)
   (text) @injection.content
-  (#set! injection.language "css"))
+  (#match? @name "[Ss][Tt][Yy][Ll][Ee]")
+  (#set! injection.language "css")
+)

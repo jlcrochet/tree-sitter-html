@@ -1,0 +1,280 @@
+================================================================================
+nesting - deeply nested elements
+================================================================================
+<div><div><div><div>Deep</div></div></div></div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - siblings at same level
+================================================================================
+<div>
+  <p>First</p>
+  <p>Second</p>
+  <p>Third</p>
+</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - mixed inline and block
+================================================================================
+<div>
+  <p>Text with <strong>bold</strong> and <em>italic</em></p>
+</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (text)
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - list with nested list
+================================================================================
+<ul>
+  <li>Item 1
+    <ul>
+      <li>Nested 1</li>
+      <li>Nested 2</li>
+    </ul>
+  </li>
+</ul>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - anchor wrapping block (HTML5)
+================================================================================
+<a href="#">
+  <div>Block inside anchor</div>
+</a>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (attribute_value)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - table structure
+================================================================================
+<table>
+  <thead>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Cell 1</td>
+      <td>Cell 2</td>
+    </tr>
+  </tbody>
+</table>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - form structure
+================================================================================
+<form action="/submit" method="post">
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name">
+  <button type="submit">Submit</button>
+</form>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (attribute_value))
+      (attribute (attribute_name) (attribute_value)))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value)))
+      (text)
+      (end_tag (tag_name)))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value)))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - definition list
+================================================================================
+<dl>
+  <dt>Term</dt>
+  <dd>Definition</dd>
+</dl>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - figure with figcaption
+================================================================================
+<figure>
+  <img src="image.jpg" alt="An image">
+  <figcaption>Image caption</figcaption>
+</figure>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (attribute_value))
+        (attribute (attribute_name) (attribute_value))))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+nesting - details and summary
+================================================================================
+<details>
+  <summary>Click to expand</summary>
+  <p>Hidden content</p>
+</details>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))

@@ -1,0 +1,264 @@
+================================================================================
+character reference - named entity (common)
+================================================================================
+<p>&amp;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - lt and gt
+================================================================================
+<p>&lt;tag&gt;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (text)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - quot and apos
+================================================================================
+<p>&quot;quoted&quot; and &apos;apostrophe&apos;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (text)
+    (character_reference)
+    (text)
+    (character_reference)
+    (text)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - nbsp
+================================================================================
+<p>Non&nbsp;breaking&nbsp;space</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (character_reference)
+    (text)
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - numeric decimal
+================================================================================
+<p>&#60;&#62;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - numeric hexadecimal lowercase
+================================================================================
+<p>&#x3c;&#x3e;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - numeric hexadecimal uppercase
+================================================================================
+<p>&#x3C;&#x3E;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - mixed with text
+================================================================================
+<p>5 &gt; 3 &amp;&amp; 3 &lt; 5</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (character_reference)
+    (text)
+    (character_reference)
+    (character_reference)
+    (text)
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - copyright symbol
+================================================================================
+<p>&copy; 2024</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - em dash
+================================================================================
+<p>Text&mdash;more text</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - euro sign
+================================================================================
+<p>&euro;100</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - heart
+================================================================================
+<p>I &hearts; HTML</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - adjacent entities
+================================================================================
+<p>&lt;&lt;&lt;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (character_reference)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - in nested elements
+================================================================================
+<div><span>&amp;</span></div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (character_reference)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - unicode smiley (numeric)
+================================================================================
+<p>&#128512;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - unicode smiley (hex)
+================================================================================
+<p>&#x1F600;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - Greek letters
+================================================================================
+<p>&alpha; &beta; &gamma;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (character_reference)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+character reference - math symbols
+================================================================================
+<p>&sum; &prod; &infin;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (character_reference)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+invalid character reference - unknown entity
+================================================================================
+<p>&unknownentity;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (invalid_character_reference)
+    (end_tag (tag_name))))

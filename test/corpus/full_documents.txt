@@ -1,0 +1,263 @@
+================================================================================
+full document - minimal HTML5
+================================================================================
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test</title>
+</head>
+<body>
+  <p>Hello</p>
+</body>
+</html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+full document - with meta tags
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page</title>
+</head>
+<body></body>
+</html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (attribute_value)))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value))))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value))
+          (attribute (attribute_name) (attribute_value))))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+full document - with link and script
+================================================================================
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value))
+          (attribute (attribute_name) (attribute_value))))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag
+          (tag_name)
+          (attribute (attribute_name) (attribute_value)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+full document - with inline styles and scripts
+================================================================================
+<!DOCTYPE html>
+<html>
+<head>
+  <style>body { margin: 0; }</style>
+</head>
+<body>
+  <script>console.log("loaded");</script>
+</body>
+</html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+full document - with comments
+================================================================================
+<!DOCTYPE html>
+<!-- Document start -->
+<html>
+<head>
+  <!-- Head section -->
+  <title>Test</title>
+</head>
+<body>
+  <!-- Body content -->
+  <p>Hello</p>
+</body>
+</html>
+<!-- Document end -->
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (comment (text))
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (comment (text))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (comment (text))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name)))
+  (comment (text)))
+
+================================================================================
+full document - semantic HTML5
+================================================================================
+<!DOCTYPE html>
+<html>
+<body>
+  <header>
+    <nav>
+      <a href="/">Home</a>
+    </nav>
+  </header>
+  <main>
+    <article>
+      <section>
+        <h1>Title</h1>
+        <p>Content</p>
+      </section>
+    </article>
+  </main>
+  <footer>
+    <p>Footer</p>
+  </footer>
+</body>
+</html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (element
+            (start_tag
+              (tag_name)
+              (attribute (attribute_name) (attribute_value)))
+            (text)
+            (end_tag (tag_name)))
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (element
+            (start_tag (tag_name))
+            (element
+              (start_tag (tag_name))
+              (text)
+              (end_tag (tag_name)))
+            (element
+              (start_tag (tag_name))
+              (text)
+              (end_tag (tag_name)))
+            (end_tag (tag_name)))
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (text)
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))

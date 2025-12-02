@@ -233,8 +233,17 @@
               }
             },
             {
-              "type": "SYMBOL",
-              "name": "end_tag"
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "end_tag"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "implied_end_tag"
+                }
+              ]
             }
           ]
         }
@@ -1006,6 +1015,10 @@
     {
       "type": "SYMBOL",
       "name": "_self_closing_tag_delimiter"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "implied_end_tag"
     },
     {
       "type": "SYMBOL",
