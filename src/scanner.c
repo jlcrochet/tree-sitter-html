@@ -59,13 +59,14 @@ typedef enum {
 } ElementNamespace;
 
 typedef struct {
-    // bool next_tag;
-    // uint8_t next_tag_name;
-    // XXH32_hash_t next_tag_name_hash;
+    #ifndef NO_IMPLIED_END_TAGS
+    // Cached tag name from lookahead during implied end tag scanning
+    bool cached_tag;
+    uint8_t cached_tag_name;
+    XXH32_hash_t cached_tag_name_hash;
 
-    // #ifndef NO_IMPLIED_END_TAGS
-    // uint8_t implied_end_tags;
-    // #endif
+    uint8_t implied_end_tags;
+    #endif
 
     Array(uint8_t /* ElementNamespace */) namespaces;
     Array(uint8_t) open_elements;
@@ -105,15 +106,13 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 
     char *offset = buffer;
 
-    // *offset++ = (char)scanner->next_tag;
-    // *offset++ = (char)scanner->next_tag_name;
-
-    // memcpy(offset, &scanner->next_tag_name_hash, sizeof(XXH32_hash_t));
-    // offset += sizeof(XXH32_hash_t);
-
-    // #ifndef NO_IMPLIED_END_TAGS
-    // *offset++ = (char)scanner->implied_end_tags;
-    // #endif
+    #ifndef NO_IMPLIED_END_TAGS
+    *offset++ = (char)scanner->cached_tag;
+    *offset++ = (char)scanner->cached_tag_name;
+    memcpy(offset, &scanner->cached_tag_name_hash, sizeof(XXH32_hash_t));
+    offset += sizeof(XXH32_hash_t);
+    *offset++ = (char)scanner->implied_end_tags;
+    #endif
 
     #define SERIALIZE_ARRAY(ARRAY) \
         { \
@@ -136,13 +135,12 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
     Scanner *scanner = (Scanner *)payload;
 
-    // scanner->next_tag = false;
-    // scanner->next_tag_name = 0;
-    // scanner->next_tag_name_hash = 0;
-
-    // #ifndef NO_IMPLIED_END_TAGS
-    // scanner->implied_end_tags = 0;
-    // #endif
+    #ifndef NO_IMPLIED_END_TAGS
+    scanner->cached_tag = false;
+    scanner->cached_tag_name = 0;
+    scanner->cached_tag_name_hash = 0;
+    scanner->implied_end_tags = 0;
+    #endif
 
     array_clear(&scanner->namespaces);
     array_clear(&scanner->open_elements);
@@ -152,15 +150,13 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
 
     const char *offset = buffer;
 
-    // scanner->next_tag = (bool)*offset++;
-    // scanner->next_tag_name = (uint8_t)*offset++;
-
-    // memcpy(&scanner->next_tag_name_hash, offset, sizeof(XXH32_hash_t));
-    // offset += sizeof(XXH32_hash_t);
-
-    // #ifndef NO_IMPLIED_END_TAGS
-    // scanner->implied_end_tags = (uint8_t)*offset++;
-    // #endif
+    #ifndef NO_IMPLIED_END_TAGS
+    scanner->cached_tag = (bool)*offset++;
+    scanner->cached_tag_name = (uint8_t)*offset++;
+    memcpy(&scanner->cached_tag_name_hash, offset, sizeof(XXH32_hash_t));
+    offset += sizeof(XXH32_hash_t);
+    scanner->implied_end_tags = (uint8_t)*offset++;
+    #endif
 
     #define DESERIALIZE_ARRAY(ARRAY) \
         { \
@@ -452,17 +448,21 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         uint8_t e;
         XXH32_hash_t name_hash;
 
-        // Check for a queued tag:
-        // if (ns == ElementNamespace_HTML && scanner->next_tag) {
-        //     e = scanner->next_tag_name;
-        //     name_hash = scanner->next_tag_name_hash;
-        //     while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
-        //         advance(lexer);
-        //     scanner->next_tag = false;
-        // } else {
-        //    ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
-        // }
+        #ifndef NO_IMPLIED_END_TAGS
+        // Check for a cached tag from implied end tag lookahead
+        if (ns == ElementNamespace_HTML && scanner->cached_tag) {
+            e = scanner->cached_tag_name;
+            name_hash = scanner->cached_tag_name_hash;
+            // Advance past the tag name in the lexer
+            while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
+                advance(lexer);
+            scanner->cached_tag = false;
+        } else {
+            ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+        }
+        #else
         ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+        #endif
 
         if (valid_symbols[HtmlTokenType_StartTagName]) {
             // Start with the default token for start tag names and disambiguate below
@@ -599,7 +599,18 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
+    #ifndef NO_IMPLIED_END_TAGS
     if (valid_symbols[HtmlTokenType_ImpliedEndTag]) {
+        // Fast path: if we already know how many implied end tags to emit, just emit one
+        if (scanner->implied_end_tags > 0) {
+            scanner->implied_end_tags--;
+            uint8_t current = array_pop(&scanner->open_elements);
+            if (current == 0)
+                array_pop(&scanner->custom_name_hashes);
+            lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
+            return true;
+        }
+
         // Only HTML namespace elements can have implied end tags
         if (get_current_namespace(scanner) != ElementNamespace_HTML)
             goto skip_implied_end_tag;
@@ -634,41 +645,86 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             return false;
         }
 
-        bool should_close = false;
+        // Cache the scanned tag name for later use
+        scanner->cached_tag = true;
+        scanner->cached_tag_name = next;
+        scanner->cached_tag_name_hash = next_hash;
+
+        // Count how many elements need to be implicitly closed
+        uint8_t close_count = 0;
 
         if (is_end_tag) {
-            // End tag case: check if this end tag is for an ancestor element
-            // that would implicitly close the current element
-            if (next != current && is_ancestor(scanner, next, next_hash) && end_tag_closes_element(current, next)) {
-                should_close = true;
-            }
-        } else {
-            // Start tag case: check if this start tag would implicitly close the current element
-            // This can happen in two ways:
-            // 1. The start tag directly closes the current element (e.g., <li> closes <li>)
-            // 2. The start tag closes an ancestor, and the current element must be closed first
-            //    (e.g., <tr> closes ancestor <tr>, so child <td> must be closed first)
-            if (start_tag_closes_element(current, next)) {
-                should_close = true;
-            } else {
-                // Check if the start tag closes any ancestor that would cascade to close current
+            // End tag case: count elements that would be implicitly closed
+            // by an end tag for an ancestor element
+            if (next != current && is_ancestor(scanner, next, next_hash)) {
+                // Count from current backwards until we find the ancestor
                 for (size_t i = scanner->open_elements.size; i > 0; i--) {
-                    uint8_t ancestor = scanner->open_elements.contents[i - 1];
-                    if (ancestor == current) continue;  // Skip current element
-                    if (start_tag_closes_element(ancestor, next) && can_have_implied_end_tag(ancestor)) {
-                        // The start tag closes this ancestor, so current element needs to be closed first
-                        should_close = true;
+                    uint8_t elem = scanner->open_elements.contents[i - 1];
+                    if (elem == next) {
+                        // For unknown elements, also check the hash
+                        if (next == 0) {
+                            size_t unknown_count = 0;
+                            for (size_t j = 0; j <= i - 1; j++) {
+                                if (scanner->open_elements.contents[j] == 0) unknown_count++;
+                            }
+                            if (unknown_count <= scanner->custom_name_hashes.size &&
+                                scanner->custom_name_hashes.contents[unknown_count - 1] == next_hash) {
+                                break;  // Found the matching ancestor
+                            }
+                        } else {
+                            break;  // Found the matching ancestor
+                        }
+                    }
+                    if (end_tag_closes_element(elem, next) && can_have_implied_end_tag(elem)) {
+                        close_count++;
+                    } else if (!can_have_implied_end_tag(elem)) {
+                        // Hit an element that can't have an implied end tag, stop
+                        close_count = 0;
                         break;
                     }
-                    // If we hit an element that can't have an implied end tag, stop searching
-                    if (!can_have_implied_end_tag(ancestor)) {
+                }
+            }
+        } else {
+            // Start tag case: count elements that would be implicitly closed
+            // This can happen in two ways:
+            // 1. The start tag directly closes the current element (e.g., <li> closes <li>)
+            // 2. The start tag closes an ancestor, and intermediate elements must be closed first
+            //
+            // First, find if there's any element that the start tag closes
+            size_t closing_index = 0;
+            bool found_closing = false;
+            for (size_t i = scanner->open_elements.size; i > 0; i--) {
+                uint8_t elem = scanner->open_elements.contents[i - 1];
+                if (start_tag_closes_element(elem, next)) {
+                    closing_index = i - 1;
+                    found_closing = true;
+                    break;
+                }
+                if (!can_have_implied_end_tag(elem)) {
+                    // Hit an element that can't have an implied end tag, stop searching
+                    break;
+                }
+            }
+
+            // If we found an element to close, count how many need to close
+            if (found_closing) {
+                for (size_t i = scanner->open_elements.size; i > closing_index; i--) {
+                    uint8_t elem = scanner->open_elements.contents[i - 1];
+                    if (can_have_implied_end_tag(elem)) {
+                        close_count++;
+                    } else {
+                        // Shouldn't happen since we checked above, but be safe
+                        close_count = 0;
                         break;
                     }
                 }
             }
         }
 
-        if (should_close) {
+        if (close_count > 0) {
+            // Store remaining count (minus one, since we're about to emit one)
+            scanner->implied_end_tags = close_count - 1;
+
             // Pop the current element from the stack
             array_pop(&scanner->open_elements);
             if (current == 0)
@@ -684,6 +740,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return false;
     }
     skip_implied_end_tag:
+    #endif
 
     if (valid_symbols[HtmlTokenType_Text] && lexer->lookahead != '<' && lexer->lookahead != '&') {
         // Leading whitespace should not be included as part of the text
