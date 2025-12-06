@@ -53,7 +53,7 @@
               "type": "REPEAT1",
               "content": {
                 "type": "SYMBOL",
-                "name": "_content"
+                "name": "_top_level_content"
               }
             }
           ]
@@ -63,7 +63,40 @@
         }
       ]
     },
-    "_content": {
+    "_top_level_content": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "_whitespace"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "element"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "text"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "character_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "invalid_character_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "comment"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "erroneous_end_tag"
+        }
+      ]
+    },
+    "_element_content": {
       "type": "CHOICE",
       "members": [
         {
@@ -93,10 +126,6 @@
         {
           "type": "SYMBOL",
           "name": "comment"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "erroneous_end_tag"
         }
       ]
     },
@@ -229,7 +258,7 @@
               "type": "REPEAT",
               "content": {
                 "type": "SYMBOL",
-                "name": "_content"
+                "name": "_element_content"
               }
             },
             {
@@ -242,6 +271,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "implied_end_tag"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "erroneous_end_tag"
                 }
               ]
             }

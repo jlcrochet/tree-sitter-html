@@ -20,8 +20,8 @@ erroneous end tag - mismatched closing tag
 (document
   (element
     (start_tag (tag_name))
-    (erroneous_end_tag (tag_name))
-    (end_tag (tag_name))))
+    (erroneous_end_tag (tag_name)))
+  (erroneous_end_tag (tag_name)))
 
 ================================================================================
 erroneous end tag - extra closing tag
@@ -89,9 +89,9 @@ erroneous end tag - nested inside valid element
   (element
     (start_tag (tag_name))
     (text)
-    (erroneous_end_tag (tag_name))
-    (text)
-    (end_tag (tag_name))))
+    (erroneous_end_tag (tag_name)))
+  (text)
+  (erroneous_end_tag (tag_name)))
 
 ================================================================================
 erroneous end tag - closing tag with whitespace

@@ -37,11 +37,22 @@ module.exports = grammar({
     document: $ => optional(seq(
       optional('\uFEFF'),
       optional(seq(optional($._whitespace), $.doctype)),
-      repeat1($._content)
+      repeat1($._top_level_content)
     )),
 
-    // This covers all normal element content outside of raw text and escapable raw text elements, which are covered separately below
-    _content: $ => choice(
+    // Top-level content (can include erroneous end tags that don't close anything)
+    _top_level_content: $ => choice(
+      $._whitespace,
+      $.element,
+      $.text,
+      $.character_reference,
+      $.invalid_character_reference,
+      $.comment,
+      $.erroneous_end_tag,
+    ),
+
+    // Element content (erroneous end tags close the element, not appear as content)
+    _element_content: $ => choice(
       $._whitespace,
       $.element,
       $.text,
@@ -49,8 +60,6 @@ module.exports = grammar({
       $.invalid_character_reference,
       $.cdata,
       $.comment,
-      // $.erroneous_start_tag,
-      $.erroneous_end_tag
     ),
 
     _whitespace: _ => WHITESPACE,
@@ -81,8 +90,8 @@ module.exports = grammar({
       alias($._self_closing_tag, $.start_tag),
       seq(
         $.start_tag,
-        repeat($._content),
-        choice($.end_tag, $.implied_end_tag)
+        repeat($._element_content),
+        choice($.end_tag, $.implied_end_tag, $.erroneous_end_tag)
       )
     ),
 
@@ -142,13 +151,6 @@ module.exports = grammar({
       optional($._whitespace),
       alias($._self_closing_tag_delimiter, '/>')
     ),
-
-    // erroneous_start_tag: $ => seq(
-    //   '<',
-    //   alias($._erroneous_start_tag_name, $.tag_name),
-    //   optional($._whitespace),
-    //   '>'
-    // ),
 
     erroneous_end_tag: $ => seq(
       '</',

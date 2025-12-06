@@ -574,10 +574,20 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     }
 
     if (valid_symbols[HtmlTokenType_ErroneousEndTagName]) {
+        #ifndef NO_IMPLIED_END_TAGS
+        // Clear any cached tag from implied end tag lookahead
+        scanner->cached_tag = false;
+        #endif
         ASSERT(isalpha(lexer->lookahead));
         advance(lexer);
         while (!lexer->eof(lexer) && !is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
             advance(lexer);
+        // Pop the current element from the stack since the erroneous end tag closes it
+        if (scanner->open_elements.size > 0) {
+            uint8_t e = array_pop(&scanner->open_elements);
+            if (e == 0)
+                array_pop(&scanner->custom_name_hashes);
+        }
         lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
         return true;
     }
@@ -684,8 +694,8 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                     }
                 }
             }
-        } else {
-            // Start tag case: count elements that would be implicitly closed
+        } else if (can_have_implied_end_tag(current)) {
+            // Start tag case: only for elements that can have HTML-semantic implied end tags
             // This can happen in two ways:
             // 1. The start tag directly closes the current element (e.g., <li> closes <li>)
             // 2. The start tag closes an ancestor, and intermediate elements must be closed first
