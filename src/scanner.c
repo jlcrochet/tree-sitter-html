@@ -262,30 +262,6 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
     return true;
 }
 
-// static void generate_implied_end_tags(Scanner *scanner) {
-//     for (size_t i = scanner->open_elements.size - 1; i > 0; i -= 1) {
-//         uint8_t e = scanner->open_elements.contents[i];
-//         if (e == HtmlElement_dd || e == HtmlElement_dt || e == HtmlElement_li || e == HtmlElement_optgroup || e == HtmlElement_option || e == HtmlElement_p || e == HtmlElement_rp || e == HtmlElement_rt) {
-//             scanner->implied_end_tags += 1;
-//         } else {
-//             break;
-//         }
-//     }
-// }
-
-// static void generate_implied_end_tags_except(Scanner *scanner, uint8_t exception) {
-//     for (size_t i = scanner->open_elements.size - 1; i > 0; i -= 1) {
-//         uint8_t e = scanner->open_elements.contents[i];
-//         if (e == exception) {
-//             break;
-//         } else if (e == HtmlElement_dd || e == HtmlElement_dt || e == HtmlElement_li || e == HtmlElement_optgroup || e == HtmlElement_option || e == HtmlElement_p || e == HtmlElement_rp || e == HtmlElement_rt) {
-//             scanner->implied_end_tags += 1;
-//         } else {
-//             break;
-//         }
-//     }
-// }
-
 // Returns true if the given start tag would implicitly close the current element
 static bool start_tag_closes_element(HtmlElement current, HtmlElement next) {
     switch (current) {
@@ -464,6 +440,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
         #endif
 
+        // Start tags
         if (valid_symbols[HtmlTokenType_StartTagName]) {
             // Start with the default token for start tag names and disambiguate below
             lexer->result_symbol = HtmlTokenType_StartTagName;
@@ -532,7 +509,10 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             if (e == 0)
                 // Again, 0 represents an unknown element in any namespace; push it's name hash onto the stack
                 array_push(&scanner->custom_name_hashes, name_hash);
-        } else {
+        }
+
+        // End tags
+        else {
             if (scanner->open_elements.size == 0) {
                 lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
                 return true;
