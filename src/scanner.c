@@ -89,6 +89,14 @@ static uint8_t get_current_tag(Scanner *scanner) {
         return HtmlElement_html;
 }
 
+static uint8_t lookup_element(const char *string, size_t length, ElementNamespace ns) {
+    switch (ns) {
+        case ElementNamespace_HTML: return lookup_html_element(string, length);
+        case ElementNamespace_MathML: return lookup_mathml_element(string, length);
+        case ElementNamespace_SVG: return lookup_svg_element(string, length);
+    }
+}
+
 void *tree_sitter_html_external_scanner_create(void) {
     return ts_calloc(1, sizeof(Scanner));
 }
@@ -193,6 +201,10 @@ static bool scan_char(TSLexer *lexer, int c) {
 // Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any
 // Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
 static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
+    // The first letter of any tag name must be an ASCII alpha character
+    if (!isalpha(lexer->lookahead))
+        return false;
+
     static Array(char) tag_name = array_new();
     array_clear(&tag_name);
 
@@ -204,13 +216,9 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
             array_extend(&tag_name, count, bytes); \
         }
 
-    // The first letter of any tag name must be an ASCII alpha character
-    if (!isalpha(lexer->lookahead))
-        return false;
-
     array_push(&tag_name, lexer->lookahead | 0x0020);
     advance(lexer);
-    
+
     bool must_be_unknown = false;
 
     while (!lexer->eof(lexer)) {
@@ -238,17 +246,7 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
         // 0 represents an unknown element in any namespace
         *element = 0;
     } else {
-        switch (ns) {
-            case ElementNamespace_HTML:
-                *element = lookup_html_element(tag_name.contents, tag_name.size);
-                break;
-            case ElementNamespace_MathML:
-                *element = lookup_mathml_element(tag_name.contents, tag_name.size);
-                break;
-            case ElementNamespace_SVG:
-                *element = lookup_svg_element(tag_name.contents, tag_name.size);
-                break;
-        }
+        *element = lookup_element(tag_name.contents, tag_name.size, ns);
     }
 
     // If we don't care about the hash, we can pass NULL for `name_hash` to skip this step
@@ -771,7 +769,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         while (!lexer->eof(lexer)) {
             int c = lexer->lookahead;
             advance(lexer);
-    
+
             if (c == '<') {
                 // Check for the end tag
                 if (lexer->lookahead == '/') {
@@ -795,7 +793,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 text_matched = true;
             }
         }
-        
+
         if (text_matched) {
             lexer->result_symbol = HtmlTokenType_RawText;
             return true;
@@ -810,9 +808,9 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         bool text_matched = false;
 
         HtmlElement top_tag = get_current_tag(scanner);
-    
+
         lexer->mark_end(lexer);
-    
+
         while (!lexer->eof(lexer) && lexer->lookahead != '&') {
             int c = lexer->lookahead;
             advance(lexer);
@@ -840,7 +838,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                 text_matched = true;
             }
         }
-        
+
         if (text_matched) {
             lexer->result_symbol = HtmlTokenType_EscapableRawText;
             return true;
@@ -878,7 +876,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             while (isalnum(lexer->lookahead)) {
                 array_push(&name, lexer->lookahead);
                 advance(lexer);
-            
+
                 if (valid_symbols[HtmlTokenType_ShortCharacterReference] && lookup_short_character_reference(name.contents, name.size)) {
                     lexer->result_symbol = HtmlTokenType_ShortCharacterReference;
                     lexer->mark_end(lexer);
@@ -909,7 +907,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
     if (valid_symbols[HtmlTokenType_CdataText]) {
         ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);
-        
+
         // Ref: https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-state
         enum {
             CdataSection,
@@ -918,7 +916,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         } state = CdataSection;
 
         lexer->mark_end(lexer);
-        
+
         while (!lexer->eof(lexer)) {
             int c = lexer->lookahead;
             advance(lexer);
@@ -928,7 +926,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                     state = STATE; \
                     goto STATE; \
                 }
-            
+
             switch (state) {
                 case CdataSection: CdataSection:
                     switch (c) {
