@@ -1,7 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <wctype.h>
 
 static inline bool is_ascii(int c) {
     return (c & ~0x7f) == 0;
