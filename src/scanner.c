@@ -9,7 +9,7 @@
 #define XXH_NO_XXH3
 #define XXH_NO_LONG_LONG
 #define XXH_NO_STREAM
-#include <xxhash.h>
+#include "../xxHash/xxhash.h"
 
 #include "helpers.h"
 #include "tables/html_elements.h"

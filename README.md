@@ -9,7 +9,10 @@ An alternative Tree-sitter grammar for HTML with improved memory efficiency and 
 The official grammar stores tag names as heap-allocated strings in the element stack. This grammar uses **enums and trie-based hash lookups** instead:
 
 - Known HTML/SVG/MathML elements are stored as single-byte enum values
-- More tags can be stored on the stack before the limit defined by `TREE_SITTER_SERIALIZATION_BUFFER_SIZE` is reached
+- Custom tag names are stored as a single-byte enum value plus a four-byte hash
+- Since full tag names are not stored on the stack, the parser can handle more deeply nested trees before reaching the serialization buffer limit.
+
+The hashes are provided by [xxHash](https://github.com/Cyan4973/xxHash).
 
 ### Implied end tags
 
