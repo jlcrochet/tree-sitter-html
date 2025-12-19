@@ -881,8 +881,17 @@
                   "value": "="
                 },
                 {
-                  "type": "SYMBOL",
-                  "name": "attribute_value"
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "SYMBOL",
+                      "name": "unquoted_attribute_value"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "quoted_attribute_value"
+                    }
+                  ]
                 }
               ]
             },
@@ -898,38 +907,38 @@
       "value": "[^\\u0000-\\u001F\\u007F-\\u009F \"'>\\/=\\uFDD0-\\uFDEF\\uFFFE\\uFFFF\\u{1FFFE}\\u{1FFFF}\\u{2FFFE}\\u{2FFFF}\\u{3FFFE}\\u{3FFFF}\\u{4FFFE}\\u{4FFFF}\\u{5FFFE}\\u{5FFFF}\\u{6FFFE}\\u{6FFFF}\\u{7FFFE}\\u{7FFFF}\\u{8FFFE}\\u{8FFFF}\\u{9FFFE}\\u{9FFFF}\\u{AFFFE}\\u{AFFFF}\\u{BFFFE}\\u{BFFFF}\\u{CFFFE}\\u{CFFFF}\\u{DFFFE}\\u{DFFFF}\\u{EFFFE}\\u{EFFFF}\\u{FFFFE}\\u{FFFFF}\\u{10FFFE}\\u{10FFFF}]+",
       "flags": "u"
     },
-    "attribute_value": {
+    "unquoted_attribute_value": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "PATTERN",
+            "value": "[^\\t\\n\\f\\r \"'=<>`&]+"
+          },
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_full_character_reference"
+            },
+            "named": true,
+            "value": "character_reference"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "invalid_character_reference"
+          },
+          {
+            "type": "PATTERN",
+            "value": "&[^\\t\\n\\f\\r \"'=<>`&]*"
+          }
+        ]
+      }
+    },
+    "quoted_attribute_value": {
       "type": "CHOICE",
       "members": [
-        {
-          "type": "REPEAT1",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "PATTERN",
-                "value": "[^\\t\\n\\f\\r \"'=<>`&]+"
-              },
-              {
-                "type": "ALIAS",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "_full_character_reference"
-                },
-                "named": true,
-                "value": "character_reference"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "invalid_character_reference"
-              },
-              {
-                "type": "PATTERN",
-                "value": "&[^\\t\\n\\f\\r \"'=<>`&]*"
-              }
-            ]
-          }
-        },
         {
           "type": "SEQ",
           "members": [

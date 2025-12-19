@@ -28,8 +28,8 @@ void element - img with attributes
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - input with various attributes
@@ -41,8 +41,8 @@ void element - input with various attributes
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value))
       (attribute (attribute_name)))))
 
 ================================================================================
@@ -55,7 +55,7 @@ void element - meta
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - link
@@ -67,8 +67,8 @@ void element - link
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - area
@@ -80,9 +80,9 @@ void element - area
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - base
@@ -94,7 +94,7 @@ void element - base
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - col
@@ -106,7 +106,7 @@ void element - col
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - embed
@@ -118,8 +118,8 @@ void element - embed
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - source
@@ -131,8 +131,8 @@ void element - source
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - track
@@ -144,9 +144,9 @@ void element - track
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 void element - wbr

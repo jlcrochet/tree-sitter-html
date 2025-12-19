@@ -31,8 +31,8 @@ custom element - with attributes
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -127,13 +127,13 @@ custom element - with slot
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value)))
+        (attribute (attribute_name) (quoted_attribute_value)))
       (text)
       (end_tag (tag_name)))
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value)))
+        (attribute (attribute_name) (quoted_attribute_value)))
       (text)
       (end_tag (tag_name)))
     (end_tag (tag_name))))

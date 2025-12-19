@@ -48,5 +48,3 @@ zig-out/
 *.tar.gz
 *.tgz
 *.zip
-
-CLAUDE.md

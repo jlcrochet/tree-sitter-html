@@ -33,8 +33,8 @@ self-closing - svg with attributes
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (attribute_value))
-      (attribute (attribute_name) (attribute_value)))))
+      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value)))))
 
 ================================================================================
 self-closing - math element
@@ -58,9 +58,9 @@ self-closing - svg circle
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -75,10 +75,10 @@ self-closing - svg line
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -93,7 +93,7 @@ self-closing - svg polygon
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -108,7 +108,7 @@ self-closing - svg polyline
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -126,16 +126,16 @@ self-closing - multiple svg elements
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -150,7 +150,7 @@ self-closing - svg use element
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -165,7 +165,7 @@ self-closing - svg image
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))
-        (attribute (attribute_name) (attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))
+        (attribute (attribute_name) (quoted_attribute_value))))
     (end_tag (tag_name))))

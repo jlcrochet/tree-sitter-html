@@ -4,7 +4,8 @@
 (comment) @comment
 (attribute_name) @attribute
 "=" @operator
-(attribute_value) @string
+(quoted_attribute_value) @string
+(unquoted_attribute_value) @string
 [
 	"'" "\""
 ] @punctuation
