@@ -8,7 +8,7 @@ attribute - double-quoted value
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -22,7 +22,7 @@ attribute - single-quoted value
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -104,7 +104,7 @@ attribute - value with spaces (double-quoted)
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -120,7 +120,7 @@ attribute - value with special characters
       (tag_name)
       (attribute
         (attribute_name)
-        (quoted_attribute_value (character_reference))))
+        (quoted_attribute_value (quoted_attribute_value_content (character_reference)))))
     (text)
     (end_tag (tag_name))))
 
@@ -134,9 +134,9 @@ attribute - data attributes
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value))
-      (attribute (attribute_name) (quoted_attribute_value))
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -150,8 +150,8 @@ attribute - hyphenated names
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value))
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -165,8 +165,8 @@ attribute - mixed quote styles
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value))
-      (attribute (attribute_name) (quoted_attribute_value))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
       (attribute (attribute_name) (unquoted_attribute_value)))
     (text)
     (end_tag (tag_name))))
@@ -181,7 +181,7 @@ attribute - whitespace around equals sign
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -195,8 +195,8 @@ attribute - multiple whitespace between attributes
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value))
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -213,8 +213,9 @@ attribute - character reference in value
       (attribute
         (attribute_name)
         (quoted_attribute_value
-          (character_reference)
-          (character_reference))))
+          (quoted_attribute_value_content
+            (character_reference)
+            (character_reference)))))
     (text)
     (end_tag (tag_name))))
 
@@ -231,8 +232,9 @@ attribute - numeric character reference in value
       (attribute
         (attribute_name)
         (quoted_attribute_value
-          (character_reference)
-          (character_reference))))
+          (quoted_attribute_value_content
+            (character_reference)
+            (character_reference)))))
     (text)
     (end_tag (tag_name))))
 
@@ -249,8 +251,9 @@ attribute - hex character reference in value
       (attribute
         (attribute_name)
         (quoted_attribute_value
-          (character_reference)
-          (character_reference))))
+          (quoted_attribute_value_content
+            (character_reference)
+            (character_reference)))))
     (text)
     (end_tag (tag_name))))
 
@@ -264,7 +267,7 @@ attribute - event handler
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -278,7 +281,7 @@ attribute - style attribute
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -292,7 +295,7 @@ attribute - class with multiple values
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 
@@ -307,6 +310,6 @@ Line 2">Content</div>
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))

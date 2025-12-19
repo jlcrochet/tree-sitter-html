@@ -201,36 +201,43 @@ module.exports = grammar({
         choice($.unquoted_attribute_value, $.quoted_attribute_value)
       ))
     ),
+
     attribute_name: _ => /[^\u0000-\u001F\u007F-\u009F "'>\/=\uFDD0-\uFDEF\uFFFE\uFFFF\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]+/u,
+
     unquoted_attribute_value: $ => repeat1(choice(
       /[^\t\n\f\r "'=<>`&]+/,
       alias($._full_character_reference, $.character_reference),
       $.invalid_character_reference,
       /&[^\t\n\f\r "'=<>`&]*/,
     )),
+
     quoted_attribute_value: $ => choice(
-      // Single-quoted
-      seq(
-        "'",
-        repeat(choice(
-          /[^'&]+/,
-          alias($._full_character_reference, $.character_reference),
-          $.invalid_character_reference,
-          /&[^&']*/,
-        )),
-        "'"
-      ),
-      // Double-quoted
-      seq(
-        '"',
-        repeat(choice(
-          /[^"&]+/,
-          alias($._full_character_reference, $.character_reference),
-          $.invalid_character_reference,
-          /&[^&"]*/,
-        )),
-        '"'
-      ),
+      $._single_quoted_attribute_value,
+      $._double_quoted_attribute_value,
     ),
+
+    _single_quoted_attribute_value: $ => seq(
+      "'",
+      optional(alias($._single_quoted_attribute_value_content, $.quoted_attribute_value_content)),
+      "'"
+    ),
+    _single_quoted_attribute_value_content: $ => repeat1(choice(
+      /[^'&]+/,
+      alias($._full_character_reference, $.character_reference),
+      $.invalid_character_reference,
+      /&[^&']*/,
+    )),
+
+    _double_quoted_attribute_value: $ => seq(
+      '"',
+      optional(alias($._double_quoted_attribute_value_content, $.quoted_attribute_value_content)),
+      '"'
+    ),
+    _double_quoted_attribute_value_content: $ => repeat1(choice(
+      /[^"&]+/,
+      alias($._full_character_reference, $.character_reference),
+      $.invalid_character_reference,
+      /&[^&"]*/,
+    )),
   }
 })

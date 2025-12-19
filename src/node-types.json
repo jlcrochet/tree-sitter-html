@@ -188,6 +188,21 @@
     "named": true,
     "fields": {},
     "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "quoted_attribute_value_content",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "quoted_attribute_value_content",
+    "named": true,
+    "fields": {},
+    "children": {
       "multiple": true,
       "required": false,
       "types": [

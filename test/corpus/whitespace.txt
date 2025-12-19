@@ -72,8 +72,8 @@ whitespace - mixed in tags
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value))
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (text)
     (end_tag (tag_name))))
 

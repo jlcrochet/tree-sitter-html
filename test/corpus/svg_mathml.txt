@@ -19,7 +19,7 @@ svg - with viewBox
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -32,8 +32,8 @@ svg - with width and height
   (element
     (start_tag
       (tag_name)
-      (attribute (attribute_name) (quoted_attribute_value))
-      (attribute (attribute_name) (quoted_attribute_value)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -60,10 +60,10 @@ svg - with child elements
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -80,9 +80,9 @@ svg - circle element
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -99,7 +99,7 @@ svg - path element
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (quoted_attribute_value))))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
     (end_tag (tag_name))))
 
 ================================================================================
@@ -118,12 +118,12 @@ svg - nested groups
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (quoted_attribute_value)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
       (element
         (start_tag
           (tag_name)
-          (attribute (attribute_name) (quoted_attribute_value))
-          (attribute (attribute_name) (quoted_attribute_value))))
+          (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+          (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
       (end_tag (tag_name)))
     (end_tag (tag_name))))
 
@@ -141,8 +141,8 @@ svg - text element
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
       (text)
       (end_tag (tag_name)))
     (end_tag (tag_name))))
@@ -182,14 +182,14 @@ svg - embedded in HTML
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
       (element
         (start_tag
           (tag_name)
-          (attribute (attribute_name) (quoted_attribute_value))
-          (attribute (attribute_name) (quoted_attribute_value))
-          (attribute (attribute_name) (quoted_attribute_value))))
+          (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+          (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+          (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
       (end_tag (tag_name)))
     (end_tag (tag_name))))
 
@@ -209,13 +209,13 @@ svg - nested svg
     (element
       (start_tag
         (tag_name)
-        (attribute (attribute_name) (quoted_attribute_value))
-        (attribute (attribute_name) (quoted_attribute_value)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
       (element
         (start_tag
           (tag_name)
-          (attribute (attribute_name) (quoted_attribute_value))
-          (attribute (attribute_name) (quoted_attribute_value))))
+          (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))
+          (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
       (end_tag (tag_name)))
     (end_tag (tag_name))))
 
