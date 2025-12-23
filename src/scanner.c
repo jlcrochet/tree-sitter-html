@@ -381,28 +381,27 @@ static bool can_have_implied_end_tag(HtmlElement e) {
            e == HtmlElement_th;
 }
 
-// Check if the end tag for `closing` is somewhere in the open elements stack (i.e., it's an ancestor)
-static bool is_ancestor(Scanner *scanner, HtmlElement closing, XXH32_hash_t closing_hash) {
-    for (size_t i = 0; i < scanner->open_elements.size; i++) {
-        uint8_t e = scanner->open_elements.contents[i];
+// Find the index of the nearest ancestor element in the open elements stack.
+// Searches from top to bottom to find the closest match.
+// Returns the index if found, or SIZE_MAX if not found.
+static size_t find_ancestor(Scanner *scanner, HtmlElement closing, XXH32_hash_t closing_hash) {
+    size_t unknown_count = scanner->custom_name_hashes.size;
+    for (size_t i = scanner->open_elements.size; i > 0; i--) {
+        uint8_t e = scanner->open_elements.contents[i - 1];
         if (e == closing) {
             if (closing == 0) {
                 // Unknown element, need to check hash
-                // Count how many unknown elements we've seen
-                size_t unknown_count = 0;
-                for (size_t j = 0; j <= i; j++) {
-                    if (scanner->open_elements.contents[j] == 0) unknown_count++;
-                }
-                if (unknown_count <= scanner->custom_name_hashes.size &&
+                if (unknown_count > 0 &&
                     scanner->custom_name_hashes.contents[unknown_count - 1] == closing_hash) {
-                    return true;
+                    return i - 1;
                 }
             } else {
-                return true;
+                return i - 1;
             }
         }
+        if (e == 0) unknown_count--;
     }
-    return false;
+    return SIZE_MAX;
 }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
@@ -644,25 +643,11 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         if (is_end_tag) {
             // End tag case: count elements that would be implicitly closed
             // by an end tag for an ancestor element
-            if (next != current && is_ancestor(scanner, next, next_hash)) {
-                // Count from current backwards until we find the ancestor
-                for (size_t i = scanner->open_elements.size; i > 0; i--) {
+            size_t ancestor_index = find_ancestor(scanner, next, next_hash);
+            if (next != current && ancestor_index != SIZE_MAX) {
+                // Count from current backwards until we reach the ancestor
+                for (size_t i = scanner->open_elements.size; i > ancestor_index + 1; i--) {
                     uint8_t elem = scanner->open_elements.contents[i - 1];
-                    if (elem == next) {
-                        // For unknown elements, also check the hash
-                        if (next == 0) {
-                            size_t unknown_count = 0;
-                            for (size_t j = 0; j <= i - 1; j++) {
-                                if (scanner->open_elements.contents[j] == 0) unknown_count++;
-                            }
-                            if (unknown_count <= scanner->custom_name_hashes.size &&
-                                scanner->custom_name_hashes.contents[unknown_count - 1] == next_hash) {
-                                break;  // Found the matching ancestor
-                            }
-                        } else {
-                            break;  // Found the matching ancestor
-                        }
-                    }
                     if (end_tag_closes_element(elem, next) && can_have_implied_end_tag(elem)) {
                         close_count++;
                     } else if (!can_have_implied_end_tag(elem)) {
