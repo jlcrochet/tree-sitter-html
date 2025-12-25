@@ -249,13 +249,10 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
         *element = lookup_element(tag_name.contents, tag_name.size, ns);
     }
 
-    // If we don't care about the hash, we can pass NULL for `name_hash` to skip this step
-    if (name_hash != NULL) {
-        if (*element == 0)
-            *name_hash = XXH32(tag_name.contents, tag_name.size, 0);
-        else
-            *name_hash = 0;
-    }
+    if (*element == 0)
+        *name_hash = XXH32(tag_name.contents, tag_name.size, 0);
+    else
+        *name_hash = 0;
 
     return true;
 }
@@ -381,27 +378,68 @@ static bool can_have_implied_end_tag(HtmlElement e) {
            e == HtmlElement_th;
 }
 
-// Find the index of the nearest ancestor element in the open elements stack.
-// Searches from top to bottom to find the closest match.
-// Returns the index if found, or SIZE_MAX if not found.
-static size_t find_ancestor(Scanner *scanner, HtmlElement closing, XXH32_hash_t closing_hash) {
+// Count how many elements would be implicitly closed by a start tag.
+// Searches from top to bottom for an element that the start tag closes,
+// counting closeable elements along the way.
+// Returns the count of elements to close, or 0 if no closing element is found or
+// if an element that can't have an implied end tag is encountered.
+static uint8_t count_start_tag_implied_closes(Scanner *scanner, HtmlElement opening) {
+    uint8_t close_count = 0;
+
+    for (size_t i = scanner->open_elements.size; i > 0; i--) {
+        uint8_t elem = scanner->open_elements.contents[i - 1];
+
+        if (start_tag_closes_element(elem, opening)) {
+            // Found an element that the start tag closes - include it in the count
+            return close_count + 1;
+        }
+
+        if (!can_have_implied_end_tag(elem)) {
+            // Hit an element that can't have an implied end tag, stop
+            return 0;
+        }
+
+        close_count++;
+    }
+
+    // No element found that the start tag closes
+    return 0;
+}
+
+// Count how many elements would be implicitly closed by an end tag for an ancestor.
+// Searches from top to bottom for the closing element, counting closeable elements along the way.
+// Returns the count of elements to close, or 0 if the ancestor is not found or
+// if an element that can't have an implied end tag is encountered.
+static uint8_t count_end_tag_implied_closes(Scanner *scanner, HtmlElement closing, XXH32_hash_t closing_hash) {
     size_t unknown_count = scanner->custom_name_hashes.size;
+    uint8_t close_count = 0;
+
     for (size_t i = scanner->open_elements.size; i > 0; i--) {
         uint8_t e = scanner->open_elements.contents[i - 1];
-        if (e == closing) {
-            if (closing == 0) {
-                // Unknown element, need to check hash
-                if (unknown_count > 0 &&
-                    scanner->custom_name_hashes.contents[unknown_count - 1] == closing_hash) {
-                    return i - 1;
-                }
-            } else {
-                return i - 1;
-            }
+
+        bool is_ancestor = e == closing &&
+                           (closing != 0 ||
+                            (unknown_count > 0 &&
+                             scanner->custom_name_hashes.contents[unknown_count - 1] == closing_hash));
+
+        if (is_ancestor) {
+            // Found the ancestor - return accumulated count (don't include the ancestor itself)
+            return close_count;
         }
+
+        // Check if this element can be implicitly closed
+        if (end_tag_closes_element(e, closing) && can_have_implied_end_tag(e)) {
+            close_count++;
+        } else if (!can_have_implied_end_tag(e)) {
+            // Hit an element that can't have an implied end tag, stop
+            return 0;
+        }
+
         if (e == 0) unknown_count--;
     }
-    return SIZE_MAX;
+
+    // Ancestor not found
+    return 0;
 }
 
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
@@ -643,55 +681,15 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         if (is_end_tag) {
             // End tag case: count elements that would be implicitly closed
             // by an end tag for an ancestor element
-            size_t ancestor_index = find_ancestor(scanner, next, next_hash);
-            if (next != current && ancestor_index != SIZE_MAX) {
-                // Count from current backwards until we reach the ancestor
-                for (size_t i = scanner->open_elements.size; i > ancestor_index + 1; i--) {
-                    uint8_t elem = scanner->open_elements.contents[i - 1];
-                    if (end_tag_closes_element(elem, next) && can_have_implied_end_tag(elem)) {
-                        close_count++;
-                    } else if (!can_have_implied_end_tag(elem)) {
-                        // Hit an element that can't have an implied end tag, stop
-                        close_count = 0;
-                        break;
-                    }
-                }
+            if (next != current) {
+                close_count = count_end_tag_implied_closes(scanner, next, next_hash);
             }
         } else if (can_have_implied_end_tag(current)) {
             // Start tag case: only for elements that can have HTML-semantic implied end tags
             // This can happen in two ways:
             // 1. The start tag directly closes the current element (e.g., <li> closes <li>)
             // 2. The start tag closes an ancestor, and intermediate elements must be closed first
-            //
-            // First, find if there's any element that the start tag closes
-            size_t closing_index = 0;
-            bool found_closing = false;
-            for (size_t i = scanner->open_elements.size; i > 0; i--) {
-                uint8_t elem = scanner->open_elements.contents[i - 1];
-                if (start_tag_closes_element(elem, next)) {
-                    closing_index = i - 1;
-                    found_closing = true;
-                    break;
-                }
-                if (!can_have_implied_end_tag(elem)) {
-                    // Hit an element that can't have an implied end tag, stop searching
-                    break;
-                }
-            }
-
-            // If we found an element to close, count how many need to close
-            if (found_closing) {
-                for (size_t i = scanner->open_elements.size; i > closing_index; i--) {
-                    uint8_t elem = scanner->open_elements.contents[i - 1];
-                    if (can_have_implied_end_tag(elem)) {
-                        close_count++;
-                    } else {
-                        // Shouldn't happen since we checked above, but be safe
-                        close_count = 0;
-                        break;
-                    }
-                }
-            }
+            close_count = count_start_tag_implied_closes(scanner, next);
         }
 
         if (close_count > 0) {
