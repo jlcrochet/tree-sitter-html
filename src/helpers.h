@@ -50,7 +50,6 @@ static size_t to_vlq(size_t in, char* const out) {
 
     return i + 1;
 }
-
 static size_t from_vlq(const char* in, size_t* out) {
     if ((unsigned char)in[0] < 128) {
         *out = (unsigned char)in[0];

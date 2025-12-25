@@ -625,18 +625,6 @@
           }
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "_whitespace"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
@@ -842,43 +830,23 @@
                 {
                   "type": "ALIAS",
                   "content": {
-                    "type": "TOKEN",
-                    "content": {
-                      "type": "SEQ",
-                      "members": [
-                        {
-                          "type": "CHOICE",
-                          "members": [
-                            {
-                              "type": "PATTERN",
-                              "value": "[\\t\\n\\f\\r ]+"
-                            },
-                            {
-                              "type": "BLANK"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "STRING",
-                          "value": "="
-                        },
-                        {
-                          "type": "CHOICE",
-                          "members": [
-                            {
-                              "type": "PATTERN",
-                              "value": "[\\t\\n\\f\\r ]+"
-                            },
-                            {
-                              "type": "BLANK"
-                            }
-                          ]
-                        }
-                      ]
-                    }
+                    "type": "SYMBOL",
+                    "name": "_equals"
                   },
                   "named": false,
                   "value": "="
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "SYMBOL",
+                      "name": "_whitespace"
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
                 },
                 {
                   "type": "CHOICE",
@@ -1099,6 +1067,10 @@
     {
       "type": "SYMBOL",
       "name": "_self_closing_tag_delimiter"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_equals"
     },
     {
       "type": "SYMBOL",

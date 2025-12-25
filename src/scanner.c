@@ -21,7 +21,8 @@
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
 
-#if HtmlElement_Count > 256 || MathmlElement_Count > 256 || SvgElement_Count > 256
+#define ELEMENT_COUNT_MAX UINT8_MAX + 1
+#if HtmlElement_Count > ELEMENT_COUNT_MAX || MathmlElement_Count > ELEMENT_COUNT_MAX || SvgElement_Count > ELEMENT_COUNT_MAX
 #error "One or more of the element enums has exceeded 256 values; need to upgrade to uint16_t"
 #endif
 
@@ -39,6 +40,7 @@ typedef enum {
     HtmlTokenType_EndTagName,
     HtmlTokenType_ErroneousEndTagName,
     HtmlTokenType_SelfClosingTagDelimiter,
+    HtmlTokenType_Equals,
     HtmlTokenType_ImpliedEndTag,
     HtmlTokenType_Text,
     HtmlTokenType_RawText,
@@ -64,7 +66,6 @@ typedef struct {
     bool cached_tag;
     uint8_t cached_tag_name;
     XXH32_hash_t cached_tag_name_hash;
-
     uint8_t implied_end_tags;
     #endif
 
@@ -89,11 +90,11 @@ static uint8_t get_current_tag(Scanner *scanner) {
         return HtmlElement_html;
 }
 
-static uint8_t lookup_element(const char *string, size_t length, ElementNamespace ns) {
+static uint8_t lookup_element(const char *name, size_t length, ElementNamespace ns) {
     switch (ns) {
-        case ElementNamespace_HTML: return lookup_html_element(string, length);
-        case ElementNamespace_MathML: return lookup_mathml_element(string, length);
-        case ElementNamespace_SVG: return lookup_svg_element(string, length);
+        case ElementNamespace_HTML: return lookup_html_element(name, length);
+        case ElementNamespace_MathML: return lookup_mathml_element(name, length);
+        case ElementNamespace_SVG: return lookup_svg_element(name, length);
     }
 }
 
@@ -181,11 +182,11 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     DESERIALIZE_ARRAY(scanner->custom_name_hashes);
 }
 
-static void advance(TSLexer *lexer) {
+static inline void advance(TSLexer *lexer) {
     lexer->advance(lexer, false);
 }
 
-static void skip(TSLexer *lexer) {
+static inline void skip(TSLexer *lexer) {
     lexer->advance(lexer, true);
 }
 
@@ -242,17 +243,14 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
         advance(lexer);
     }
 
-    if (must_be_unknown) {
-        // 0 represents an unknown element in any namespace
-        *element = 0;
-    } else {
-        *element = lookup_element(tag_name.contents, tag_name.size, ns);
-    }
+    // 0 represents an unknown element in any namespace
+    *element = must_be_unknown
+        ? 0
+        : lookup_element(tag_name.contents, tag_name.size, ns);
 
-    if (*element == 0)
-        *name_hash = XXH32(tag_name.contents, tag_name.size, 0);
-    else
-        *name_hash = 0;
+    *name_hash = *element == 0
+        ? XXH32(tag_name.contents, tag_name.size, 0)
+        : 0;
 
     return true;
 }
@@ -378,34 +376,6 @@ static bool can_have_implied_end_tag(HtmlElement e) {
            e == HtmlElement_th;
 }
 
-// Count how many elements would be implicitly closed by a start tag.
-// Searches from top to bottom for an element that the start tag closes,
-// counting closeable elements along the way.
-// Returns the count of elements to close, or 0 if no closing element is found or
-// if an element that can't have an implied end tag is encountered.
-static uint8_t count_start_tag_implied_closes(Scanner *scanner, HtmlElement opening) {
-    uint8_t close_count = 0;
-
-    for (size_t i = scanner->open_elements.size; i > 0; i--) {
-        uint8_t elem = scanner->open_elements.contents[i - 1];
-
-        if (start_tag_closes_element(elem, opening)) {
-            // Found an element that the start tag closes - include it in the count
-            return close_count + 1;
-        }
-
-        if (!can_have_implied_end_tag(elem)) {
-            // Hit an element that can't have an implied end tag, stop
-            return 0;
-        }
-
-        close_count++;
-    }
-
-    // No element found that the start tag closes
-    return 0;
-}
-
 // Count how many elements would be implicitly closed by an end tag for an ancestor.
 // Searches from top to bottom for the closing element, counting closeable elements along the way.
 // Returns the count of elements to close, or 0 if the ancestor is not found or
@@ -442,6 +412,34 @@ static uint8_t count_end_tag_implied_closes(Scanner *scanner, HtmlElement closin
     return 0;
 }
 
+// Count how many elements would be implicitly closed by a start tag.
+// Searches from top to bottom for an element that the start tag closes,
+// counting closeable elements along the way.
+// Returns the count of elements to close, or 0 if no closing element is found or
+// if an element that can't have an implied end tag is encountered.
+static uint8_t count_start_tag_implied_closes(Scanner *scanner, HtmlElement opening) {
+    uint8_t close_count = 0;
+
+    for (size_t i = scanner->open_elements.size; i > 0; i--) {
+        uint8_t elem = scanner->open_elements.contents[i - 1];
+
+        if (start_tag_closes_element(elem, opening)) {
+            // Found an element that the start tag closes - include it in the count
+            return close_count + 1;
+        }
+
+        if (!can_have_implied_end_tag(elem)) {
+            // Hit an element that can't have an implied end tag, stop
+            return 0;
+        }
+
+        close_count++;
+    }
+
+    // No element found that the start tag closes
+    return 0;
+}
+
 bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
     Scanner *scanner = (Scanner *)payload;
 
@@ -453,6 +451,21 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
     #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
         (SCAN(CHAR) || SCAN(CHAR | 0x0020))
+
+    // Handle attribute equals sign - must come early before other checks
+    if (valid_symbols[HtmlTokenType_Equals]) {
+        // Skip optional whitespace before the equals sign
+        while (is_html_whitespace(lexer->lookahead))
+            skip(lexer);
+
+        // Only match if we actually see an equals sign
+        if (lexer->lookahead == '=') {
+            advance(lexer);
+            lexer->result_symbol = HtmlTokenType_Equals;
+            return true;
+        }
+        // If no equals sign, fall through to let tree-sitter try other rules
+    }
 
     if (valid_symbols[HtmlTokenType_StartTagName] || valid_symbols[HtmlTokenType_EndTagName]) {
         ElementNamespace ns = get_current_namespace(scanner);
@@ -612,7 +625,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);
         #endif
 
-        // This is necessary for some reason, probably due to a bug in the grammar
+        // Skip optional whitespace before the delimiter
         while (is_html_whitespace(lexer->lookahead))
             skip(lexer);
 

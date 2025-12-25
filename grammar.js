@@ -20,6 +20,7 @@ module.exports = grammar({
     $._end_tag_name,
     $._erroneous_end_tag_name,
     $._self_closing_tag_delimiter,
+    $._equals,
     $.implied_end_tag,
     $.text,
     $._raw_text,
@@ -148,7 +149,7 @@ module.exports = grammar({
       '<',
       alias($._start_tag_name, $.tag_name),
       repeat(seq($._whitespace, $.attribute)),
-      optional($._whitespace),
+      // NOTE: Whitespace before the delimiter is handled by the external scanner
       alias($._self_closing_tag_delimiter, '/>')
     ),
 
@@ -193,11 +194,8 @@ module.exports = grammar({
     attribute: $ => seq(
       $.attribute_name,
       optional(seq(
-        // This rule seems to do a better job at prioritizing whitespace before the `=` than simply making a regular sequence:
-        alias(
-          token(seq(optional(WHITESPACE), '=', optional(WHITESPACE))),
-          '='
-        ),
+        alias($._equals, '='),
+        optional($._whitespace),
         choice($.unquoted_attribute_value, $.quoted_attribute_value)
       ))
     ),
