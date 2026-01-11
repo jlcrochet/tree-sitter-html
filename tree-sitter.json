@@ -16,7 +16,8 @@
         "src/tables/mathml_elements.h",
         "src/tables/svg_elements.h",
         "src/tables/full_character_references.h",
-        "src/tables/short_character_references.h"
+        "src/tables/short_character_references.h",
+        "xxHash/xxhash.h"
       ],
       "highlights": "queries/highlights.scm",
       "injections": "queries/injections.scm",
