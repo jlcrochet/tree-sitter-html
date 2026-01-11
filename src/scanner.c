@@ -255,53 +255,6 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
     return true;
 }
 
-// Bitmask helper: check if bit is set in a 2-word bitmask array
-#define BITMASK_CHECK(mask, bit) ((bit) < 128 && ((mask)[(bit) >> 6] >> ((bit) & 63)) & 1)
-
-// Elements that close <p> when used as a start tag
-// Bits set for: address(3), article(5), aside(6), blockquote(12), details(26), div(29), dl(30),
-// fieldset(34), figcaption(35), figure(36), footer(37), form(38), header(40), hgroup(41),
-// h1-h6(42-47), hr(48), main(61), menu(65), nav(69), ol(72), p(76), pre(79), search(88), section(89), table(100), ul(113)
-static const uint64_t p_closing_start_tags[2] = {
-    (1ULL << 3) | (1ULL << 5) | (1ULL << 6) | (1ULL << 12) | (1ULL << 26) | (1ULL << 29) |
-    (1ULL << 30) | (1ULL << 34) | (1ULL << 35) | (1ULL << 36) | (1ULL << 37) | (1ULL << 38) |
-    (1ULL << 40) | (1ULL << 41) | (1ULL << 42) | (1ULL << 43) | (1ULL << 44) | (1ULL << 45) |
-    (1ULL << 46) | (1ULL << 47) | (1ULL << 48) | (1ULL << 61),
-    (1ULL << (65-64)) | (1ULL << (69-64)) | (1ULL << (72-64)) | (1ULL << (76-64)) |
-    (1ULL << (79-64)) | (1ULL << (88-64)) | (1ULL << (89-64)) | (1ULL << (100-64)) | (1ULL << (113-64))
-};
-
-// Elements that do NOT close <p> when used as an end tag (inverted logic for efficiency)
-// a(1), audio(7), del(25), ins(54), map(62), noscript(70), video(115)
-static const uint64_t p_non_closing_end_tags[2] = {
-    (1ULL << 1) | (1ULL << 7) | (1ULL << 25) | (1ULL << 54) | (1ULL << 62),
-    (1ULL << (70-64)) | (1ULL << (115-64))
-};
-
-// Elements that close <li>: ul(113), ol(72), menu(65)
-static const uint64_t li_closing_end_tags[2] = {
-    0,
-    (1ULL << (65-64)) | (1ULL << (72-64)) | (1ULL << (113-64))
-};
-
-// Elements that close <optgroup>/<option>: select(90), datalist(23), optgroup(73)
-static const uint64_t optgroup_closing_end_tags[2] = {
-    (1ULL << 23),
-    (1ULL << (73-64)) | (1ULL << (90-64))
-};
-
-// Elements that close <tr>: thead(107), tbody(101), tfoot(105), table(100)
-static const uint64_t tr_closing_end_tags[2] = {
-    0,
-    (1ULL << (100-64)) | (1ULL << (101-64)) | (1ULL << (105-64)) | (1ULL << (107-64))
-};
-
-// Elements that close <td>/<th>: tr(110), thead(107), tbody(101), tfoot(105), table(100)
-static const uint64_t td_closing_end_tags[2] = {
-    0,
-    (1ULL << (100-64)) | (1ULL << (101-64)) | (1ULL << (105-64)) | (1ULL << (107-64)) | (1ULL << (110-64))
-};
-
 // Returns true if the given start tag would implicitly close the current element
 static inline bool start_tag_closes_element(HtmlElement current, HtmlElement next) {
     switch (current) {
@@ -312,7 +265,37 @@ static inline bool start_tag_closes_element(HtmlElement current, HtmlElement nex
         case HtmlElement_dd:
             return next == HtmlElement_dd || next == HtmlElement_dt;
         case HtmlElement_p:
-            return BITMASK_CHECK(p_closing_start_tags, next);
+            return next == HtmlElement_address ||
+                   next == HtmlElement_article ||
+                   next == HtmlElement_aside ||
+                   next == HtmlElement_blockquote ||
+                   next == HtmlElement_details ||
+                   next == HtmlElement_div ||
+                   next == HtmlElement_dl ||
+                   next == HtmlElement_fieldset ||
+                   next == HtmlElement_figcaption ||
+                   next == HtmlElement_figure ||
+                   next == HtmlElement_footer ||
+                   next == HtmlElement_form ||
+                   next == HtmlElement_h1 ||
+                   next == HtmlElement_h2 ||
+                   next == HtmlElement_h3 ||
+                   next == HtmlElement_h4 ||
+                   next == HtmlElement_h5 ||
+                   next == HtmlElement_h6 ||
+                   next == HtmlElement_header ||
+                   next == HtmlElement_hgroup ||
+                   next == HtmlElement_hr ||
+                   next == HtmlElement_main ||
+                   next == HtmlElement_menu ||
+                   next == HtmlElement_nav ||
+                   next == HtmlElement_ol ||
+                   next == HtmlElement_p ||
+                   next == HtmlElement_pre ||
+                   next == HtmlElement_search ||
+                   next == HtmlElement_section ||
+                   next == HtmlElement_table ||
+                   next == HtmlElement_ul;
         case HtmlElement_rt:
         case HtmlElement_rp:
             return next == HtmlElement_rt || next == HtmlElement_rp;
@@ -337,29 +320,36 @@ static inline bool start_tag_closes_element(HtmlElement current, HtmlElement nex
 static inline bool end_tag_closes_element(HtmlElement current, HtmlElement closing) {
     switch (current) {
         case HtmlElement_li:
-            return BITMASK_CHECK(li_closing_end_tags, closing);
+            return closing == HtmlElement_ul || closing == HtmlElement_ol || closing == HtmlElement_menu;
         case HtmlElement_dt:
         case HtmlElement_dd:
             return closing == HtmlElement_dl;
         case HtmlElement_p:
             // p can be closed by the end tag of most parent elements
+            // We'll be permissive here and let it close for any ancestor end tag
             // except for elements that specifically can contain p without closing it
-            return !BITMASK_CHECK(p_non_closing_end_tags, closing);
+            return closing != HtmlElement_a &&
+                   closing != HtmlElement_audio &&
+                   closing != HtmlElement_del &&
+                   closing != HtmlElement_ins &&
+                   closing != HtmlElement_map &&
+                   closing != HtmlElement_noscript &&
+                   closing != HtmlElement_video;
         case HtmlElement_rt:
         case HtmlElement_rp:
             return closing == HtmlElement_ruby;
         case HtmlElement_optgroup:
         case HtmlElement_option:
-            return BITMASK_CHECK(optgroup_closing_end_tags, closing);
+            return closing == HtmlElement_select || closing == HtmlElement_datalist || closing == HtmlElement_optgroup;
         case HtmlElement_thead:
         case HtmlElement_tbody:
         case HtmlElement_tfoot:
             return closing == HtmlElement_table;
         case HtmlElement_tr:
-            return BITMASK_CHECK(tr_closing_end_tags, closing);
+            return closing == HtmlElement_thead || closing == HtmlElement_tbody || closing == HtmlElement_tfoot || closing == HtmlElement_table;
         case HtmlElement_td:
         case HtmlElement_th:
-            return BITMASK_CHECK(td_closing_end_tags, closing);
+            return closing == HtmlElement_tr || closing == HtmlElement_thead || closing == HtmlElement_tbody || closing == HtmlElement_tfoot || closing == HtmlElement_table;
         default:
             return false;
     }
