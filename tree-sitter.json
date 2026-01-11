@@ -15,8 +15,8 @@
         "src/tables/html_elements.h",
         "src/tables/mathml_elements.h",
         "src/tables/svg_elements.h",
-        "src/tables/html_ful_character_references.h",
-        "src/tables/html_short_character_references_no_semicolon.h"
+        "src/tables/full_character_references.h",
+        "src/tables/short_character_references.h"
       ],
       "highlights": "queries/highlights.scm",
       "injections": "queries/injections.scm",

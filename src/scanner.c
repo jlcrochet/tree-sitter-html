@@ -373,11 +373,6 @@ static const bool implied_end_tag_elements[HtmlElement_Count] = {
     [HtmlElement_th] = true,
 };
 
-// Returns true if the given element can have an implied end tag
-static inline bool can_have_implied_end_tag(HtmlElement e) {
-    return e < HtmlElement_Count && implied_end_tag_elements[e];
-}
-
 // Count how many elements would be implicitly closed by an end tag for an ancestor.
 // Searches from top to bottom for the closing element, counting closeable elements along the way.
 // Returns the count of elements to close, or 0 if the ancestor is not found or
@@ -400,9 +395,9 @@ static uint8_t count_end_tag_implied_closes(Scanner *scanner, HtmlElement closin
         }
 
         // Check if this element can be implicitly closed
-        if (end_tag_closes_element(e, closing) && can_have_implied_end_tag(e)) {
+        if (end_tag_closes_element(e, closing) && implied_end_tag_elements[e]) {
             close_count++;
-        } else if (!can_have_implied_end_tag(e)) {
+        } else if (!implied_end_tag_elements[e]) {
             // Hit an element that can't have an implied end tag, stop
             return 0;
         }
@@ -430,7 +425,7 @@ static uint8_t count_start_tag_implied_closes(Scanner *scanner, HtmlElement open
             return close_count + 1;
         }
 
-        if (!can_have_implied_end_tag(elem)) {
+        if (!implied_end_tag_elements[elem]) {
             // Hit an element that can't have an implied end tag, stop
             return 0;
         }
@@ -660,7 +655,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         uint8_t current = *array_back(&scanner->open_elements);
 
         // Only certain elements can have implied end tags
-        if (!can_have_implied_end_tag(current))
+        if (!implied_end_tag_elements[current])
             goto skip_implied_end_tag;
 
         // We need to peek ahead to see what's coming - must be a tag
@@ -699,7 +694,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             if (next != current) {
                 close_count = count_end_tag_implied_closes(scanner, next, next_hash);
             }
-        } else if (can_have_implied_end_tag(current)) {
+        } else if (implied_end_tag_elements[current]) {
             // Start tag case: only for elements that can have HTML-semantic implied end tags
             // This can happen in two ways:
             // 1. The start tag directly closes the current element (e.g., <li> closes <li>)
