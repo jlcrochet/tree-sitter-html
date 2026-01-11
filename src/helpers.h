@@ -67,5 +67,6 @@ static size_t from_vlq(const char* in, size_t* out) {
 }
 
 static inline bool is_html_whitespace(int32_t c) {
-    return c == '\t' || c == '\n' || c == '\f' || c == '\r' || c == ' ';
+    // Ordered by frequency: space is most common, then newline, tab, carriage return, form feed
+    return c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\f';
 }
