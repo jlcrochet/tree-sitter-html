@@ -1,7 +1,5 @@
 #include <stdint.h>
-#include <ctype.h>
 #include <string.h>
-#include <wctype.h>
 
 #define XXH_INLINE_ALL
 // We're only calling XXH32(), so these modifiers are okay:
@@ -200,11 +198,12 @@ static bool scan_char(TSLexer *lexer, int c) {
     }
 }
 
-// Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any
+// Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any.
+// Note: HTML lowercases only ASCII letters; non-ASCII is preserved.
 // Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
 static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
-    // The first letter of any tag name must be an ASCII alpha character
-    if (!isalpha(lexer->lookahead))
+    // Tag names must begin with an ASCII alpha character in the tag-open state
+    if (!is_ascii_alpha(lexer->lookahead))
         return false;
 
     static Array(char) tag_name = array_new();
@@ -218,7 +217,7 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
             array_extend(&tag_name, count, bytes); \
         }
 
-    array_push(&tag_name, lexer->lookahead | 0x0020);
+    array_push(&tag_name, (char)ascii_tolower(lexer->lookahead));
     advance(lexer);
 
     bool must_be_unknown = false;
@@ -230,8 +229,10 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
             // If NULL is reached before EOF somehow, append U+FFFD REPLACEMENT CHARACTER to the name
             must_be_unknown = true;
             PUSH_CODEPOINT(0xFFFD);
-        } else if (isalnum(lexer->lookahead)) {
-            array_push(&tag_name, lexer->lookahead | 0x0020);
+        } else if (is_ascii_alnum(lexer->lookahead)) {
+            array_push(&tag_name, (char)ascii_tolower(lexer->lookahead));
+        } else if (lexer->lookahead == '-') {
+            array_push(&tag_name, '-');
         } else if (is_ascii(lexer->lookahead)) {
             // Any other ASCII character is valid, but indicates an unknown element
             must_be_unknown = true;
@@ -239,7 +240,7 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
         } else {
             // All non-ASCII characters are valid in a tag name, but indicate an unknown element
             must_be_unknown = true;
-            PUSH_CODEPOINT(towlower(lexer->lookahead));
+            PUSH_CODEPOINT(lexer->lookahead);
         }
         advance(lexer);
     }
@@ -254,6 +255,81 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
         : 0;
 
     return true;
+}
+
+static bool scan_ascii_word_icase(TSLexer *lexer, const char *word, size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        int32_t c = lexer->lookahead;
+        if (!is_ascii(c))
+            return false;
+        if ((char)ascii_tolower(c) != word[i])
+            return false;
+        advance(lexer);
+    }
+    return true;
+}
+
+static bool scan_raw_text_like(
+    TSLexer *lexer,
+    Scanner *scanner,
+    HtmlTokenType result_symbol,
+    bool stop_on_amp,
+    HtmlElement tag_a,
+    const char *name_a,
+    size_t name_a_len,
+    HtmlElement tag_b,
+    const char *name_b,
+    size_t name_b_len
+) {
+    if (stop_on_amp && lexer->lookahead == '&')
+        return false;
+
+    // Leading whitespace should not be included as part of the text
+    while (is_html_whitespace(lexer->lookahead))
+        skip(lexer);
+
+    bool text_matched = false;
+
+    HtmlElement top_tag = get_current_tag(scanner);
+    const char *end_name = NULL;
+    size_t end_len = 0;
+    if (top_tag == tag_a) {
+        end_name = name_a;
+        end_len = name_a_len;
+    } else if (top_tag == tag_b) {
+        end_name = name_b;
+        end_len = name_b_len;
+    }
+
+    lexer->mark_end(lexer);
+
+    while (!lexer->eof(lexer) && (!stop_on_amp || lexer->lookahead != '&')) {
+        int32_t c = lexer->lookahead;
+        advance(lexer);
+
+        if (c == '<') {
+            // Check for the end tag
+            if (lexer->lookahead == '/' && end_name) {
+                advance(lexer);
+                if (scan_ascii_word_icase(lexer, end_name, end_len)) {
+                    if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
+                        break;
+                }
+            }
+            lexer->mark_end(lexer);
+            text_matched = true;
+        } else if (!is_html_whitespace(c)) {
+            lexer->mark_end(lexer);
+            text_matched = true;
+        }
+    }
+
+    if (text_matched) {
+        lexer->result_symbol = result_symbol;
+        return true;
+    }
+
+    return false;
 }
 
 // Returns true if the given start tag would implicitly close the current element
@@ -604,7 +680,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         // Clear any cached tag from implied end tag lookahead
         scanner->cached_tag = false;
         #endif
-        ASSERT(isalpha(lexer->lookahead));
+        ASSERT(is_ascii_alpha(lexer->lookahead));
         advance(lexer);
         while (!lexer->eof(lexer) && !is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
             advance(lexer);
@@ -757,127 +833,69 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
     }
 
-    if (valid_symbols[HtmlTokenType_RawText]) {
-        // Leading whitespace should not be included as part of the text
-        while (is_html_whitespace(lexer->lookahead))
-            skip(lexer);
-
-        bool text_matched = false;
-
-        HtmlElement top_tag = get_current_tag(scanner);
-
-        lexer->mark_end(lexer);
-
-        while (!lexer->eof(lexer)) {
-            int c = lexer->lookahead;
-            advance(lexer);
-
-            if (c == '<') {
-                // Check for the end tag
-                if (lexer->lookahead == '/') {
-                    advance(lexer);
-                    if (top_tag == HtmlElement_script) {
-                        if (SCAN_ICASE('S') && SCAN_ICASE('C') && SCAN_ICASE('R') && SCAN_ICASE('I') && SCAN_ICASE('P') && SCAN_ICASE('T')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    } else if (top_tag == HtmlElement_style) {
-                        if (SCAN_ICASE('S') && SCAN_ICASE('T') && SCAN_ICASE('Y') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    }
-                }
-                lexer->mark_end(lexer);
-                text_matched = true;
-            } else if (!is_html_whitespace(c)) {
-                lexer->mark_end(lexer);
-                text_matched = true;
-            }
-        }
-
-        if (text_matched) {
-            lexer->result_symbol = HtmlTokenType_RawText;
-            return true;
-        }
+    if (valid_symbols[HtmlTokenType_RawText] &&
+        scan_raw_text_like(
+            lexer,
+            scanner,
+            HtmlTokenType_RawText,
+            false,
+            HtmlElement_script,
+            "script",
+            6,
+            HtmlElement_style,
+            "style",
+            5
+        )) {
+        return true;
     }
 
-    if (valid_symbols[HtmlTokenType_EscapableRawText] && lexer->lookahead != '&') {
-        // Leading whitespace should not be included as part of the text
-        while (is_html_whitespace(lexer->lookahead))
-            skip(lexer);
-
-        bool text_matched = false;
-
-        HtmlElement top_tag = get_current_tag(scanner);
-
-        lexer->mark_end(lexer);
-
-        while (!lexer->eof(lexer) && lexer->lookahead != '&') {
-            int c = lexer->lookahead;
-            advance(lexer);
-
-            if (c == '<') {
-                // Check for the end tag
-                if (lexer->lookahead == '/') {
-                    advance(lexer);
-                    if (top_tag == HtmlElement_textarea) {
-                        if (SCAN_ICASE('T') && SCAN_ICASE('E') && SCAN_ICASE('X') && SCAN_ICASE('T') && SCAN_ICASE('A') && SCAN_ICASE('R') && SCAN_ICASE('E') && SCAN_ICASE('A')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    } else if (top_tag == HtmlElement_title) {
-                        if (SCAN_ICASE('T') && SCAN_ICASE('I') && SCAN_ICASE('T') && SCAN_ICASE('L') && SCAN_ICASE('E')) {
-                            if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '>' || lexer->lookahead == '/')
-                                break;
-                        }
-                    }
-                }
-                lexer->mark_end(lexer);
-                text_matched = true;
-            } else if (!is_html_whitespace(c)) {
-                lexer->mark_end(lexer);
-                text_matched = true;
-            }
-        }
-
-        if (text_matched) {
-            lexer->result_symbol = HtmlTokenType_EscapableRawText;
-            return true;
-        }
+    if (valid_symbols[HtmlTokenType_EscapableRawText] &&
+        scan_raw_text_like(
+            lexer,
+            scanner,
+            HtmlTokenType_EscapableRawText,
+            true,
+            HtmlElement_textarea,
+            "textarea",
+            8,
+            HtmlElement_title,
+            "title",
+            5
+        )) {
+        return true;
     }
 
     if ((valid_symbols[HtmlTokenType_FullCharacterReference] || valid_symbols[HtmlTokenType_ShortCharacterReference] || valid_symbols[HtmlTokenType_InvalidCharacterReference]) && lexer->lookahead == '&') {
         advance(lexer);
 
-        if (SCAN('#')) {
-            ASSERT(valid_symbols[HtmlTokenType_FullCharacterReference]);
-            // Numeric character reference
-            if (SCAN_ICASE('X')) {
-                // Hexadecimal
-                ASSERT(isxdigit(lexer->lookahead));
-                do { advance(lexer); } while (isxdigit(lexer->lookahead));
-                ASSERT(SCAN(';'));
-                lexer->result_symbol = HtmlTokenType_FullCharacterReference;
-                return true;
+            if (SCAN('#')) {
+                ASSERT(valid_symbols[HtmlTokenType_FullCharacterReference]);
+                // Numeric character reference
+                if (SCAN_ICASE('X')) {
+                    // Hexadecimal
+                    ASSERT(is_ascii_xdigit(lexer->lookahead));
+                    do { advance(lexer); } while (is_ascii_xdigit(lexer->lookahead));
+                    ASSERT(SCAN(';'));
+                    lexer->result_symbol = HtmlTokenType_FullCharacterReference;
+                    return true;
+                } else {
+                    // Decimal
+                    ASSERT(is_ascii_digit(lexer->lookahead));
+                    do { advance(lexer); } while (is_ascii_digit(lexer->lookahead));
+                    ASSERT(SCAN(';'));
+                    lexer->result_symbol = HtmlTokenType_FullCharacterReference;
+                    return true;
+                }
             } else {
-                // Decimal
-                ASSERT(isdigit(lexer->lookahead));
-                do { advance(lexer); } while (isdigit(lexer->lookahead));
-                ASSERT(SCAN(';'));
-                lexer->result_symbol = HtmlTokenType_FullCharacterReference;
-                return true;
-            }
-        } else {
-            // Named character reference
-            static Array(char) name = array_new();
-            array_clear(&name);
+                // Named character reference
+                static Array(char) name = array_new();
+                array_clear(&name);
 
-            lexer->mark_end(lexer);
+                lexer->mark_end(lexer);
 
-            while (isalnum(lexer->lookahead)) {
-                array_push(&name, lexer->lookahead);
-                advance(lexer);
+                while (is_ascii_alnum(lexer->lookahead)) {
+                    array_push(&name, lexer->lookahead);
+                    advance(lexer);
 
                 if (valid_symbols[HtmlTokenType_ShortCharacterReference] && lookup_short_character_reference(name.contents, name.size)) {
                     lexer->result_symbol = HtmlTokenType_ShortCharacterReference;

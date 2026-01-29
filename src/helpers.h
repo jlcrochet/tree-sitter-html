@@ -6,6 +6,26 @@ static inline bool is_ascii(int c) {
     return (c & ~0x7f) == 0;
 }
 
+static inline bool is_ascii_alpha(int32_t c) {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+static inline bool is_ascii_digit(int32_t c) {
+    return c >= '0' && c <= '9';
+}
+
+static inline bool is_ascii_alnum(int32_t c) {
+    return is_ascii_alpha(c) || is_ascii_digit(c);
+}
+
+static inline bool is_ascii_xdigit(int32_t c) {
+    return is_ascii_digit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+}
+
+static inline int32_t ascii_tolower(int32_t c) {
+    return (c >= 'A' && c <= 'Z') ? (c | 0x20) : c;
+}
+
 static size_t codepoint_to_utf8(char* const bytes, const int32_t codepoint) {
     if (codepoint <= 0x7F) {
         bytes[0] = codepoint;
