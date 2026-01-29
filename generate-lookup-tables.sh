@@ -1,8 +1,8 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 for ns in Html Mathml Svg; do
   lower="${ns,,}"
 
-  ./triehash/triehash.pl \
+  ./src/vendor/triehash/triehash.pl \
     --enum-name="${ns}Element" \
     --function-name="lookup_${lower}_element" \
     --label-prefix="${ns}Element_" \
@@ -13,7 +13,7 @@ done
 for type in Full Short; do
   lower="${type,,}"
 
-  ./triehash/triehash.pl \
+  ./src/vendor/triehash/triehash.pl \
     --enum-name="${type}CharacterReference" \
     --function-name="lookup_${lower}_character_reference" \
     --label-prefix="${type}CharacterReference_" \

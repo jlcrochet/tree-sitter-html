@@ -370,3 +370,92 @@ math - sqrt element
         (end_tag (tag_name)))
       (end_tag (tag_name)))
     (end_tag (tag_name))))
+
+================================================================================
+svg - self-closing followed by HTML
+================================================================================
+<svg/><div>content</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name)))
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+math - self-closing followed by HTML
+================================================================================
+<math/><p>paragraph</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name)))
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+svg - self-closing embedded in HTML with sibling
+================================================================================
+<div><svg/><span>text</span></div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+math - self-closing embedded in HTML with sibling
+================================================================================
+<p>Formula: <math/> is empty.</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (element
+      (start_tag (tag_name)))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+svg - self-closing with attributes followed by HTML
+================================================================================
+<svg viewBox="0 0 100 100"/><div>after</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+svg - nested self-closing
+================================================================================
+<svg><svg/></svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name)))
+    (end_tag (tag_name))))

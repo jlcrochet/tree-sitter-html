@@ -1,6 +1,6 @@
 [submodule "xxHash"]
-	path = xxHash
+	path = src/vendor/xxHash
 	url = https://github.com/Cyan4973/xxHash
 [submodule "triehash"]
-	path = triehash
+	path = src/vendor/triehash
 	url = https://github.com/julian-klode/triehash

@@ -9,7 +9,7 @@
 #define XXH_NO_XXH3
 #define XXH_NO_LONG_LONG
 #define XXH_NO_STREAM
-#include "../xxHash/xxhash.h"
+#include "vendor/xxHash/xxhash.h"
 
 #include "helpers.h"
 #include "tables/html_elements.h"
@@ -21,7 +21,7 @@
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
 
-#define ELEMENT_COUNT_MAX UINT8_MAX + 1
+#define ELEMENT_COUNT_MAX (UINT8_MAX + 1)
 #if HtmlElement_Count > ELEMENT_COUNT_MAX || MathmlElement_Count > ELEMENT_COUNT_MAX || SvgElement_Count > ELEMENT_COUNT_MAX
 #error "One or more of the element enums has exceeded 256 values; need to upgrade to uint16_t"
 #endif
@@ -95,6 +95,7 @@ static uint8_t lookup_element(const char *name, size_t length, ElementNamespace 
         case ElementNamespace_HTML: return lookup_html_element(name, length);
         case ElementNamespace_MathML: return lookup_mathml_element(name, length);
         case ElementNamespace_SVG: return lookup_svg_element(name, length);
+        default: return 0;
     }
 }
 
@@ -552,7 +553,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             }
 
             if (e == 0)
-                // Again, 0 represents an unknown element in any namespace; push it's name hash onto the stack
+                // Again, 0 represents an unknown element in any namespace; push its name hash onto the stack
                 array_push(&scanner->custom_name_hashes, name_hash);
         }
 
@@ -628,8 +629,16 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
         ASSERT(SCAN('/') && SCAN('>'));
         uint8_t e = array_pop(&scanner->open_elements);
-        if (e == 0)
+        if (e == 0) {
             array_pop(&scanner->custom_name_hashes);
+        } else {
+            // Pop namespace for self-closing foreign elements
+            ElementNamespace ns = get_current_namespace(scanner);
+            if ((ns == ElementNamespace_MathML && e == MathmlElement_math) ||
+                (ns == ElementNamespace_SVG && e == SvgElement_svg)) {
+                array_pop(&scanner->namespaces);
+            }
+        }
         lexer->result_symbol = HtmlTokenType_SelfClosingTagDelimiter;
         return true;
     }

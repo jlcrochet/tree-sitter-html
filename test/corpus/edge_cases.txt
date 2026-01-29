@@ -1,0 +1,707 @@
+================================================================================
+edge case - BOM at document start
+================================================================================
+<div>content</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - unicode in custom element name
+================================================================================
+<my-élément>content</my-élément>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - emoji in text content
+================================================================================
+<p>Hello 👋 World 🌍</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - right-to-left text
+================================================================================
+<p dir="rtl">مرحبا بالعالم</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - very long custom element name
+================================================================================
+<my-extremely-long-custom-element-name-that-goes-on-and-on></my-extremely-long-custom-element-name-that-goes-on-and-on>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - custom element with numbers
+================================================================================
+<element-123>content</element-123>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - attribute with unicode name
+================================================================================
+<div données="value">content</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - attribute value with newlines
+================================================================================
+<div data-value="line1
+line2
+line3">content</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - unquoted attribute with edge characters
+================================================================================
+<div data-value=hello:world>content</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (unquoted_attribute_value)))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - multiple boolean attributes
+================================================================================
+<input disabled readonly required hidden>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name))
+      (attribute (attribute_name))
+      (attribute (attribute_name))
+      (attribute (attribute_name)))))
+
+================================================================================
+edge case - comment with dashes inside
+================================================================================
+<!-- this -- has -- dashes -->
+--------------------------------------------------------------------------------
+
+(document
+  (comment (text)))
+
+================================================================================
+edge case - comment with multiple trailing dashes
+================================================================================
+<!-- comment ---- -->
+--------------------------------------------------------------------------------
+
+(document
+  (comment (text)))
+
+================================================================================
+edge case - script with closing tag in string (ends at first closing tag)
+================================================================================
+<script>var x = "</script>";</script>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name)))
+  (text)
+  (erroneous_end_tag (tag_name)))
+
+================================================================================
+edge case - script with case-insensitive closing
+================================================================================
+<script>code</SCRIPT>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - script with partial closing tag
+================================================================================
+<script>x = "</scr" + "ipt>"</script>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - style with closing tag in comment (ends at first closing tag)
+================================================================================
+<style>/* </style> */ body{}</style>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name)))
+  (text)
+  (erroneous_end_tag (tag_name)))
+
+================================================================================
+edge case - textarea with HTML-like content
+================================================================================
+<textarea><div>not a div</div></textarea>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - title with entities
+================================================================================
+<title>&lt;Hello&gt; &amp; World</title>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (text)
+    (character_reference)
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - numeric character reference max valid
+================================================================================
+<p>&#1114111;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - hex character reference uppercase
+================================================================================
+<p>&#X41;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - adjacent character references
+================================================================================
+<p>&lt;&gt;&amp;</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (character_reference)
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - character reference in unquoted attribute
+================================================================================
+<div data-value=a&lt;b>content</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (unquoted_attribute_value)))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - short character reference (legacy)
+================================================================================
+<p>&lt</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - form feed whitespace
+================================================================================
+<div>content</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - carriage return in content
+================================================================================
+<p>line1
+line2</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - svg CDATA with brackets inside
+================================================================================
+<svg><style><![CDATA[a[href] { color: blue; } ]]></style></svg>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (cdata (text))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - implied end tag chain (li)
+================================================================================
+<ul><li>one<li>two<li>three</ul>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - implied end tag chain (p in div)
+================================================================================
+<div><p>one<p>two<p>three</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - implied end tag dt/dd alternating
+================================================================================
+<dl><dt>term1<dd>def1<dt>term2<dd>def2</dl>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - implied end tag nested tables
+================================================================================
+<table><tr><td>a<td>b</table>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - many custom elements (tests hash storage)
+================================================================================
+<a-1><b-2><c-3><d-4><e-5>deep</e-5></d-4></c-3></b-2></a-1>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (element
+            (start_tag (tag_name))
+            (text)
+            (end_tag (tag_name)))
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - alternating HTML and SVG namespaces
+================================================================================
+<div><svg><foreignObject><div><svg></svg></div></foreignObject></svg></div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (element
+          (start_tag (tag_name))
+          (element
+            (start_tag (tag_name))
+            (end_tag (tag_name)))
+          (end_tag (tag_name)))
+        (end_tag (tag_name)))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - void element inside custom element
+================================================================================
+<my-card><img src="test.jpg"><br></my-card>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag
+        (tag_name)
+        (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content)))))
+    (element
+      (start_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - multiple erroneous end tags
+================================================================================
+</div></span></p>
+--------------------------------------------------------------------------------
+
+(document
+  (erroneous_end_tag (tag_name))
+  (erroneous_end_tag (tag_name))
+  (erroneous_end_tag (tag_name)))
+
+================================================================================
+edge case - empty doctype variants
+================================================================================
+<!DOCTYPE html>
+<html></html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag (tag_name))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - doctype case variations
+================================================================================
+<!doctype HTML>
+<html></html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag (tag_name))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - element immediately after doctype
+================================================================================
+<!DOCTYPE html><html></html>
+--------------------------------------------------------------------------------
+
+(document
+  (doctype)
+  (element
+    (start_tag (tag_name))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - optgroup and option implied closing
+================================================================================
+<select><optgroup><option>a<option>b<optgroup><option>c</select>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (element
+        (start_tag (tag_name))
+        (text)
+        (implied_end_tag))
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - ruby rt rp implied closing
+================================================================================
+<ruby>漢<rt>かん<rp>(<rp>)</ruby>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - p closed by block element
+================================================================================
+<p>text<div>block</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (implied_end_tag))
+  (element
+    (start_tag (tag_name))
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - not is a valid short entity
+================================================================================
+<p>&notanentity; text</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - truly invalid entity
+================================================================================
+<p>&invalidname; text</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (invalid_character_reference)
+    (text)
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - attribute without value followed by another
+================================================================================
+<input disabled name="test">
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name))
+      (attribute (attribute_name) (quoted_attribute_value (quoted_attribute_value_content))))))
+
+================================================================================
+edge case - empty attribute value
+================================================================================
+<input value="">
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag
+      (tag_name)
+      (attribute (attribute_name) (quoted_attribute_value)))))
+
+================================================================================
+edge case - tag with only whitespace inside
+================================================================================
+<div>   </div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - nested empty elements
+================================================================================
+<div><span></span><span></span></div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (end_tag (tag_name)))
+    (element
+      (start_tag (tag_name))
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
+edge case - mixed content with entities and elements
+================================================================================
+<p>Hello &amp; <strong>World</strong>!</p>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (text)
+    (character_reference)
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (text)
+    (end_tag (tag_name))))

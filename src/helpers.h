@@ -6,7 +6,6 @@ static inline bool is_ascii(int c) {
     return (c & ~0x7f) == 0;
 }
 
-// Source: <https://stackoverflow.com/a/42013433/11588119>
 static size_t codepoint_to_utf8(char* const bytes, const int32_t codepoint) {
     if (codepoint <= 0x7F) {
         bytes[0] = codepoint;
@@ -30,25 +29,28 @@ static size_t codepoint_to_utf8(char* const bytes, const int32_t codepoint) {
         bytes[3] = 0x80 | (codepoint & 0x3F);          /* 10xxxxxx */
         return 4;
     }
-    return 0;
+    else {
+        return 0;
+    }
 }
 
-// Source: <https://rosettacode.org/wiki/Variable-length_quantity#C>
 static size_t to_vlq(size_t in, char* const out) {
     if (in < 128) {
         out[0] = in;
         return 1;
     }
 
-    int i, j;
+    // Count bytes needed
+    size_t len = 0;
+    for (size_t tmp = in; tmp > 0; tmp >>= 7) len++;
 
-    for (i = 9; i > 0; i--)
-        if (in & 127ULL << i * 7) break;
-    for (j = 0; j <= i; j++)
-        out[j] = ((in >> ((i - j) * 7)) & 127) | 128;
-    out[i] ^= 128;
+    // Write in reverse order (most significant byte first)
+    for (size_t i = len; i > 0; i--) {
+        out[i - 1] = (in & 127) | (i < len ? 128 : 0);
+        in >>= 7;
+    }
 
-    return i + 1;
+    return len;
 }
 static size_t from_vlq(const char* in, size_t* out) {
     if ((unsigned char)in[0] < 128) {
@@ -61,7 +63,7 @@ static size_t from_vlq(const char* in, size_t* out) {
 
     do {
         *out = (*out << 7) | (size_t)(in[idx] & 127);
-    } while (in[idx++] & 128);
+    } while ((unsigned char)in[idx++] & 128);
 
     return idx;
 }
