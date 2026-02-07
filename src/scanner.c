@@ -157,8 +157,10 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     if (length == 0) return;
 
     const char *offset = buffer;
+    const char *end = buffer + length;
 
     #ifndef NO_IMPLIED_END_TAGS
+    if (offset + 2 + sizeof(XXH32_hash_t) + 1 > end) return;
     scanner->cached_tag = (bool)*offset++;
     scanner->cached_tag_name = (uint8_t)*offset++;
     memcpy(&scanner->cached_tag_name_hash, offset, sizeof(XXH32_hash_t));
@@ -168,11 +170,14 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
 
     #define DESERIALIZE_ARRAY(ARRAY) \
         { \
+            if (offset >= end) return; \
             size_t size; \
             offset += from_vlq(offset, &size); \
+            size_t byte_count = size * array_elem_size(&ARRAY); \
+            if (offset + byte_count > end) return; \
             if (size > 0) { \
                 array_extend(&ARRAY, size, offset); \
-                offset += size * array_elem_size(&ARRAY); \
+                offset += byte_count; \
             } \
         }
 
@@ -347,6 +352,7 @@ static inline bool start_tag_closes_element(HtmlElement current, HtmlElement nex
                    next == HtmlElement_aside ||
                    next == HtmlElement_blockquote ||
                    next == HtmlElement_details ||
+                   next == HtmlElement_dialog ||
                    next == HtmlElement_div ||
                    next == HtmlElement_dl ||
                    next == HtmlElement_fieldset ||
@@ -779,7 +785,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             if (next != current) {
                 close_count = count_end_tag_implied_closes(scanner, next, next_hash);
             }
-        } else if (implied_end_tag_elements[current]) {
+        } else {
             // Start tag case: only for elements that can have HTML-semantic implied end tags
             // This can happen in two ways:
             // 1. The start tag directly closes the current element (e.g., <li> closes <li>)
@@ -868,34 +874,34 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
     if ((valid_symbols[HtmlTokenType_FullCharacterReference] || valid_symbols[HtmlTokenType_ShortCharacterReference] || valid_symbols[HtmlTokenType_InvalidCharacterReference]) && lexer->lookahead == '&') {
         advance(lexer);
 
-            if (SCAN('#')) {
-                ASSERT(valid_symbols[HtmlTokenType_FullCharacterReference]);
-                // Numeric character reference
-                if (SCAN_ICASE('X')) {
-                    // Hexadecimal
-                    ASSERT(is_ascii_xdigit(lexer->lookahead));
-                    do { advance(lexer); } while (is_ascii_xdigit(lexer->lookahead));
-                    ASSERT(SCAN(';'));
-                    lexer->result_symbol = HtmlTokenType_FullCharacterReference;
-                    return true;
-                } else {
-                    // Decimal
-                    ASSERT(is_ascii_digit(lexer->lookahead));
-                    do { advance(lexer); } while (is_ascii_digit(lexer->lookahead));
-                    ASSERT(SCAN(';'));
-                    lexer->result_symbol = HtmlTokenType_FullCharacterReference;
-                    return true;
-                }
+        if (SCAN('#')) {
+            ASSERT(valid_symbols[HtmlTokenType_FullCharacterReference]);
+            // Numeric character reference
+            if (SCAN_ICASE('X')) {
+                // Hexadecimal
+                ASSERT(is_ascii_xdigit(lexer->lookahead));
+                do { advance(lexer); } while (is_ascii_xdigit(lexer->lookahead));
+                ASSERT(SCAN(';'));
+                lexer->result_symbol = HtmlTokenType_FullCharacterReference;
+                return true;
             } else {
-                // Named character reference
-                static Array(char) name = array_new();
-                array_clear(&name);
+                // Decimal
+                ASSERT(is_ascii_digit(lexer->lookahead));
+                do { advance(lexer); } while (is_ascii_digit(lexer->lookahead));
+                ASSERT(SCAN(';'));
+                lexer->result_symbol = HtmlTokenType_FullCharacterReference;
+                return true;
+            }
+        } else {
+            // Named character reference
+            static Array(char) name = array_new();
+            array_clear(&name);
 
-                lexer->mark_end(lexer);
+            lexer->mark_end(lexer);
 
-                while (is_ascii_alnum(lexer->lookahead)) {
-                    array_push(&name, lexer->lookahead);
-                    advance(lexer);
+            while (is_ascii_alnum(lexer->lookahead)) {
+                array_push(&name, lexer->lookahead);
+                advance(lexer);
 
                 if (valid_symbols[HtmlTokenType_ShortCharacterReference] && lookup_short_character_reference(name.contents, name.size)) {
                     lexer->result_symbol = HtmlTokenType_ShortCharacterReference;
@@ -925,6 +931,12 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         }
     }
 
+    #define RECONSUME(STATE) \
+        { \
+            state = STATE; \
+            goto STATE; \
+        }
+
     if (valid_symbols[HtmlTokenType_CdataText]) {
         ASSERT(get_current_namespace(scanner) != ElementNamespace_HTML);
 
@@ -940,12 +952,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         while (!lexer->eof(lexer)) {
             int c = lexer->lookahead;
             advance(lexer);
-
-            #define RECONSUME(STATE) \
-                { \
-                    state = STATE; \
-                    goto STATE; \
-                }
 
             switch (state) {
                 case CdataSection: CdataSection:
@@ -1004,12 +1010,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         while (!lexer->eof(lexer)) {
             int c = lexer->lookahead;
             advance(lexer);
-
-            #define RECONSUME(STATE) \
-                { \
-                    state = STATE; \
-                    goto STATE; \
-                }
 
             switch (state) {
                 case CommentStart: CommentStart:
@@ -1144,6 +1144,8 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             }
         }
     }
+
+    #undef RECONSUME
 
     return false;
 }

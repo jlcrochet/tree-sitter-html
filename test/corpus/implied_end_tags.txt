@@ -109,6 +109,28 @@ p element - implied end tag from block element
     (end_tag (tag_name))))
 
 ================================================================================
+p element - implied end tag from dialog
+================================================================================
+<div>
+  <p>Paragraph
+  <dialog>Content</dialog>
+</div>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (implied_end_tag))
+    (element
+      (start_tag (tag_name))
+      (text)
+      (end_tag (tag_name)))
+    (end_tag (tag_name))))
+
+================================================================================
 p element - implied end tag from another p
 ================================================================================
 <div>
