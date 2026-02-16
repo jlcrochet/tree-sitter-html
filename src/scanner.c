@@ -24,6 +24,12 @@
 #error "One or more of the element enums has exceeded 256 values; need to upgrade to uint16_t"
 #endif
 
+#define TAG_NAME_INLINE_BUFFER_SIZE 32
+#define CHARACTER_REFERENCE_INLINE_BUFFER_SIZE 16
+#define FULL_CHARACTER_REFERENCE_NAME_MAX 31
+#define SHORT_CHARACTER_REFERENCE_NAME_MIN 2
+#define SHORT_CHARACTER_REFERENCE_NAME_MAX 6
+
 typedef enum HtmlElement HtmlElement;
 typedef enum MathmlElement MathmlElement;
 typedef enum SvgElement SvgElement;
@@ -64,6 +70,10 @@ typedef struct {
     bool cached_tag;
     uint8_t cached_tag_name;
     XXH32_hash_t cached_tag_name_hash;
+    // Number of codepoints consumed by the cached tag name in the input stream
+    uint32_t cached_tag_name_length;
+    // Whether the cached tag name was followed by a proper tag-name terminator
+    bool cached_tag_has_terminator;
     uint8_t implied_end_tags;
     #endif
 
@@ -96,6 +106,27 @@ static uint8_t lookup_element(const char *name, size_t length, ElementNamespace 
         case ElementNamespace_MathML: return lookup_mathml_element(name, length);
         case ElementNamespace_SVG: return lookup_svg_element(name, length);
         default: return 0;
+    }
+}
+
+static inline bool is_html_void_element(uint8_t element) {
+    switch (element) {
+        case HtmlElement_area:
+        case HtmlElement_base:
+        case HtmlElement_br:
+        case HtmlElement_col:
+        case HtmlElement_embed:
+        case HtmlElement_hr:
+        case HtmlElement_img:
+        case HtmlElement_input:
+        case HtmlElement_link:
+        case HtmlElement_meta:
+        case HtmlElement_source:
+        case HtmlElement_track:
+        case HtmlElement_wbr:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -161,16 +192,10 @@ static bool deserialize_array_bounded(
     return true;
 }
 
-static uint32_t count_unknown_elements(Scanner *scanner) {
-    uint32_t count = 0;
-    for (uint32_t i = 0; i < scanner->open_elements.size; i++) {
-        if (scanner->open_elements.contents[i] == 0)
-            count++;
-    }
-    return count;
-}
-
+#ifndef NDEBUG
 static bool scanner_state_is_valid(Scanner *scanner) {
+    uint32_t unknown_count = 0;
+
     if (scanner->namespaces.size > scanner->open_elements.size)
         return false;
 
@@ -179,22 +204,28 @@ static bool scanner_state_is_valid(Scanner *scanner) {
             return false;
     }
 
-    return scanner->custom_name_hashes.size == count_unknown_elements(scanner);
-}
+    for (uint32_t i = 0; i < scanner->open_elements.size; i++) {
+        if (scanner->open_elements.contents[i] == 0)
+            unknown_count++;
+    }
 
-static inline void clear_scanner_state(Scanner *scanner) {
+    return scanner->custom_name_hashes.size == unknown_count;
+}
+#endif
+
+static inline void clear_serialized_scanner_state(Scanner *scanner) {
     #ifndef NO_IMPLIED_END_TAGS
     scanner->cached_tag = false;
     scanner->cached_tag_name = 0;
     scanner->cached_tag_name_hash = 0;
+    scanner->cached_tag_name_length = 0;
+    scanner->cached_tag_has_terminator = false;
     scanner->implied_end_tags = 0;
     #endif
 
     array_clear(&scanner->namespaces);
     array_clear(&scanner->open_elements);
     array_clear(&scanner->custom_name_hashes);
-    array_clear(&scanner->tag_name_buffer);
-    array_clear(&scanner->character_reference_buffer);
 }
 
 static inline void push_open_element(Scanner *scanner, uint8_t element, XXH32_hash_t name_hash) {
@@ -246,12 +277,15 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
     const char *end = buffer + TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
 
     #ifndef NO_IMPLIED_END_TAGS
-    if ((size_t)(end - offset) < 2 + sizeof(XXH32_hash_t) + 1)
+    if ((size_t)(end - offset) < 2 + sizeof(XXH32_hash_t) + sizeof(uint32_t) + 1 + 1)
         return 0;
     *offset++ = (char)scanner->cached_tag;
     *offset++ = (char)scanner->cached_tag_name;
     memcpy(offset, &scanner->cached_tag_name_hash, sizeof(XXH32_hash_t));
     offset += sizeof(XXH32_hash_t);
+    memcpy(offset, &scanner->cached_tag_name_length, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    *offset++ = (char)scanner->cached_tag_has_terminator;
     *offset++ = (char)scanner->implied_end_tags;
     #endif
 
@@ -284,7 +318,7 @@ unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer
 
 void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
     Scanner *scanner = (Scanner *)payload;
-    clear_scanner_state(scanner);
+    clear_serialized_scanner_state(scanner);
 
     if (length == 0) return;
 
@@ -292,11 +326,14 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     const char *end = buffer + length;
 
     #ifndef NO_IMPLIED_END_TAGS
-    if ((size_t)(end - offset) < 2 + sizeof(XXH32_hash_t) + 1) return;
+    if ((size_t)(end - offset) < 2 + sizeof(XXH32_hash_t) + sizeof(uint32_t) + 1 + 1) return;
     scanner->cached_tag = (bool)*offset++;
     scanner->cached_tag_name = (uint8_t)*offset++;
     memcpy(&scanner->cached_tag_name_hash, offset, sizeof(XXH32_hash_t));
     offset += sizeof(XXH32_hash_t);
+    memcpy(&scanner->cached_tag_name_length, offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    scanner->cached_tag_has_terminator = (bool)*offset++;
     scanner->implied_end_tags = (uint8_t)*offset++;
     #endif
 
@@ -321,13 +358,15 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
         array_elem_size(&scanner->custom_name_hashes)
     )) goto invalid_state;
 
+    #ifndef NDEBUG
     if (!scanner_state_is_valid(scanner))
         goto invalid_state;
+    #endif
 
     return;
 
 invalid_state:
-    clear_scanner_state(scanner);
+    clear_serialized_scanner_state(scanner);
 }
 
 static inline void advance(TSLexer *lexer) {
@@ -350,25 +389,48 @@ static bool scan_char(TSLexer *lexer, int c) {
 // Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any.
 // Note: HTML lowercases only ASCII letters; non-ASCII is preserved.
 // Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
-static bool scan_tag_name(TSLexer *lexer, Scanner *scanner, ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
+static bool scan_tag_name(
+    TSLexer *lexer,
+    Scanner *scanner,
+    ElementNamespace ns,
+    uint8_t *element,
+    XXH32_hash_t *name_hash,
+    uint32_t *name_length,
+    bool *has_terminator
+) {
     // Tag names must begin with an ASCII alpha character in the tag-open state
     if (!is_ascii_alpha(lexer->lookahead))
         return false;
 
-    array_clear(&scanner->tag_name_buffer);
+    char inline_tag_name_buffer[TAG_NAME_INLINE_BUFFER_SIZE];
+    size_t byte_length = 0;
+    bool using_dynamic_buffer = false;
 
-    // For non-ASCII codepoints, we have to serialize to UTF8 first because our lookup tables only support 8-bit characters:
-    #define PUSH_CODEPOINT(CODEPOINT) \
+    #define APPEND_TAG_NAME_BYTES(BYTES, COUNT) \
         { \
-            char bytes[4]; \
-            size_t count = codepoint_to_utf8(bytes, CODEPOINT); \
-            array_extend(&scanner->tag_name_buffer, count, bytes); \
+            size_t _count = (COUNT); \
+            if (_count > 0) { \
+                if (!using_dynamic_buffer && byte_length + _count <= sizeof(inline_tag_name_buffer)) { \
+                    memcpy(inline_tag_name_buffer + byte_length, (BYTES), _count); \
+                } else { \
+                    if (!using_dynamic_buffer) { \
+                        array_clear(&scanner->tag_name_buffer); \
+                        if (byte_length > 0) \
+                            array_extend(&scanner->tag_name_buffer, byte_length, inline_tag_name_buffer); \
+                        using_dynamic_buffer = true; \
+                    } \
+                    array_extend(&scanner->tag_name_buffer, _count, (BYTES)); \
+                } \
+                byte_length += _count; \
+            } \
         }
 
-    array_push(&scanner->tag_name_buffer, (char)ascii_tolower(lexer->lookahead));
+    char first_char = (char)ascii_tolower(lexer->lookahead);
+    APPEND_TAG_NAME_BYTES(&first_char, 1);
     advance(lexer);
 
     bool must_be_unknown = false;
+    uint32_t length = 1;
 
     while (!lexer->eof(lexer)) {
         if (is_html_whitespace(lexer->lookahead) || lexer->lookahead == '/' || lexer->lookahead == '>') {
@@ -376,31 +438,49 @@ static bool scan_tag_name(TSLexer *lexer, Scanner *scanner, ElementNamespace ns,
         } else if (lexer->lookahead == '\0') {
             // If NULL is reached before EOF somehow, append U+FFFD REPLACEMENT CHARACTER to the name
             must_be_unknown = true;
-            PUSH_CODEPOINT(0xFFFD);
+            static const char replacement_character_utf8[] = { (char)0xEF, (char)0xBF, (char)0xBD };
+            APPEND_TAG_NAME_BYTES(replacement_character_utf8, sizeof(replacement_character_utf8));
         } else if (is_ascii_alnum(lexer->lookahead)) {
-            array_push(&scanner->tag_name_buffer, (char)ascii_tolower(lexer->lookahead));
+            char c = (char)ascii_tolower(lexer->lookahead);
+            APPEND_TAG_NAME_BYTES(&c, 1);
         } else if (lexer->lookahead == '-') {
-            array_push(&scanner->tag_name_buffer, '-');
+            static const char hyphen = '-';
+            APPEND_TAG_NAME_BYTES(&hyphen, 1);
         } else if (is_ascii(lexer->lookahead)) {
             // Any other ASCII character is valid, but indicates an unknown element
             must_be_unknown = true;
-            array_push(&scanner->tag_name_buffer, lexer->lookahead);
+            char c = (char)lexer->lookahead;
+            APPEND_TAG_NAME_BYTES(&c, 1);
         } else {
             // All non-ASCII characters are valid in a tag name, but indicate an unknown element
             must_be_unknown = true;
-            PUSH_CODEPOINT(lexer->lookahead);
+            char bytes[4];
+            size_t count = codepoint_to_utf8(bytes, lexer->lookahead);
+            APPEND_TAG_NAME_BYTES(bytes, count);
         }
         advance(lexer);
+        length++;
     }
+
+    const char *name = using_dynamic_buffer
+        ? scanner->tag_name_buffer.contents
+        : inline_tag_name_buffer;
 
     // 0 represents an unknown element in any namespace
     *element = must_be_unknown
         ? 0
-        : lookup_element(scanner->tag_name_buffer.contents, scanner->tag_name_buffer.size, ns);
+        : lookup_element(name, byte_length, ns);
 
     *name_hash = *element == 0
-        ? XXH32(scanner->tag_name_buffer.contents, scanner->tag_name_buffer.size, 0)
+        ? XXH32(name, byte_length, 0)
         : 0;
+
+    if (name_length)
+        *name_length = length;
+    if (has_terminator)
+        *has_terminator = !lexer->eof(lexer);
+
+    #undef APPEND_TAG_NAME_BYTES
 
     return true;
 }
@@ -415,6 +495,54 @@ static bool scan_ascii_word_icase(TSLexer *lexer, const char *word, size_t lengt
         advance(lexer);
     }
     return true;
+}
+
+static inline bool is_common_short_character_reference(const char *name, size_t length) {
+    switch (length) {
+        case 2:
+            return
+                (name[0] == 'l' && name[1] == 't') ||
+                (name[0] == 'g' && name[1] == 't') ||
+                (name[0] == 'L' && name[1] == 'T') ||
+                (name[0] == 'G' && name[1] == 'T');
+        case 3:
+            return
+                (name[0] == 'a' && name[1] == 'm' && name[2] == 'p') ||
+                (name[0] == 'A' && name[1] == 'M' && name[2] == 'P') ||
+                (name[0] == 'n' && name[1] == 'o' && name[2] == 't');
+        case 4:
+            return
+                (name[0] == 'q' && name[1] == 'u' && name[2] == 'o' && name[3] == 't') ||
+                (name[0] == 'Q' && name[1] == 'U' && name[2] == 'O' && name[3] == 'T') ||
+                (name[0] == 'n' && name[1] == 'b' && name[2] == 's' && name[3] == 'p');
+        default:
+            return false;
+    }
+}
+
+static inline bool is_common_full_character_reference(const char *name, size_t length) {
+    switch (length) {
+        case 2:
+            return
+                (name[0] == 'l' && name[1] == 't') ||
+                (name[0] == 'g' && name[1] == 't') ||
+                (name[0] == 'L' && name[1] == 'T') ||
+                (name[0] == 'G' && name[1] == 'T');
+        case 3:
+            return
+                (name[0] == 'a' && name[1] == 'm' && name[2] == 'p') ||
+                (name[0] == 'A' && name[1] == 'M' && name[2] == 'P') ||
+                (name[0] == 'n' && name[1] == 'o' && name[2] == 't');
+        case 4:
+            return
+                (name[0] == 'q' && name[1] == 'u' && name[2] == 'o' && name[3] == 't') ||
+                (name[0] == 'Q' && name[1] == 'U' && name[2] == 'O' && name[3] == 'T') ||
+                (name[0] == 'n' && name[1] == 'b' && name[2] == 's' && name[3] == 'p');
+        case 5:
+            return name[0] == 'a' && name[1] == 'p' && name[2] == 'o' && name[3] == 's';
+        default:
+            return false;
+    }
 }
 
 static bool scan_raw_text_like(
@@ -480,105 +608,151 @@ static bool scan_raw_text_like(
     return false;
 }
 
-// Returns true if the given start tag would implicitly close the current element
-static inline bool start_tag_closes_element(HtmlElement current, HtmlElement next) {
-    switch (current) {
-        case HtmlElement_li:
-            return next == HtmlElement_li;
-        case HtmlElement_dt:
-            return next == HtmlElement_dt || next == HtmlElement_dd;
-        case HtmlElement_dd:
-            return next == HtmlElement_dd || next == HtmlElement_dt;
-        case HtmlElement_p:
-            return next == HtmlElement_address ||
-                   next == HtmlElement_article ||
-                   next == HtmlElement_aside ||
-                   next == HtmlElement_blockquote ||
-                   next == HtmlElement_details ||
-                   next == HtmlElement_dialog ||
-                   next == HtmlElement_div ||
-                   next == HtmlElement_dl ||
-                   next == HtmlElement_fieldset ||
-                   next == HtmlElement_figcaption ||
-                   next == HtmlElement_figure ||
-                   next == HtmlElement_footer ||
-                   next == HtmlElement_form ||
-                   next == HtmlElement_h1 ||
-                   next == HtmlElement_h2 ||
-                   next == HtmlElement_h3 ||
-                   next == HtmlElement_h4 ||
-                   next == HtmlElement_h5 ||
-                   next == HtmlElement_h6 ||
-                   next == HtmlElement_header ||
-                   next == HtmlElement_hgroup ||
-                   next == HtmlElement_hr ||
-                   next == HtmlElement_main ||
-                   next == HtmlElement_menu ||
-                   next == HtmlElement_nav ||
-                   next == HtmlElement_ol ||
-                   next == HtmlElement_p ||
-                   next == HtmlElement_pre ||
-                   next == HtmlElement_search ||
-                   next == HtmlElement_section ||
-                   next == HtmlElement_table ||
-                   next == HtmlElement_ul;
-        case HtmlElement_rt:
-        case HtmlElement_rp:
-            return next == HtmlElement_rt || next == HtmlElement_rp;
-        case HtmlElement_optgroup:
-            return next == HtmlElement_optgroup;
-        case HtmlElement_option:
-            return next == HtmlElement_option || next == HtmlElement_optgroup;
-        case HtmlElement_thead:
-        case HtmlElement_tbody:
-            return next == HtmlElement_tbody || next == HtmlElement_tfoot;
-        case HtmlElement_tr:
-            return next == HtmlElement_tr;
-        case HtmlElement_td:
-        case HtmlElement_th:
-            return next == HtmlElement_td || next == HtmlElement_th;
-        default:
-            return false;
-    }
+typedef enum {
+    StartTagClosureClass_None = 0,
+    StartTagClosureClass_Li = 1u << 0,
+    StartTagClosureClass_DtDd = 1u << 1,
+    StartTagClosureClass_PBlock = 1u << 2,
+    StartTagClosureClass_RtRp = 1u << 3,
+    StartTagClosureClass_Optgroup = 1u << 4,
+    StartTagClosureClass_Option = 1u << 5,
+    StartTagClosureClass_TbodyTfoot = 1u << 6,
+    StartTagClosureClass_Tr = 1u << 7,
+    StartTagClosureClass_TdTh = 1u << 8,
+} StartTagClosureClass;
+
+typedef enum {
+    EndTagClosureClass_None = 0,
+    EndTagClosureClass_UlOlMenu = 1u << 0,
+    EndTagClosureClass_Dl = 1u << 1,
+    EndTagClosureClass_Ruby = 1u << 2,
+    EndTagClosureClass_SelectDatalistOptgroup = 1u << 3,
+    EndTagClosureClass_Table = 1u << 4,
+    EndTagClosureClass_TheadTbodyTfootTable = 1u << 5,
+    EndTagClosureClass_TrTheadTbodyTfootTable = 1u << 6,
+} EndTagClosureClass;
+
+static const uint16_t start_tag_closing_class_for_opening[HtmlElement_Count] = {
+    [HtmlElement_li] = StartTagClosureClass_Li,
+    [HtmlElement_dt] = StartTagClosureClass_DtDd,
+    [HtmlElement_dd] = StartTagClosureClass_DtDd,
+    [HtmlElement_address] = StartTagClosureClass_PBlock,
+    [HtmlElement_article] = StartTagClosureClass_PBlock,
+    [HtmlElement_aside] = StartTagClosureClass_PBlock,
+    [HtmlElement_blockquote] = StartTagClosureClass_PBlock,
+    [HtmlElement_details] = StartTagClosureClass_PBlock,
+    [HtmlElement_dialog] = StartTagClosureClass_PBlock,
+    [HtmlElement_div] = StartTagClosureClass_PBlock,
+    [HtmlElement_dl] = StartTagClosureClass_PBlock,
+    [HtmlElement_fieldset] = StartTagClosureClass_PBlock,
+    [HtmlElement_figcaption] = StartTagClosureClass_PBlock,
+    [HtmlElement_figure] = StartTagClosureClass_PBlock,
+    [HtmlElement_footer] = StartTagClosureClass_PBlock,
+    [HtmlElement_form] = StartTagClosureClass_PBlock,
+    [HtmlElement_h1] = StartTagClosureClass_PBlock,
+    [HtmlElement_h2] = StartTagClosureClass_PBlock,
+    [HtmlElement_h3] = StartTagClosureClass_PBlock,
+    [HtmlElement_h4] = StartTagClosureClass_PBlock,
+    [HtmlElement_h5] = StartTagClosureClass_PBlock,
+    [HtmlElement_h6] = StartTagClosureClass_PBlock,
+    [HtmlElement_header] = StartTagClosureClass_PBlock,
+    [HtmlElement_hgroup] = StartTagClosureClass_PBlock,
+    [HtmlElement_hr] = StartTagClosureClass_PBlock,
+    [HtmlElement_main] = StartTagClosureClass_PBlock,
+    [HtmlElement_menu] = StartTagClosureClass_PBlock,
+    [HtmlElement_nav] = StartTagClosureClass_PBlock,
+    [HtmlElement_ol] = StartTagClosureClass_PBlock,
+    [HtmlElement_p] = StartTagClosureClass_PBlock,
+    [HtmlElement_pre] = StartTagClosureClass_PBlock,
+    [HtmlElement_search] = StartTagClosureClass_PBlock,
+    [HtmlElement_section] = StartTagClosureClass_PBlock,
+    [HtmlElement_table] = StartTagClosureClass_PBlock,
+    [HtmlElement_ul] = StartTagClosureClass_PBlock,
+    [HtmlElement_rt] = StartTagClosureClass_RtRp,
+    [HtmlElement_rp] = StartTagClosureClass_RtRp,
+    [HtmlElement_optgroup] = StartTagClosureClass_Optgroup,
+    [HtmlElement_option] = StartTagClosureClass_Option,
+    [HtmlElement_tbody] = StartTagClosureClass_TbodyTfoot,
+    [HtmlElement_tfoot] = StartTagClosureClass_TbodyTfoot,
+    [HtmlElement_tr] = StartTagClosureClass_Tr,
+    [HtmlElement_td] = StartTagClosureClass_TdTh,
+    [HtmlElement_th] = StartTagClosureClass_TdTh,
+};
+
+static const uint16_t start_tag_closure_mask_for_current[HtmlElement_Count] = {
+    [HtmlElement_li] = StartTagClosureClass_Li,
+    [HtmlElement_dt] = StartTagClosureClass_DtDd,
+    [HtmlElement_dd] = StartTagClosureClass_DtDd,
+    [HtmlElement_p] = StartTagClosureClass_PBlock,
+    [HtmlElement_rt] = StartTagClosureClass_RtRp,
+    [HtmlElement_rp] = StartTagClosureClass_RtRp,
+    [HtmlElement_optgroup] = StartTagClosureClass_Optgroup,
+    [HtmlElement_option] = StartTagClosureClass_Optgroup | StartTagClosureClass_Option,
+    [HtmlElement_thead] = StartTagClosureClass_TbodyTfoot,
+    [HtmlElement_tbody] = StartTagClosureClass_TbodyTfoot,
+    [HtmlElement_tr] = StartTagClosureClass_Tr,
+    [HtmlElement_td] = StartTagClosureClass_TdTh,
+    [HtmlElement_th] = StartTagClosureClass_TdTh,
+};
+
+static inline bool start_tag_closes_element(uint8_t current, uint16_t opening_class) {
+    return (start_tag_closure_mask_for_current[current] & opening_class) != 0;
 }
 
-// Returns true if an end tag for the given element would implicitly close the current element
-static inline bool end_tag_closes_element(HtmlElement current, HtmlElement closing) {
-    switch (current) {
-        case HtmlElement_li:
-            return closing == HtmlElement_ul || closing == HtmlElement_ol || closing == HtmlElement_menu;
-        case HtmlElement_dt:
-        case HtmlElement_dd:
-            return closing == HtmlElement_dl;
-        case HtmlElement_p:
-            // p can be closed by the end tag of most parent elements
-            // We'll be permissive here and let it close for any ancestor end tag
-            // except for elements that specifically can contain p without closing it
-            return closing != HtmlElement_a &&
-                   closing != HtmlElement_audio &&
-                   closing != HtmlElement_del &&
-                   closing != HtmlElement_ins &&
-                   closing != HtmlElement_map &&
-                   closing != HtmlElement_noscript &&
-                   closing != HtmlElement_video;
-        case HtmlElement_rt:
-        case HtmlElement_rp:
-            return closing == HtmlElement_ruby;
-        case HtmlElement_optgroup:
-        case HtmlElement_option:
-            return closing == HtmlElement_select || closing == HtmlElement_datalist || closing == HtmlElement_optgroup;
-        case HtmlElement_thead:
-        case HtmlElement_tbody:
-        case HtmlElement_tfoot:
-            return closing == HtmlElement_table;
-        case HtmlElement_tr:
-            return closing == HtmlElement_thead || closing == HtmlElement_tbody || closing == HtmlElement_tfoot || closing == HtmlElement_table;
-        case HtmlElement_td:
-        case HtmlElement_th:
-            return closing == HtmlElement_tr || closing == HtmlElement_thead || closing == HtmlElement_tbody || closing == HtmlElement_tfoot || closing == HtmlElement_table;
-        default:
-            return false;
+static const uint16_t end_tag_closing_class_for_closing[HtmlElement_Count] = {
+    [HtmlElement_ul] = EndTagClosureClass_UlOlMenu,
+    [HtmlElement_ol] = EndTagClosureClass_UlOlMenu,
+    [HtmlElement_menu] = EndTagClosureClass_UlOlMenu,
+    [HtmlElement_dl] = EndTagClosureClass_Dl,
+    [HtmlElement_ruby] = EndTagClosureClass_Ruby,
+    [HtmlElement_select] = EndTagClosureClass_SelectDatalistOptgroup,
+    [HtmlElement_datalist] = EndTagClosureClass_SelectDatalistOptgroup,
+    [HtmlElement_optgroup] = EndTagClosureClass_SelectDatalistOptgroup,
+    [HtmlElement_table] = EndTagClosureClass_Table |
+                          EndTagClosureClass_TheadTbodyTfootTable |
+                          EndTagClosureClass_TrTheadTbodyTfootTable,
+    [HtmlElement_thead] = EndTagClosureClass_TheadTbodyTfootTable |
+                          EndTagClosureClass_TrTheadTbodyTfootTable,
+    [HtmlElement_tbody] = EndTagClosureClass_TheadTbodyTfootTable |
+                          EndTagClosureClass_TrTheadTbodyTfootTable,
+    [HtmlElement_tfoot] = EndTagClosureClass_TheadTbodyTfootTable |
+                          EndTagClosureClass_TrTheadTbodyTfootTable,
+    [HtmlElement_tr] = EndTagClosureClass_TrTheadTbodyTfootTable,
+};
+
+static const uint16_t end_tag_closure_mask_for_current[HtmlElement_Count] = {
+    [HtmlElement_li] = EndTagClosureClass_UlOlMenu,
+    [HtmlElement_dt] = EndTagClosureClass_Dl,
+    [HtmlElement_dd] = EndTagClosureClass_Dl,
+    [HtmlElement_rt] = EndTagClosureClass_Ruby,
+    [HtmlElement_rp] = EndTagClosureClass_Ruby,
+    [HtmlElement_optgroup] = EndTagClosureClass_SelectDatalistOptgroup,
+    [HtmlElement_option] = EndTagClosureClass_SelectDatalistOptgroup,
+    [HtmlElement_thead] = EndTagClosureClass_Table,
+    [HtmlElement_tbody] = EndTagClosureClass_Table,
+    [HtmlElement_tfoot] = EndTagClosureClass_Table,
+    [HtmlElement_tr] = EndTagClosureClass_TheadTbodyTfootTable,
+    [HtmlElement_td] = EndTagClosureClass_TrTheadTbodyTfootTable,
+    [HtmlElement_th] = EndTagClosureClass_TrTheadTbodyTfootTable,
+};
+
+static const bool end_tag_p_closure_exclusions[HtmlElement_Count] = {
+    [HtmlElement_a] = true,
+    [HtmlElement_audio] = true,
+    [HtmlElement_del] = true,
+    [HtmlElement_ins] = true,
+    [HtmlElement_map] = true,
+    [HtmlElement_noscript] = true,
+    [HtmlElement_video] = true,
+};
+
+static inline bool end_tag_closes_element(uint8_t current, uint16_t closing_class, bool p_can_be_closed) {
+    if (current == HtmlElement_p) {
+        // p can be closed by most ancestor end tags, except this small exclusion set.
+        return p_can_be_closed;
     }
+
+    return (end_tag_closure_mask_for_current[current] & closing_class) != 0;
 }
 
 // Lookup table for elements that can have an implied end tag
@@ -599,11 +773,97 @@ static const bool implied_end_tag_elements[HtmlElement_Count] = {
     [HtmlElement_th] = true,
 };
 
+static const uint16_t start_tag_closing_class_for_first_char[26] = {
+    ['a' - 'a'] = StartTagClosureClass_PBlock,
+    ['b' - 'a'] = StartTagClosureClass_PBlock,
+    ['d' - 'a'] = StartTagClosureClass_DtDd | StartTagClosureClass_PBlock,
+    ['f' - 'a'] = StartTagClosureClass_PBlock,
+    ['h' - 'a'] = StartTagClosureClass_PBlock,
+    ['l' - 'a'] = StartTagClosureClass_Li,
+    ['m' - 'a'] = StartTagClosureClass_PBlock,
+    ['n' - 'a'] = StartTagClosureClass_PBlock,
+    ['o' - 'a'] = StartTagClosureClass_PBlock |
+                  StartTagClosureClass_Optgroup |
+                  StartTagClosureClass_Option,
+    ['p' - 'a'] = StartTagClosureClass_PBlock,
+    ['r' - 'a'] = StartTagClosureClass_RtRp,
+    ['s' - 'a'] = StartTagClosureClass_PBlock,
+    ['t' - 'a'] = StartTagClosureClass_TbodyTfoot |
+                  StartTagClosureClass_Tr |
+                  StartTagClosureClass_TdTh,
+    ['u' - 'a'] = StartTagClosureClass_PBlock,
+};
+
+static const uint16_t end_tag_closing_class_for_first_char[26] = {
+    ['d' - 'a'] = EndTagClosureClass_Dl |
+                  EndTagClosureClass_SelectDatalistOptgroup,
+    ['m' - 'a'] = EndTagClosureClass_UlOlMenu,
+    ['o' - 'a'] = EndTagClosureClass_UlOlMenu |
+                  EndTagClosureClass_SelectDatalistOptgroup,
+    ['r' - 'a'] = EndTagClosureClass_Ruby,
+    ['s' - 'a'] = EndTagClosureClass_SelectDatalistOptgroup,
+    ['t' - 'a'] = EndTagClosureClass_Table |
+                  EndTagClosureClass_TheadTbodyTfootTable |
+                  EndTagClosureClass_TrTheadTbodyTfootTable,
+    ['u' - 'a'] = EndTagClosureClass_UlOlMenu,
+};
+
+static inline uint16_t implied_start_tag_classes_for_first_char(int32_t first_char) {
+    if (!is_ascii_alpha(first_char))
+        return StartTagClosureClass_None;
+    return start_tag_closing_class_for_first_char[ascii_tolower(first_char) - 'a'];
+}
+
+static inline uint16_t implied_end_tag_classes_for_first_char(int32_t first_char) {
+    if (!is_ascii_alpha(first_char))
+        return EndTagClosureClass_None;
+    return end_tag_closing_class_for_first_char[ascii_tolower(first_char) - 'a'];
+}
+
+// Fast prefilter that avoids scanning a whole tag name when no element in the
+// current implied-end chain can possibly be closed by a start tag beginning with
+// the observed first character.
+static bool maybe_implied_close_on_start_tag_first_char(Scanner *scanner, uint16_t opening_classes) {
+    if (opening_classes == StartTagClosureClass_None)
+        return false;
+
+    for (size_t i = scanner->open_elements.size; i > 0; i--) {
+        uint8_t elem = scanner->open_elements.contents[i - 1];
+        if (!implied_end_tag_elements[elem])
+            return false;
+        if ((start_tag_closure_mask_for_current[elem] & opening_classes) != 0)
+            return true;
+    }
+
+    return false;
+}
+
+// Similar prefilter for end tags based on first character + closure classes.
+static bool maybe_implied_close_on_end_tag_first_char(Scanner *scanner, uint16_t closing_classes) {
+    for (size_t i = scanner->open_elements.size; i > 0; i--) {
+        uint8_t elem = scanner->open_elements.contents[i - 1];
+        if (!implied_end_tag_elements[elem])
+            return false;
+        if (elem == HtmlElement_p)
+            return true;
+        if ((end_tag_closure_mask_for_current[elem] & closing_classes) != 0)
+            return true;
+    }
+
+    return false;
+}
+
 // Count how many elements would be implicitly closed by an end tag for an ancestor.
 // Searches from top to bottom for the closing element, counting closeable elements along the way.
 // Returns the count of elements to close, or 0 if the ancestor is not found or
 // if an element that can't have an implied end tag is encountered.
 static uint8_t count_end_tag_implied_closes(Scanner *scanner, HtmlElement closing, XXH32_hash_t closing_hash) {
+    uint16_t closing_class = end_tag_closing_class_for_closing[closing];
+    bool p_can_be_closed = !end_tag_p_closure_exclusions[closing];
+
+    if (closing_class == EndTagClosureClass_None && !p_can_be_closed)
+        return 0;
+
     size_t unknown_count = scanner->custom_name_hashes.size;
     uint8_t close_count = 0;
 
@@ -620,12 +880,14 @@ static uint8_t count_end_tag_implied_closes(Scanner *scanner, HtmlElement closin
             return close_count;
         }
 
-        // Check if this element can be implicitly closed
-        if (end_tag_closes_element(e, closing) && implied_end_tag_elements[e]) {
-            close_count++;
-        } else if (!implied_end_tag_elements[e]) {
+        if (!implied_end_tag_elements[e]) {
             // Hit an element that can't have an implied end tag, stop
             return 0;
+        }
+
+        // Check if this element can be implicitly closed
+        if (end_tag_closes_element(e, closing_class, p_can_be_closed)) {
+            close_count++;
         }
 
         if (e == 0) unknown_count--;
@@ -641,19 +903,23 @@ static uint8_t count_end_tag_implied_closes(Scanner *scanner, HtmlElement closin
 // Returns the count of elements to close, or 0 if no closing element is found or
 // if an element that can't have an implied end tag is encountered.
 static uint8_t count_start_tag_implied_closes(Scanner *scanner, HtmlElement opening) {
+    uint16_t opening_class = start_tag_closing_class_for_opening[opening];
+    if (opening_class == StartTagClosureClass_None)
+        return 0;
+
     uint8_t close_count = 0;
 
     for (size_t i = scanner->open_elements.size; i > 0; i--) {
         uint8_t elem = scanner->open_elements.contents[i - 1];
 
-        if (start_tag_closes_element(elem, opening)) {
-            // Found an element that the start tag closes - include it in the count
-            return close_count + 1;
-        }
-
         if (!implied_end_tag_elements[elem]) {
             // Hit an element that can't have an implied end tag, stop
             return 0;
+        }
+
+        if (start_tag_closes_element(elem, opening_class)) {
+            // Found an element that the start tag closes - include it in the count
+            return close_count + 1;
         }
 
         close_count++;
@@ -674,6 +940,10 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
     #define SCAN_ICASE(CHAR /* should be an uppercase ASCII letter */) \
         (SCAN(CHAR) || SCAN(CHAR | 0x0020))
+
+    const bool can_match_short_character_reference = valid_symbols[HtmlTokenType_ShortCharacterReference];
+    const bool can_match_full_character_reference = valid_symbols[HtmlTokenType_FullCharacterReference];
+    const bool can_match_invalid_character_reference = valid_symbols[HtmlTokenType_InvalidCharacterReference];
 
     // Handle attribute equals sign - must come early before other checks
     if (valid_symbols[HtmlTokenType_Equals]) {
@@ -700,88 +970,82 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         if (ns == ElementNamespace_HTML && scanner->cached_tag) {
             e = scanner->cached_tag_name;
             name_hash = scanner->cached_tag_name_hash;
+            if (!scanner->cached_tag_has_terminator) {
+                scanner->cached_tag = false;
+                return false;
+            }
             // Advance past the tag name in the lexer
-            while (!lexer->eof(lexer) &&
-                   !is_html_whitespace(lexer->lookahead) &&
-                   lexer->lookahead != '/' &&
-                   lexer->lookahead != '>')
+            for (uint32_t i = 0; i < scanner->cached_tag_name_length; i++) {
+                if (lexer->eof(lexer)) {
+                    scanner->cached_tag = false;
+                    return false;
+                }
                 advance(lexer);
+            }
             if (lexer->eof(lexer)) {
                 scanner->cached_tag = false;
                 return false;
             }
             scanner->cached_tag = false;
         } else {
-            ASSERT(scan_tag_name(lexer, scanner, ns, &e, &name_hash));
+            ASSERT(scan_tag_name(lexer, scanner, ns, &e, &name_hash, NULL, NULL));
         }
         #else
-        ASSERT(scan_tag_name(lexer, scanner, ns, &e, &name_hash));
+        ASSERT(scan_tag_name(lexer, scanner, ns, &e, &name_hash, NULL, NULL));
         #endif
 
         // Start tags
         if (valid_symbols[HtmlTokenType_StartTagName]) {
             // Start with the default token for start tag names and disambiguate below
             lexer->result_symbol = HtmlTokenType_StartTagName;
-            push_open_element(scanner, e, name_hash);
+            bool is_void_html_tag = ns == ElementNamespace_HTML && is_html_void_element(e);
 
-            switch (ns) {
-                case ElementNamespace_HTML:
-                    switch (e) {
-                        // Void elements
-                        case HtmlElement_area:
-                        case HtmlElement_base:
-                        case HtmlElement_br:
-                        case HtmlElement_col:
-                        case HtmlElement_embed:
-                        case HtmlElement_hr:
-                        case HtmlElement_img:
-                        case HtmlElement_input:
-                        case HtmlElement_link:
-                        case HtmlElement_meta:
-                        case HtmlElement_source:
-                        case HtmlElement_track:
-                        case HtmlElement_wbr:
-                            lexer->result_symbol = HtmlTokenType_VoidStartTagName;
-                            (void)pop_open_element(scanner);
-                            break;
+            if (is_void_html_tag) {
+                lexer->result_symbol = HtmlTokenType_VoidStartTagName;
+            } else {
+                push_open_element(scanner, e, name_hash);
 
-                        // Raw text elements
-                        case HtmlElement_script:
-                        case HtmlElement_style:
-                            lexer->result_symbol = HtmlTokenType_RawTextStartTagName;
-                            break;
+                switch (ns) {
+                    case ElementNamespace_HTML:
+                        switch (e) {
+                            // Raw text elements
+                            case HtmlElement_script:
+                            case HtmlElement_style:
+                                lexer->result_symbol = HtmlTokenType_RawTextStartTagName;
+                                break;
 
-                        // Escapable raw text elements
-                        case HtmlElement_textarea:
-                        case HtmlElement_title:
-                            lexer->result_symbol = HtmlTokenType_EscapableRawTextStartTagName;
-                            break;
+                            // Escapable raw text elements
+                            case HtmlElement_textarea:
+                            case HtmlElement_title:
+                                lexer->result_symbol = HtmlTokenType_EscapableRawTextStartTagName;
+                                break;
 
-                        // Top-level elements
-                        case HtmlElement_html:
-                            array_push(&scanner->namespaces, ElementNamespace_HTML);
-                            break;
-                        // For top-level elements of foreign namespaces, we need to make sure that we are pushing the value from that namespace's enum onto the stack so that it can be matched with the end tag later. For example, `HtmlElement_math` and `HtmlElement_svg` are used for matching start tag names in HTML, but `MathmlElement_math` and `SvgElement_svg` are what should be pushed onto the stack.
-                        case HtmlElement_math:
-                            *array_back(&scanner->open_elements) = MathmlElement_math;
+                            // Top-level elements
+                            case HtmlElement_html:
+                                array_push(&scanner->namespaces, ElementNamespace_HTML);
+                                break;
+                            // For top-level elements of foreign namespaces, we need to make sure that we are pushing the value from that namespace's enum onto the stack so that it can be matched with the end tag later. For example, `HtmlElement_math` and `HtmlElement_svg` are used for matching start tag names in HTML, but `MathmlElement_math` and `SvgElement_svg` are what should be pushed onto the stack.
+                            case HtmlElement_math:
+                                *array_back(&scanner->open_elements) = MathmlElement_math;
+                                array_push(&scanner->namespaces, ElementNamespace_MathML);
+                                break;
+                            case HtmlElement_svg:
+                                *array_back(&scanner->open_elements) = SvgElement_svg;
+                                array_push(&scanner->namespaces, ElementNamespace_SVG);
+                                break;
+                        }
+                        break;
+                    case ElementNamespace_MathML:
+                        // The top-level `math` element can be nested, so we need to push the MathML namespace again so that we know how many end tags to look for
+                        if (e == MathmlElement_math)
                             array_push(&scanner->namespaces, ElementNamespace_MathML);
-                            break;
-                        case HtmlElement_svg:
-                            *array_back(&scanner->open_elements) = SvgElement_svg;
+                        break;
+                    case ElementNamespace_SVG:
+                        // The top-level `svg` element can be nested, so we need to push the SVG namespace again so that we know how many end tags to look for
+                        if (e == SvgElement_svg)
                             array_push(&scanner->namespaces, ElementNamespace_SVG);
-                            break;
-                    }
-                    break;
-                case ElementNamespace_MathML:
-                    // The top-level `math` element can be nested, so we need to push the MathML namespace again so that we know how many end tags to look for
-                    if (e == MathmlElement_math)
-                        array_push(&scanner->namespaces, ElementNamespace_MathML);
-                    break;
-                case ElementNamespace_SVG:
-                    // The top-level `svg` element can be nested, so we need to push the SVG namespace again so that we know how many end tags to look for
-                    if (e == SvgElement_svg)
-                        array_push(&scanner->namespaces, ElementNamespace_SVG);
-                    break;
+                        break;
+                }
             }
         }
 
@@ -879,10 +1143,33 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             advance(lexer);
         }
 
+        if (!is_ascii_alpha(lexer->lookahead))
+            return false;
+
+        if (is_end_tag) {
+            uint16_t closing_classes = implied_end_tag_classes_for_first_char(lexer->lookahead);
+            if (!maybe_implied_close_on_end_tag_first_char(scanner, closing_classes))
+                return false;
+        } else {
+            uint16_t opening_classes = implied_start_tag_classes_for_first_char(lexer->lookahead);
+            if (!maybe_implied_close_on_start_tag_first_char(scanner, opening_classes))
+                return false;
+        }
+
         // Scan the tag name to see what's coming
         uint8_t next;
         XXH32_hash_t next_hash;
-        if (!scan_tag_name(lexer, scanner, ElementNamespace_HTML, &next, &next_hash)) {
+        uint32_t next_length = 0;
+        bool next_has_terminator = false;
+        if (!scan_tag_name(
+            lexer,
+            scanner,
+            ElementNamespace_HTML,
+            &next,
+            &next_hash,
+            &next_length,
+            &next_has_terminator
+        )) {
             // If we can't scan a tag name, return false immediately to reset lexer
             return false;
         }
@@ -891,6 +1178,8 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         scanner->cached_tag = true;
         scanner->cached_tag_name = next;
         scanner->cached_tag_name_hash = next_hash;
+        scanner->cached_tag_name_length = next_length;
+        scanner->cached_tag_has_terminator = next_has_terminator;
 
         // Count how many elements need to be implicitly closed
         uint8_t close_count = 0;
@@ -985,11 +1274,11 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         return true;
     }
 
-    if ((valid_symbols[HtmlTokenType_FullCharacterReference] || valid_symbols[HtmlTokenType_ShortCharacterReference] || valid_symbols[HtmlTokenType_InvalidCharacterReference]) && lexer->lookahead == '&') {
+    if ((can_match_full_character_reference || can_match_short_character_reference || can_match_invalid_character_reference) && lexer->lookahead == '&') {
         advance(lexer);
 
         if (SCAN('#')) {
-            ASSERT(valid_symbols[HtmlTokenType_FullCharacterReference]);
+            ASSERT(can_match_full_character_reference);
             // Numeric character reference
             if (SCAN_ICASE('X')) {
                 // Hexadecimal
@@ -1008,31 +1297,71 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             }
         } else {
             // Named character reference
-            array_clear(&scanner->character_reference_buffer);
+            char inline_reference_buffer[CHARACTER_REFERENCE_INLINE_BUFFER_SIZE];
+            size_t ref_length = 0;
+            size_t stored_length = 0;
+            bool using_dynamic_buffer = false;
 
             lexer->mark_end(lexer);
 
             while (is_ascii_alnum(lexer->lookahead)) {
-                array_push(&scanner->character_reference_buffer, lexer->lookahead);
+                char c = (char)lexer->lookahead;
                 advance(lexer);
+                ref_length++;
 
-                if (valid_symbols[HtmlTokenType_ShortCharacterReference] &&
-                    lookup_short_character_reference(
-                        scanner->character_reference_buffer.contents,
-                        scanner->character_reference_buffer.size
-                    )) {
+                if (stored_length < FULL_CHARACTER_REFERENCE_NAME_MAX) {
+                    if (!using_dynamic_buffer && stored_length < sizeof(inline_reference_buffer)) {
+                        inline_reference_buffer[stored_length] = c;
+                    } else {
+                        if (!using_dynamic_buffer) {
+                            array_clear(&scanner->character_reference_buffer);
+                            if (stored_length > 0)
+                                array_extend(&scanner->character_reference_buffer, stored_length, inline_reference_buffer);
+                            using_dynamic_buffer = true;
+                        }
+                        array_push(&scanner->character_reference_buffer, c);
+                    }
+                    stored_length++;
+                }
+
+                if (can_match_short_character_reference &&
+                    ref_length >= SHORT_CHARACTER_REFERENCE_NAME_MIN &&
+                    ref_length <= SHORT_CHARACTER_REFERENCE_NAME_MAX &&
+                    (
+                        is_common_short_character_reference(
+                            using_dynamic_buffer ? scanner->character_reference_buffer.contents : inline_reference_buffer,
+                            ref_length
+                        ) ||
+                        lookup_short_character_reference(
+                            using_dynamic_buffer ? scanner->character_reference_buffer.contents : inline_reference_buffer,
+                            ref_length
+                        )
+                    )
+                ) {
                     lexer->result_symbol = HtmlTokenType_ShortCharacterReference;
                     lexer->mark_end(lexer);
                 }
             }
 
-            ASSERT(scanner->character_reference_buffer.size > 0);
+            ASSERT(ref_length > 0);
+            const char *reference_name = using_dynamic_buffer
+                ? scanner->character_reference_buffer.contents
+                : inline_reference_buffer;
 
             if (SCAN(';')) {
-                if (lookup_full_character_reference(
-                    scanner->character_reference_buffer.contents,
-                    scanner->character_reference_buffer.size
-                )) {
+                if (
+                    ref_length <= FULL_CHARACTER_REFERENCE_NAME_MAX &&
+                    (
+                    is_common_full_character_reference(
+                        reference_name,
+                        ref_length
+                    ) ||
+                    lookup_full_character_reference(
+                        reference_name,
+                        ref_length
+                    )
+                    )
+                ) {
                     lexer->mark_end(lexer);
                     lexer->result_symbol = HtmlTokenType_FullCharacterReference;
                     return true;
