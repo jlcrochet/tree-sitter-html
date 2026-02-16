@@ -705,3 +705,42 @@ edge case - mixed content with entities and elements
       (end_tag (tag_name)))
     (text)
     (end_tag (tag_name))))
+
+================================================================================
+edge case - malformed implied end lookahead at EOF (p/div)
+================================================================================
+<p><div
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (implied_end_tag))
+  (ERROR))
+
+================================================================================
+edge case - malformed implied end lookahead at EOF (li/li)
+================================================================================
+<li><li
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (implied_end_tag))
+  (ERROR))
+
+================================================================================
+edge case - erroneous foreign close resets namespace
+================================================================================
+<svg></bogus><foo><![CDATA[x]]></foo>
+--------------------------------------------------------------------------------
+
+(document
+  (element
+    (start_tag (tag_name))
+    (erroneous_end_tag (tag_name)))
+  (element
+    (start_tag (tag_name))
+    (ERROR (tag_name))
+    (erroneous_end_tag (tag_name))))

@@ -36,7 +36,7 @@
       }
     ],
     "links": {
-      "repository": "https://github.com/jlcrochet/tree-sitter-html"
+      "repository": "https://github.com/tree-sitter/tree-sitter-html"
     }
   },
   "bindings": {

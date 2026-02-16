@@ -3,6 +3,7 @@ $(error Windows is not supported)
 endif
 
 LANGUAGE_NAME := tree-sitter-html
+DESCRIPTION := Tree-sitter parser for HTML
 HOMEPAGE_URL := https://github.com/tree-sitter/tree-sitter-html
 VERSION := 0.1.0
 

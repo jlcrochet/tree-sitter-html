@@ -41,11 +41,50 @@ pub const NODE_TYPES: &str = include_str!("../../src/node-types.json");
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn test_can_load_grammar() {
+    fn parse(source: &str) -> tree_sitter::Tree {
         let mut parser = tree_sitter::Parser::new();
         parser
             .set_language(&super::LANGUAGE.into())
             .expect("Error loading HTML parser");
+        parser.parse(source, None).expect("Failed to parse source")
+    }
+
+    #[test]
+    fn test_can_load_grammar() {
+        let _ = parse("<div></div>");
+    }
+
+    #[test]
+    fn test_malformed_implied_end_inputs_terminate() {
+        for source in ["<p><div", "<li><li", "<ul><li>text<li"] {
+            let tree = parse(source);
+            assert!(tree.root_node().has_error(), "expected parse error for {source:?}");
+        }
+    }
+
+    #[test]
+    fn test_erroneous_foreign_end_tag_restores_html_namespace() {
+        let tree = parse("<svg></bogus><foo><![CDATA[x]]></foo>");
+        let sexp = tree.root_node().to_sexp();
+        assert!(
+            !sexp.contains("(cdata"),
+            "CDATA should not be accepted after leaving SVG namespace: {sexp}"
+        );
+    }
+
+    #[test]
+    fn test_deep_custom_nesting_does_not_crash() {
+        let depth = 320;
+        let mut source = String::new();
+        source.reserve(depth * 7);
+        for _ in 0..depth {
+            source.push_str("<x>");
+        }
+        for _ in 0..depth {
+            source.push_str("</x>");
+        }
+
+        let tree = parse(&source);
+        assert!(!tree.root_node().has_error(), "deep nesting should parse cleanly");
     }
 }

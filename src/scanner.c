@@ -70,6 +70,8 @@ typedef struct {
     Array(uint8_t /* ElementNamespace */) namespaces;
     Array(uint8_t) open_elements;
     Array(XXH32_hash_t) custom_name_hashes;
+    Array(char) tag_name_buffer;
+    Array(char) character_reference_buffer;
 } Scanner;
 
 static ElementNamespace get_current_namespace(Scanner *scanner) {
@@ -97,52 +99,90 @@ static uint8_t lookup_element(const char *name, size_t length, ElementNamespace 
     }
 }
 
-void *tree_sitter_html_external_scanner_create(void) {
-    return ts_calloc(1, sizeof(Scanner));
+static bool try_get_array_byte_count(size_t size, size_t elem_size, size_t *byte_count) {
+    if (elem_size > 0 && size > SIZE_MAX / elem_size)
+        return false;
+    *byte_count = size * elem_size;
+    return true;
 }
 
-void tree_sitter_html_external_scanner_destroy(void *payload) {
-    Scanner *scanner = (Scanner *)payload;
-    array_delete(&scanner->namespaces);
-    array_delete(&scanner->open_elements);
-    array_delete(&scanner->custom_name_hashes);
-    ts_free(scanner);
+static bool serialize_array_bounded(
+    char **offset,
+    const char *end,
+    const void *contents,
+    size_t size,
+    size_t elem_size
+) {
+    size_t size_len = vlq_length(size);
+    if ((size_t)(end - *offset) < size_len)
+        return false;
+    *offset += to_vlq(size, *offset);
+
+    size_t byte_count = 0;
+    if (!try_get_array_byte_count(size, elem_size, &byte_count))
+        return false;
+    if ((size_t)(end - *offset) < byte_count)
+        return false;
+
+    if (byte_count > 0) {
+        memcpy(*offset, contents, byte_count);
+        *offset += byte_count;
+    }
+
+    return true;
 }
 
-unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer) {
-    Scanner *scanner = (Scanner *)payload;
+static bool deserialize_array_bounded(
+    const char **offset,
+    const char *end,
+    Array *array,
+    size_t elem_size
+) {
+    size_t size = 0;
+    size_t consumed = 0;
+    if (!from_vlq_bounded(*offset, end, &size, &consumed))
+        return false;
+    *offset += consumed;
 
-    char *offset = buffer;
+    if (size > UINT32_MAX)
+        return false;
 
-    #ifndef NO_IMPLIED_END_TAGS
-    *offset++ = (char)scanner->cached_tag;
-    *offset++ = (char)scanner->cached_tag_name;
-    memcpy(offset, &scanner->cached_tag_name_hash, sizeof(XXH32_hash_t));
-    offset += sizeof(XXH32_hash_t);
-    *offset++ = (char)scanner->implied_end_tags;
-    #endif
+    size_t byte_count = 0;
+    if (!try_get_array_byte_count(size, elem_size, &byte_count))
+        return false;
+    if ((size_t)(end - *offset) < byte_count)
+        return false;
 
-    #define SERIALIZE_ARRAY(ARRAY) \
-        { \
-            offset += to_vlq(ARRAY.size, offset); \
-            if (ARRAY.size > 0) { \
-                size_t length = ARRAY.size * array_elem_size(&ARRAY); \
-                assert(length + offset - buffer <= TREE_SITTER_SERIALIZATION_BUFFER_SIZE); \
-                memcpy(offset, ARRAY.contents, length); \
-                offset += length; \
-            } \
-        }
+    if (size > 0) {
+        _array__splice(array, elem_size, array->size, 0, (uint32_t)size, *offset);
+        *offset += byte_count;
+    }
 
-    SERIALIZE_ARRAY(scanner->namespaces);
-    SERIALIZE_ARRAY(scanner->open_elements);
-    SERIALIZE_ARRAY(scanner->custom_name_hashes);
-
-    return offset - buffer;
+    return true;
 }
 
-void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
-    Scanner *scanner = (Scanner *)payload;
+static uint32_t count_unknown_elements(Scanner *scanner) {
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < scanner->open_elements.size; i++) {
+        if (scanner->open_elements.contents[i] == 0)
+            count++;
+    }
+    return count;
+}
 
+static bool scanner_state_is_valid(Scanner *scanner) {
+    if (scanner->namespaces.size > scanner->open_elements.size)
+        return false;
+
+    for (uint32_t i = 0; i < scanner->namespaces.size; i++) {
+        if (scanner->namespaces.contents[i] > ElementNamespace_SVG)
+            return false;
+    }
+
+    return scanner->custom_name_hashes.size == count_unknown_elements(scanner);
+}
+
+static inline void clear_scanner_state(Scanner *scanner) {
     #ifndef NO_IMPLIED_END_TAGS
     scanner->cached_tag = false;
     scanner->cached_tag_name = 0;
@@ -153,6 +193,98 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     array_clear(&scanner->namespaces);
     array_clear(&scanner->open_elements);
     array_clear(&scanner->custom_name_hashes);
+    array_clear(&scanner->tag_name_buffer);
+    array_clear(&scanner->character_reference_buffer);
+}
+
+static inline void push_open_element(Scanner *scanner, uint8_t element, XXH32_hash_t name_hash) {
+    array_push(&scanner->open_elements, element);
+    if (element == 0)
+        array_push(&scanner->custom_name_hashes, name_hash);
+}
+
+static inline void maybe_pop_current_namespace(Scanner *scanner, uint8_t element) {
+    if (scanner->namespaces.size == 0)
+        return;
+
+    ElementNamespace ns = get_current_namespace(scanner);
+    bool closes_namespace_root =
+        (ns == ElementNamespace_HTML && element == HtmlElement_html) ||
+        (ns == ElementNamespace_MathML && element == MathmlElement_math) ||
+        (ns == ElementNamespace_SVG && element == SvgElement_svg);
+
+    if (closes_namespace_root)
+        (void)array_pop(&scanner->namespaces);
+}
+
+static inline uint8_t pop_open_element(Scanner *scanner) {
+    uint8_t element = array_pop(&scanner->open_elements);
+    if (element == 0 && scanner->custom_name_hashes.size > 0)
+        (void)array_pop(&scanner->custom_name_hashes);
+    maybe_pop_current_namespace(scanner, element);
+    return element;
+}
+
+void *tree_sitter_html_external_scanner_create(void) {
+    return ts_calloc(1, sizeof(Scanner));
+}
+
+void tree_sitter_html_external_scanner_destroy(void *payload) {
+    Scanner *scanner = (Scanner *)payload;
+    array_delete(&scanner->namespaces);
+    array_delete(&scanner->open_elements);
+    array_delete(&scanner->custom_name_hashes);
+    array_delete(&scanner->tag_name_buffer);
+    array_delete(&scanner->character_reference_buffer);
+    ts_free(scanner);
+}
+
+unsigned tree_sitter_html_external_scanner_serialize(void *payload, char *buffer) {
+    Scanner *scanner = (Scanner *)payload;
+
+    char *offset = buffer;
+    const char *end = buffer + TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
+
+    #ifndef NO_IMPLIED_END_TAGS
+    if ((size_t)(end - offset) < 2 + sizeof(XXH32_hash_t) + 1)
+        return 0;
+    *offset++ = (char)scanner->cached_tag;
+    *offset++ = (char)scanner->cached_tag_name;
+    memcpy(offset, &scanner->cached_tag_name_hash, sizeof(XXH32_hash_t));
+    offset += sizeof(XXH32_hash_t);
+    *offset++ = (char)scanner->implied_end_tags;
+    #endif
+
+    if (!serialize_array_bounded(
+        &offset,
+        end,
+        scanner->namespaces.contents,
+        scanner->namespaces.size,
+        array_elem_size(&scanner->namespaces)
+    )) return 0;
+
+    if (!serialize_array_bounded(
+        &offset,
+        end,
+        scanner->open_elements.contents,
+        scanner->open_elements.size,
+        array_elem_size(&scanner->open_elements)
+    )) return 0;
+
+    if (!serialize_array_bounded(
+        &offset,
+        end,
+        scanner->custom_name_hashes.contents,
+        scanner->custom_name_hashes.size,
+        array_elem_size(&scanner->custom_name_hashes)
+    )) return 0;
+
+    return offset - buffer;
+}
+
+void tree_sitter_html_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
+    Scanner *scanner = (Scanner *)payload;
+    clear_scanner_state(scanner);
 
     if (length == 0) return;
 
@@ -160,7 +292,7 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     const char *end = buffer + length;
 
     #ifndef NO_IMPLIED_END_TAGS
-    if (offset + 2 + sizeof(XXH32_hash_t) + 1 > end) return;
+    if ((size_t)(end - offset) < 2 + sizeof(XXH32_hash_t) + 1) return;
     scanner->cached_tag = (bool)*offset++;
     scanner->cached_tag_name = (uint8_t)*offset++;
     memcpy(&scanner->cached_tag_name_hash, offset, sizeof(XXH32_hash_t));
@@ -168,22 +300,34 @@ void tree_sitter_html_external_scanner_deserialize(void *payload, const char *bu
     scanner->implied_end_tags = (uint8_t)*offset++;
     #endif
 
-    #define DESERIALIZE_ARRAY(ARRAY) \
-        { \
-            if (offset >= end) return; \
-            size_t size; \
-            offset += from_vlq(offset, &size); \
-            size_t byte_count = size * array_elem_size(&ARRAY); \
-            if (offset + byte_count > end) return; \
-            if (size > 0) { \
-                array_extend(&ARRAY, size, offset); \
-                offset += byte_count; \
-            } \
-        }
+    if (!deserialize_array_bounded(
+        &offset,
+        end,
+        (Array *)&scanner->namespaces,
+        array_elem_size(&scanner->namespaces)
+    )) goto invalid_state;
 
-    DESERIALIZE_ARRAY(scanner->namespaces);
-    DESERIALIZE_ARRAY(scanner->open_elements);
-    DESERIALIZE_ARRAY(scanner->custom_name_hashes);
+    if (!deserialize_array_bounded(
+        &offset,
+        end,
+        (Array *)&scanner->open_elements,
+        array_elem_size(&scanner->open_elements)
+    )) goto invalid_state;
+
+    if (!deserialize_array_bounded(
+        &offset,
+        end,
+        (Array *)&scanner->custom_name_hashes,
+        array_elem_size(&scanner->custom_name_hashes)
+    )) goto invalid_state;
+
+    if (!scanner_state_is_valid(scanner))
+        goto invalid_state;
+
+    return;
+
+invalid_state:
+    clear_scanner_state(scanner);
 }
 
 static inline void advance(TSLexer *lexer) {
@@ -206,23 +350,22 @@ static bool scan_char(TSLexer *lexer, int c) {
 // Scan a tag name and return its element enum in the given namespace as well as its custom name hash, if any.
 // Note: HTML lowercases only ASCII letters; non-ASCII is preserved.
 // Ref: https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state
-static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
+static bool scan_tag_name(TSLexer *lexer, Scanner *scanner, ElementNamespace ns, uint8_t *element, XXH32_hash_t *name_hash) {
     // Tag names must begin with an ASCII alpha character in the tag-open state
     if (!is_ascii_alpha(lexer->lookahead))
         return false;
 
-    static Array(char) tag_name = array_new();
-    array_clear(&tag_name);
+    array_clear(&scanner->tag_name_buffer);
 
     // For non-ASCII codepoints, we have to serialize to UTF8 first because our lookup tables only support 8-bit characters:
     #define PUSH_CODEPOINT(CODEPOINT) \
         { \
             char bytes[4]; \
             size_t count = codepoint_to_utf8(bytes, CODEPOINT); \
-            array_extend(&tag_name, count, bytes); \
+            array_extend(&scanner->tag_name_buffer, count, bytes); \
         }
 
-    array_push(&tag_name, (char)ascii_tolower(lexer->lookahead));
+    array_push(&scanner->tag_name_buffer, (char)ascii_tolower(lexer->lookahead));
     advance(lexer);
 
     bool must_be_unknown = false;
@@ -235,13 +378,13 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
             must_be_unknown = true;
             PUSH_CODEPOINT(0xFFFD);
         } else if (is_ascii_alnum(lexer->lookahead)) {
-            array_push(&tag_name, (char)ascii_tolower(lexer->lookahead));
+            array_push(&scanner->tag_name_buffer, (char)ascii_tolower(lexer->lookahead));
         } else if (lexer->lookahead == '-') {
-            array_push(&tag_name, '-');
+            array_push(&scanner->tag_name_buffer, '-');
         } else if (is_ascii(lexer->lookahead)) {
             // Any other ASCII character is valid, but indicates an unknown element
             must_be_unknown = true;
-            array_push(&tag_name, lexer->lookahead);
+            array_push(&scanner->tag_name_buffer, lexer->lookahead);
         } else {
             // All non-ASCII characters are valid in a tag name, but indicate an unknown element
             must_be_unknown = true;
@@ -253,10 +396,10 @@ static bool scan_tag_name(TSLexer *lexer, ElementNamespace ns, uint8_t *element,
     // 0 represents an unknown element in any namespace
     *element = must_be_unknown
         ? 0
-        : lookup_element(tag_name.contents, tag_name.size, ns);
+        : lookup_element(scanner->tag_name_buffer.contents, scanner->tag_name_buffer.size, ns);
 
     *name_hash = *element == 0
-        ? XXH32(tag_name.contents, tag_name.size, 0)
+        ? XXH32(scanner->tag_name_buffer.contents, scanner->tag_name_buffer.size, 0)
         : 0;
 
     return true;
@@ -558,21 +701,28 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             e = scanner->cached_tag_name;
             name_hash = scanner->cached_tag_name_hash;
             // Advance past the tag name in the lexer
-            while (!is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
+            while (!lexer->eof(lexer) &&
+                   !is_html_whitespace(lexer->lookahead) &&
+                   lexer->lookahead != '/' &&
+                   lexer->lookahead != '>')
                 advance(lexer);
+            if (lexer->eof(lexer)) {
+                scanner->cached_tag = false;
+                return false;
+            }
             scanner->cached_tag = false;
         } else {
-            ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+            ASSERT(scan_tag_name(lexer, scanner, ns, &e, &name_hash));
         }
         #else
-        ASSERT(scan_tag_name(lexer, ns, &e, &name_hash));
+        ASSERT(scan_tag_name(lexer, scanner, ns, &e, &name_hash));
         #endif
 
         // Start tags
         if (valid_symbols[HtmlTokenType_StartTagName]) {
             // Start with the default token for start tag names and disambiguate below
             lexer->result_symbol = HtmlTokenType_StartTagName;
-            array_push(&scanner->open_elements, e);
+            push_open_element(scanner, e, name_hash);
 
             switch (ns) {
                 case ElementNamespace_HTML:
@@ -592,7 +742,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                         case HtmlElement_track:
                         case HtmlElement_wbr:
                             lexer->result_symbol = HtmlTokenType_VoidStartTagName;
-                            array_pop(&scanner->open_elements);
+                            (void)pop_open_element(scanner);
                             break;
 
                         // Raw text elements
@@ -633,10 +783,6 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
                         array_push(&scanner->namespaces, ElementNamespace_SVG);
                     break;
             }
-
-            if (e == 0)
-                // Again, 0 represents an unknown element in any namespace; push its name hash onto the stack
-                array_push(&scanner->custom_name_hashes, name_hash);
         }
 
         // End tags
@@ -648,32 +794,17 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
 
             uint8_t top_tag = *array_back(&scanner->open_elements);
             XXH32_hash_t top_name_hash = 0;
-            if (top_tag == 0)
+            if (top_tag == 0) {
+                ASSERT(scanner->custom_name_hashes.size > 0);
                 top_name_hash = *array_back(&scanner->custom_name_hashes);
+            }
 
             if (e == top_tag && name_hash == top_name_hash) {
-                array_pop(&scanner->open_elements);
-
-                switch (ns) {
-                    case ElementNamespace_HTML:
-                        if (e == HtmlElement_html)
-                            array_pop(&scanner->namespaces);
-                        break;
-                    case ElementNamespace_MathML:
-                        if (e == MathmlElement_math)
-                            array_pop(&scanner->namespaces);
-                        break;
-                    case ElementNamespace_SVG:
-                        if (e == SvgElement_svg)
-                            array_pop(&scanner->namespaces);
-                        break;
-                }
-
-                if (top_name_hash)
-                    array_pop(&scanner->custom_name_hashes);
+                (void)pop_open_element(scanner);
 
                 lexer->result_symbol = HtmlTokenType_EndTagName;
             } else {
+                (void)pop_open_element(scanner);
                 lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
             }
         }
@@ -691,11 +822,8 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         while (!lexer->eof(lexer) && !is_html_whitespace(lexer->lookahead) && lexer->lookahead != '/' && lexer->lookahead != '>')
             advance(lexer);
         // Pop the current element from the stack since the erroneous end tag closes it
-        if (scanner->open_elements.size > 0) {
-            uint8_t e = array_pop(&scanner->open_elements);
-            if (e == 0)
-                array_pop(&scanner->custom_name_hashes);
-        }
+        if (scanner->open_elements.size > 0)
+            (void)pop_open_element(scanner);
         lexer->result_symbol = HtmlTokenType_ErroneousEndTagName;
         return true;
     }
@@ -710,17 +838,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             skip(lexer);
 
         ASSERT(SCAN('/') && SCAN('>'));
-        uint8_t e = array_pop(&scanner->open_elements);
-        if (e == 0) {
-            array_pop(&scanner->custom_name_hashes);
-        } else {
-            // Pop namespace for self-closing foreign elements
-            ElementNamespace ns = get_current_namespace(scanner);
-            if ((ns == ElementNamespace_MathML && e == MathmlElement_math) ||
-                (ns == ElementNamespace_SVG && e == SvgElement_svg)) {
-                array_pop(&scanner->namespaces);
-            }
-        }
+        (void)pop_open_element(scanner);
         lexer->result_symbol = HtmlTokenType_SelfClosingTagDelimiter;
         return true;
     }
@@ -730,9 +848,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         // Fast path: if we already know how many implied end tags to emit, just emit one
         if (scanner->implied_end_tags > 0) {
             scanner->implied_end_tags--;
-            uint8_t current = array_pop(&scanner->open_elements);
-            if (current == 0)
-                array_pop(&scanner->custom_name_hashes);
+            (void)pop_open_element(scanner);
             lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
             return true;
         }
@@ -766,7 +882,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
         // Scan the tag name to see what's coming
         uint8_t next;
         XXH32_hash_t next_hash;
-        if (!scan_tag_name(lexer, ElementNamespace_HTML, &next, &next_hash)) {
+        if (!scan_tag_name(lexer, scanner, ElementNamespace_HTML, &next, &next_hash)) {
             // If we can't scan a tag name, return false immediately to reset lexer
             return false;
         }
@@ -798,9 +914,7 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             scanner->implied_end_tags = close_count - 1;
 
             // Pop the current element from the stack
-            array_pop(&scanner->open_elements);
-            if (current == 0)
-                array_pop(&scanner->custom_name_hashes);
+            (void)pop_open_element(scanner);
 
             // Emit zero-width implied end tag token
             lexer->result_symbol = HtmlTokenType_ImpliedEndTag;
@@ -894,25 +1008,31 @@ bool tree_sitter_html_external_scanner_scan(void *payload, TSLexer *lexer, const
             }
         } else {
             // Named character reference
-            static Array(char) name = array_new();
-            array_clear(&name);
+            array_clear(&scanner->character_reference_buffer);
 
             lexer->mark_end(lexer);
 
             while (is_ascii_alnum(lexer->lookahead)) {
-                array_push(&name, lexer->lookahead);
+                array_push(&scanner->character_reference_buffer, lexer->lookahead);
                 advance(lexer);
 
-                if (valid_symbols[HtmlTokenType_ShortCharacterReference] && lookup_short_character_reference(name.contents, name.size)) {
+                if (valid_symbols[HtmlTokenType_ShortCharacterReference] &&
+                    lookup_short_character_reference(
+                        scanner->character_reference_buffer.contents,
+                        scanner->character_reference_buffer.size
+                    )) {
                     lexer->result_symbol = HtmlTokenType_ShortCharacterReference;
                     lexer->mark_end(lexer);
                 }
             }
 
-            ASSERT(name.size > 0);
+            ASSERT(scanner->character_reference_buffer.size > 0);
 
             if (SCAN(';')) {
-                if (lookup_full_character_reference(name.contents, name.size)) {
+                if (lookup_full_character_reference(
+                    scanner->character_reference_buffer.contents,
+                    scanner->character_reference_buffer.size
+                )) {
                     lexer->mark_end(lexer);
                     lexer->result_symbol = HtmlTokenType_FullCharacterReference;
                     return true;

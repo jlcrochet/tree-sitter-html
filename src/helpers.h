@@ -72,20 +72,41 @@ static size_t to_vlq(size_t in, char* const out) {
 
     return len;
 }
-static size_t from_vlq(const char* in, size_t* out) {
+static size_t vlq_length(size_t in) {
+    size_t len = 1;
+    while (in >= 128) {
+        len++;
+        in >>= 7;
+    }
+    return len;
+}
+
+static bool from_vlq_bounded(const char *in, const char *end, size_t *out, size_t *consumed) {
+    if (in >= end)
+        return false;
+
     if ((unsigned char)in[0] < 128) {
         *out = (unsigned char)in[0];
-        return 1;
+        *consumed = 1;
+        return true;
     }
 
     size_t idx = 0;
     *out = 0;
 
-    do {
-        *out = (*out << 7) | (size_t)(in[idx] & 127);
-    } while ((unsigned char)in[idx++] & 128);
+    while (in + idx < end) {
+        unsigned char byte = (unsigned char)in[idx];
+        if (*out > (SIZE_MAX >> 7))
+            return false;
+        *out = (*out << 7) | (size_t)(byte & 127);
+        idx++;
+        if (!(byte & 128)) {
+            *consumed = idx;
+            return true;
+        }
+    }
 
-    return idx;
+    return false;
 }
 
 static inline bool is_html_whitespace(int32_t c) {
